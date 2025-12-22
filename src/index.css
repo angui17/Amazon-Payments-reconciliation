@@ -1,0 +1,65 @@
+/* Variables CSS */
+:root {
+  --primary-orange: #FF6B00;
+  --orange-light: #FF8C42;
+  --orange-dark: #CC5500;
+  --background-light: #FFF5EE;
+  --text-dark: #333333;
+  --border-light: #E0E0E0;
+  --success-green: #27ae60;
+  --error-red: #e74c3c;
+  --warning-orange: #e67e22;
+  --info-blue: #1976d2;
+  --gray-light: #f8f9fa;
+  --gray-medium: #e0e0e0;
+  --gray-dark: #666666;
+  --white: #ffffff;
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-medium: 0 4px 12px rgba(0,0,0,0.15);
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+}
+
+/* Reset y estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background-color: var(--gray-light);
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+#root {
+  height: 100vh;
+}
+
+/* Estilos utilitarios */
+.text-positive { color: var(--success-green); }
+.text-negative { color: var(--error-red); }
+.text-warning { color: var(--warning-orange); }
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
