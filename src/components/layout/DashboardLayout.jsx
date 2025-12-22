@@ -1,3 +1,5 @@
+// Layout principal del dashboard
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import TopNav from './TopNav';

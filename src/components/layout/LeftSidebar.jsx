@@ -1,3 +1,5 @@
+// Sidebar izquierdo con filtros
+
 import React, { useState } from 'react';
 
 const LeftSidebar = ({ activePage, onUploadCSV }) => {
