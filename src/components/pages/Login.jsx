@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../App';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/login.css';
 
 const Login = () => {
@@ -11,7 +11,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,17 +28,11 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Simulación de autenticación
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (credentials.username === 'admin' && credentials.password === 'admin') {
-        login();
-        navigate('/dashboard');
-      } else {
-        setError('Invalid username or password. Try admin/admin');
-      }
+      setLoading(true);
+      await login(credentials.username, credentials.password);
+      navigate('/dashboard');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError('Invalid username or password. Try admin/admin');
     } finally {
       setLoading(false);
     }
