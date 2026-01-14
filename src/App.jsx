@@ -1,9 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// import Login from './components/pages/Login';
-// import Dashboard from './components/pages/Dashboard';
-// import './styles/dashboard.css';
-
 // // Contexto de autenticación
 // export const AuthContext = React.createContext();
 
@@ -81,6 +75,7 @@ import UserProfile from './components/pages/UserProfile'
 import AccountSettings from './components/pages/AccountSettings'
 import Security from './components/pages/Security'
 import Notifications from './components/pages/Notifications'
+import './styles/dashboard.css'
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children }) => {

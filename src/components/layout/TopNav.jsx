@@ -122,7 +122,6 @@ const TopNav = () => {
   return (
     <div className="top-nav">
       <div className="logo">AmazonPay Reconciliation</div>
-      
       <div className="nav-tabs">
         {navItems.map((item) => (
           <NavLink
@@ -136,7 +135,6 @@ const TopNav = () => {
           </NavLink>
         ))}
       </div>
-      
       <div 
         className="user-menu" 
         onClick={() => setShowUserDropdown(!showUserDropdown)}
@@ -147,16 +145,7 @@ const TopNav = () => {
         <div className="user-avatar">
           {user?.avatar || '👤'}
         </div>
-        
         <div className={`user-dropdown ${showUserDropdown ? 'active' : ''}`}>
-          <div className="user-info">
-            <div className="user-avatar-large">{user?.avatar || '👤'}</div>
-            <div>
-              <div className="user-name">{user?.name || 'User'}</div>
-              <div className="user-email">{user?.email || 'user@company.com'}</div>
-            </div>
-          </div>
-          
           {userMenuItems.map((item) => (
             <NavLink
               key={item.path}
@@ -167,9 +156,6 @@ const TopNav = () => {
               <span>{item.icon}</span> {item.label}
             </NavLink>
           ))}
-          
-          <div className="divider"></div>
-          
           <div 
             className="user-dropdown-item logout"
             onClick={handleLogout}

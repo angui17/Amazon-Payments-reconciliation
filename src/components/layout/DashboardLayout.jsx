@@ -76,6 +76,7 @@ import LeftSidebar from './LeftSidebar'
 import RightSidebar from './RightSidebar'
 import CSVUploadModal from '../common/CSVUploadModal'
 import '../../styles/dashboard.css'
+import '../../styles/mockup.css'
 
 const DashboardLayout = () => {
   const [showCSVModal, setShowCSVModal] = useState(false)
