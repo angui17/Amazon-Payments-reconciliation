@@ -3,7 +3,7 @@ import useOrdersApi from '../../hooks/useOrdersApi'
 import OrderFilters from '../orders/OrderFilters'
 import OrderActions from '../orders/OrderActions'
 import '../../styles/dashboard.css'
-import { useData } from '../../context/DataContext' 
+import { useData } from '../../context/DataContext'
 
 const Orders = () => {
   const [filters, setFilters] = useState({})
@@ -17,16 +17,21 @@ const Orders = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
     let list = data || []
-    if (statusFilter) list = list.filter((r) => String(r.status) === String(statusFilter))
+    const q = search.trim().toLowerCase()
+
+    if (statusFilter) {
+      list = list.filter(r => String(r.status) === String(statusFilter))
+    }
+
     if (!q) return list
-    return list.filter((r) =>
+
+    return list.filter(r =>
       String(r.order_id || r.amazonOrderId || '').toLowerCase().includes(q) ||
       String(r.sku || '').toLowerCase().includes(q) ||
       String(r.status || '').toLowerCase().includes(q)
     )
-  }, [data, search, statusFilter])
+  }, [data, search, statusFilter, filters])
 
   function formatToMMDDYYYY(value) {
     if (!value) return '';
@@ -38,8 +43,8 @@ const Orders = () => {
 
   function applyDateFilter() {
     const f = {};
-    if (dateRange.start) f.fecha_desde = formatToMMDDYYYY(dateRange.start);
-    if (dateRange.end) f.fecha_hasta = formatToMMDDYYYY(dateRange.end);
+    if (dateRange.start) f.fecha_desde = formatToMMDDYYYY(dateRange.start);  // Formatear aquí
+    if (dateRange.end) f.fecha_hasta = formatToMMDDYYYY(dateRange.end);     // Formatear aquí
     setFilters(f);
     setPage(1);
   }
@@ -150,7 +155,7 @@ const Orders = () => {
                 <tr key={row.id || row.order_id}>
                   <td>{row.ORDER_ID || row.amazonOrderId}</td>
                   <td>{row.SKU}</td>
-                  <td>{row.DATE_TIME ? new Date(row.DATE_TIME).toLocaleString() : ''}</td>
+                  <td>{row.DATE_TIME ? new Date(row.DATE_TIME).toLocaleDateString() : ''}</td>
                   <td>{typeof row.TOTAL === 'number' ? `$${row.TOTAL.toLocaleString()}` : (row.TOTAL || '')}</td>
                   <td>{row.STATUS}</td>
                   <td>
