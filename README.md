@@ -3,4 +3,7 @@ This platform will automate the reconciliation process of invoices and payments 
 
 npm install
 npm install react-chartjs-2 chart.js react-csv
+
 npm run dev
+
+tree -I node_modules (Para mostrar toda la estrcutura del proyecto)
