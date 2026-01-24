@@ -1,4 +1,17 @@
-node_modules
+# Dependencies
+node_modules/
 
-# Ignore build output
+# Build
 dist/
+build/
+
+# Vite
+.vite/
+
+# Env
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+.vscode/
