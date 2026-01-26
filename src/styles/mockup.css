@@ -1,3 +1,4 @@
+/* mockup.css */
 :root {
   --primary-orange: #FF6B00;
   --orange-light: #FF8C42;
@@ -22,8 +23,9 @@ body {
 .dashboard-container {
   display: grid;
   grid-template-rows: 60px 1fr;
-  grid-template-columns: 250px 1fr 300px;
+  grid-template-columns: 1fr; 
   height: 100vh;
+  width: 100vw;
 }
 
 /* Constrain overall page width to 75% and center it for better visibility */
@@ -227,9 +229,11 @@ body {
 
 /* Main Content */
 .main-content {
-  padding: 20px;
   background-color: #f8f9fa;
-  overflow-y: auto;
+    width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 20px;
 }
 
 .content-header {

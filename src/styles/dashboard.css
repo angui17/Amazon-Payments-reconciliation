@@ -1,3 +1,4 @@
+/* dashboard.css */
 :root {
   --primary-orange: #FF6B00;
   --orange-light: #FF8C42;
@@ -20,14 +21,14 @@ body {
 }
 
 .dashboard-container {
-  /* display: grid;
-  grid-template-rows: 60px 1fr;
-  grid-template-columns: 1fr 200px;
-  height: 100vh; */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
+
 /* Top Navigation */
-.top-nav {
+/* .top-nav {
   grid-column: 1 / -1;
   background: linear-gradient(135deg, var(--primary-orange), var(--orange-dark));
   display: flex;
@@ -35,7 +36,7 @@ body {
   padding: 0 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   z-index: 100;
-}
+} */
 
 .logo {
   color: white;
@@ -123,9 +124,13 @@ body {
 
 /* Main Content */
 .main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow-y: auto;
   background-color: #f8f9fa;
-  overflow-y: auto; 
-  grid-column: 2;
+  padding: 20px;
+  /* grid-column: 2; */
 }
 
 .content-header {
@@ -247,13 +252,14 @@ body {
 
 /* Right Sidebar */
 .right-sidebar {
-  background-color: white;
+  /* background-color: white;
   border-left: 1px solid var(--border-light);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 25px;
-  grid-column: 3;
+  grid-column: 3; */
+  grid-column: auto;
 }
 
 .sidebar-section h3 {
@@ -322,12 +328,10 @@ body {
 }
 
 /* Page Styles */
-.page {
-  display: none;
-}
-
+.page,
 .page.active {
-  display: block;
+  width: 100%;
+  max-width: none;
 }
 
 /* Data Tables */

@@ -13,7 +13,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         rewrite: path => {
-          console.log('proxying:', path);
           return path.replace(/^\/ida-proxy/, '');
         }
       }
