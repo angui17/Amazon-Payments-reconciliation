@@ -1,9 +1,17 @@
-# Amazon-Payments-reconciliation
-This platform will automate the reconciliation process of invoices and payments between Amazon and SAP Business One, addressing current limitations. The solution will be hosted on IDA Cloud and will include a web portal for real-time monitoring, management, and reporting. 
+# 📊 Amazon Payments Reconciliation
+This platform provides an automated solution for reconciling invoices and payments between Amazon and SAP Business One, improving accuracy and efficiency over existing manual processes.
 
+The solution is hosted on IDA Cloud and features a web portal for real-time monitoring, management, and reporting.
+
+## 📦 Installation
+```bash
 npm install
 npm install react-chartjs-2 chart.js react-csv
-
 npm run dev
+tree -I node_modules (to display the full project structure)
+```
 
-tree -I node_modules (Para mostrar toda la estrcutura del proyecto)
+## 👩‍💻 Developer
+
+**Developer:** Anguibell Romero  
+**Repository:** https://github.com/angui17/Amazon-Payments-reconciliation
