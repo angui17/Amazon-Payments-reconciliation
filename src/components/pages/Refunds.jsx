@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { getRefunds } from '../../api/refunds';
+import { useParams } from "react-router-dom"
+
+import { getRefundsSales, getRefundsPayments } from '../../api/refunds';
 
 import '../../styles/dashboard.css';
-
-// Cards 
-import { isCurrentMonth } from "../../utils/dateUtils";
 
 // Charts
 import RefundsByReason from "../charts/RefundsByReason";
 import RefundsTimeline from "../charts/RefundsTimeline";
 
+// Info tablas
+import RefundsSalesRows from '../refunds/RefundsSalesRows';
+import RefundsPaymentsRows from '../refunds/RefundsPaymentsRows';
+import RefundsTableHeaders from '../refunds/RefundsTableHeaders';
+import TableSkeletonOrEmpty from '../refunds/TableSkeletonOrEmpty';
+import KPICard from '../common/KPICard';
+
 const Refunds = () => {
   const fechaDesde = "10-01-2024";
   const fechaHasta = "10-31-2024";
+
+  const { type } = useParams();  // sales o payments
 
   const [refunds, setRefunds] = useState([]);
   const [refundsAll, setRefundsAll] = useState([]);
@@ -47,19 +55,35 @@ const Refunds = () => {
   useEffect(() => {
     const fetchRefunds = async () => {
       try {
+        if (type == "sales") {
+          const allRefunds = await getRefundsSales({
+            fecha_desde: fechaDesde,
+            fecha_hasta: fechaHasta,
+          });
+          setRefundsAll(allRefunds)
 
-        const allRefunds = await getRefunds({
-          fecha_desde: fechaDesde,
-          fecha_hasta: fechaHasta,
-        });
-        setRefundsAll(allRefunds)
+          const data = await getRefundsSales({
+            fecha_desde: fechaDesde,
+            fecha_hasta: fechaHasta,
+            limit: 10,
+          });
+          setRefunds(data);
+          return
+        } else if (type == "payments") {
+          const allRefunds = await getRefundsPayments({
+            fecha_desde: fechaDesde,
+            fecha_hasta: fechaHasta,
+          });
+          setRefundsAll(allRefunds)
 
-        const data = await getRefunds({
-          fecha_desde: fechaDesde,
-          fecha_hasta: fechaHasta,
-          limit: 10,
-        });
-        setRefunds(data);
+          const data = await getRefundsPayments({
+            fecha_desde: fechaDesde,
+            fecha_hasta: fechaHasta,
+            limit: 10,
+          });
+          setRefunds(data);
+          return
+        }
       } catch (error) {
         console.error('Error fetching refunds:', error);
       } finally {
@@ -78,21 +102,9 @@ const Refunds = () => {
       </div>
 
       <div className="kpi-cards">
-        <div className="kpi-card">
-          <div>Total Refunds</div>
-          <div className="kpi-value"> {loading ? "—" : totalRefundsThisMonth} </div>
-          <div className="kpi-label">This month</div>
-        </div>
-        <div className="kpi-card">
-          <div>Processed</div>
-          <div className="kpi-value"> {loading ? "—" : processedThisMonth}</div>
-          <div className="kpi-label"> {loading ? "Calculating..." : `${successRate}% success rate`}</div>
-        </div>
-        <div className="kpi-card">
-          <div>Pending</div>
-          <div className="kpi-value">{loading ? "—" : pendingThisMonth}</div>
-          <div className="kpi-label">Awaiting processing</div>
-        </div>
+        <KPICard title="Total Refunds" value={loading ? "—" : totalRefundsThisMonth} change="This month" />
+        <KPICard title="Processed" value={loading ? "—" : processedThisMonth} change={loading ? "Calculating..." : `${successRate}% success rate`} />
+        <KPICard title="Pending" value={loading ? "—" : pendingThisMonth} change="Awaiting processing" />
       </div>
 
       <div className="data-table">
@@ -105,81 +117,20 @@ const Refunds = () => {
         </div>
         <div className="table-container">
           <table>
-            <thead>
-              <tr>
-                <th><input type="checkbox" /></th>
-                <th>Refund ID</th>
-                <th>Order ID</th>
-                <th>SKU</th>
-                <th>Amount</th>
-                <th>Reason</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <RefundsTableHeaders />
             <tbody>
-              {loading ? (
-                [...Array(6)].map((_, i) => (
-                  <tr key={i} className="skeleton-row">
-                    <td><div className="skeleton checkbox" /></td>
-                    <td><div className="skeleton small" /></td>
-                    <td><div className="skeleton medium" /></td>
-                    <td><div className="skeleton large" /></td>
-                    <td><div className="skeleton small" /></td>
-                    <td><div className="skeleton small" /></td>
-                    <td><div className="skeleton small" /></td>
-                    <td><div className="skeleton medium" /></td>
-                    <td><div className="skeleton button" /></td>
-                  </tr>
-                ))
-              ) : refunds.length === 0 ? (
-                <tr>
-                  <td colSpan="9" className="empty-state">
-                    No refunds found
-                  </td>
-                </tr>
-              ) : (
-                refunds.map((r, idx) => (
-                  <tr key={idx}>
-                    <td><input type="checkbox" /></td>
-
-                    <td>{r.ID_UNIQUE}</td>
-                    <td>{r.ORDER_ID}</td>
-
-                    <td>
-                      <div>{r.SKU}</div>
-                      <div className="sku-details">
-                        <div className="sku-info">
-                          <span className="sku-label">Product:</span>
-                          <span className="sku-value">{r.DESCRIPTION?.toLowerCase()}</span>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className={r.TOTAL < 0 ? "text-negative" : ""}>
-                      ${r.TOTAL}
-                    </td>
-
-                    <td>{r.TYPE}</td>
-
-                    <td>
-                      <span className={`status-badge ${r.STATUS === "C" ? "status-success" : "status-pending"}`}>
-                        {r.STATUS === "C" ? "Completed" : r.STATUS}
-                      </span>
-                    </td>
-
-                    <td>{r.DATE}</td>
-
-                    <td className="action-buttons">
-                      <button className="action-btn action-view">View</button>
-                    </td>
-                  </tr>
-                ))
+              <TableSkeletonOrEmpty
+                loading={loading}
+                dataLength={refunds.length}
+                colSpan={9} 
+                emptyMessage="No refunds found"
+              />
+              {!loading && refunds.length > 0 && (
+                type === "sales" ?
+                  <RefundsSalesRows refunds={refunds} /> :
+                  <RefundsPaymentsRows payments={refunds} />
               )}
             </tbody>
-
-
           </table>
         </div>
       </div>
@@ -193,7 +144,6 @@ const Refunds = () => {
         </div>
         <div className="chart-container">
           <div className="chart-title">Refund Processing Timeline</div>
-
           {loading ? (<div className="chart-placeholder">Loading chart...</div>) : (
             <RefundsTimeline data={refundsByDate} />
           )}

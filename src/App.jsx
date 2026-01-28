@@ -52,7 +52,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
-            <Route path="refunds" element={<Refunds />} />
+            <Route path="refunds/:type" element={<Refunds />} />  {/* sales o payments */}
             <Route path="payments" element={<Payments />} />
             <Route path="fees" element={<Fees />} />
             <Route path="files" element={<Files />} />
