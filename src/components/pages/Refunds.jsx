@@ -69,7 +69,7 @@ const Refunds = () => {
             fecha_desde: fechaDesde,
             fecha_hasta: fechaHasta,
             limit: 10,
-          });
+          })          
           setRefunds(data);
           return
         } else if (type == "payments") {
@@ -84,6 +84,7 @@ const Refunds = () => {
             fecha_hasta: fechaHasta,
             limit: 10,
           });
+                    console.log(data)
           setRefunds(data);
           return
         }
@@ -120,7 +121,7 @@ const Refunds = () => {
         </div>
         <div className="table-container">
           <table>
-            <RefundsTableHeaders />
+            <RefundsTableHeaders type={type}/>
             <tbody>
               <TableSkeletonOrEmpty
                 loading={loading}
