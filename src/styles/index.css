@@ -1,4 +1,6 @@
-/* index.css - Variables CSS */
+/* =========================
+   Variables CSS
+========================= */
 :root {
   --primary-orange: #FF6B00;
   --orange-light: #FF8C42;
@@ -21,11 +23,23 @@
   --radius-large: 12px;
 }
 
-/* Reset y estilos base */
+/* =========================
+   Reset global
+========================= */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* =========================
+   Base layout (CLAVE)
+========================= */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;   /* 🔥 elimina scroll horizontal */
 }
 
 body {
@@ -35,16 +49,24 @@ body {
   line-height: 1.6;
 }
 
+/* React root */
 #root {
+  width: 100%;
   height: 100vh;
+  overflow: hidden; /* 🔥 evita doble scroll */
 }
 
-/* Estilos utilitarios */
+/* =========================
+   Utilidades
+========================= */
 .text-positive { color: var(--success-green); }
 .text-negative { color: var(--error-red); }
-.text-warning { color: var(--warning-orange); }
+.text-warning  { color: var(--warning-orange); }
 
-/* Scrollbar personalizado */
+/* =========================
+   Scrollbar personalizado
+   (solo aparece donde haga falta)
+========================= */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

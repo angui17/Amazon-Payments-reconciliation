@@ -19,6 +19,7 @@ import OrdersTableBody from '../orders/OrdersTableBody'
 
 // Para exportación a CSV
 import { buildOrdersCsvData, exportToCSV } from '../../utils/ordersExport'
+import OrdersTableBodyPayments from '../orders/OrdersTableBodyPayments'
 
 
 const Orders = () => {
@@ -247,8 +248,8 @@ const Orders = () => {
       ) : (
         <div className="table-container">
           <table className="table">
-            <OrdersTableHeaders />
-            <OrdersTableBody rows={orders} />
+            <OrdersTableHeaders type={type} />
+            {type == "sales" ? <OrdersTableBody rows={orders} /> : <OrdersTableBodyPayments rows={orders} />}
           </table>
         </div>
       )}

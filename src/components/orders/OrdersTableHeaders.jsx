@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ORDER_COLUMNS = [
+const ORDER_COLUMNS_SALES = [
     { id: 'order_id', label: 'Order ID' },
     { id: 'sku', label: 'SKU' },
     { id: 'description', label: 'Description' },
@@ -15,16 +15,31 @@ const ORDER_COLUMNS = [
     { id: 'actions', label: 'Actions' }
 ]
 
-const OrdersTableHeaders = () => {
-    return (
-        <thead>
-            <tr>
-                {ORDER_COLUMNS.map(col => (
-                    <th key={col.id}>{col.label}</th>
-                ))}
-            </tr>
-        </thead>
-    )
+const ORDER_COLUMNS_PAYMENTS = [
+    { id: 'order_id', label: 'Order ID' },
+    { id: 'sku', label: 'SKU' },
+    { id: 'description', label: 'Amount description' },
+    { id: 'amount', label: 'Amount' },
+    { id: 'status', label: 'Status' },
+    { id: 'total', label: 'Total Amount' },
+    { id: 'actions', label: 'Actions' }
+]
+
+const OrdersTableHeaders = ({ type }) => {
+  const columns =
+    type === 'payments'
+      ? ORDER_COLUMNS_PAYMENTS
+      : ORDER_COLUMNS_SALES
+
+  return (
+    <thead>
+      <tr>
+        {columns.map(col => (
+          <th key={col.id}>{col.label}</th>
+        ))}
+      </tr>
+    </thead>
+  )
 }
 
 export default OrdersTableHeaders

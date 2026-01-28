@@ -24,19 +24,107 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
 }
 
 
 /* Top Navigation */
-/* .top-nav {
-  grid-column: 1 / -1;
+.top-nav {
   background: linear-gradient(135deg, var(--primary-orange), var(--orange-dark));
   display: flex;
   align-items: center;
   padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 100;
-} */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2000;
+  height: 64px;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  /* O usa overflow-x: hidden si solo necesitas horizontal */
+}
+
+/* Contenedor del dropdown */
+.sales-dropdown {
+  position: relative;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Menú desplegable */
+.sales-dropdown-menu {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  background: white;
+  min-width: 180px;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  padding: 10px 0;
+  z-index: 9999;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Items del dropdown */
+.sales-dropdown-item {
+  display: block;
+  padding: 8px 14px;
+  color: #333;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sales-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.sales-dropdown-menu a {
+  color: black !important;
+  text-decoration: none !important;
+}
+
+/* PAYMENTS DROPDOWN STYLES */
+.payments-dropdown {
+  position: relative;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Menú desplegable de Payments */
+.payments-dropdown-menu {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  background: white;
+  min-width: 180px;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  padding: 10px 0;
+  z-index: 9999;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Items del dropdown de Payments */
+.payments-dropdown-item {
+  display: block;
+  padding: 8px 14px;
+  color: #333 !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+.payments-dropdown-item:hover {
+  background-color: #f5f5f5;
+  color: #333 !important;
+  text-decoration: none !important;
+}
 
 .logo {
   color: white;
@@ -48,6 +136,18 @@ body {
 .nav-tabs {
   display: flex;
   flex: 1;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-bottom: none;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
 }
 
 .nav-tab {
@@ -59,6 +159,7 @@ body {
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: all 0.3s;
+  text-decoration: none !important;
 }
 
 .nav-tab.active {
@@ -70,6 +171,22 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.nav-tab a {
+  text-decoration: none !important;
+  color: inherit;
+  /* mantiene el color de la tab */
+}
+
+.nav-tab a:hover {
+  text-decoration: none;
+  /* evita que aparezca al pasar el mouse */
+}
+
+.sales-dropdown-item,
+.user-dropdown-item {
+  text-decoration: none !important;
+}
+
 .user-menu {
   color: white;
   display: flex;
@@ -78,6 +195,7 @@ body {
   cursor: pointer;
   position: relative;
 }
+
 
 .user-dropdown {
   position: absolute;
@@ -127,10 +245,10 @@ body {
   flex: 1;
   width: 100%;
   max-width: 100%;
-  overflow-y: auto;
   background-color: #f8f9fa;
   padding: 20px;
-  /* grid-column: 2; */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .content-header {
@@ -1232,3 +1350,11 @@ input:checked+.toggle-slider:before {
   padding: 2rem;
   color: #888;
 }
+
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
