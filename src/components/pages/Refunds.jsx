@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 
 import { getRefundsSales, getRefundsPayments } from '../../api/refunds';
 
+// Estilos
 import '../../styles/dashboard.css';
 
 // Charts
@@ -14,6 +15,8 @@ import RefundsSalesRows from '../refunds/RefundsSalesRows';
 import RefundsPaymentsRows from '../refunds/RefundsPaymentsRows';
 import RefundsTableHeaders from '../refunds/RefundsTableHeaders';
 import TableSkeletonOrEmpty from '../refunds/TableSkeletonOrEmpty';
+
+// Cards
 import KPICard from '../common/KPICard';
 
 const Refunds = () => {
