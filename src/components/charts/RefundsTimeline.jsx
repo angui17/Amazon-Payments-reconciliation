@@ -6,9 +6,12 @@ const RefundsTimeline = ({ data }) => {
     datasets: [
       {
         label: "Refunds",
-        data: data.map(d => d.count),
-        tension: 0.4,
+        data: data.map(d => d.count), // por ahora count; luego lo cambiamos a amount
+        tension: 0.35,
         fill: true,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
       },
     ],
   };
@@ -17,24 +20,29 @@ const RefundsTimeline = ({ data }) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
+      legend: { display: false },
+      tooltip: {
+        intersect: false,
+        mode: "index",
       },
+    },
+    interaction: {
+      intersect: false,
+      mode: "index",
     },
     scales: {
       x: {
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
+        ticks: { maxTicksLimit: 8 },
+      },
+      y: {
+        grid: { drawBorder: false },
+        ticks: { maxTicksLimit: 5 },
       },
     },
   };
 
-  return (
-    <div style={{ height: "200px" }}>
-      <Line data={chartData} options={options} />
-    </div>
-  );
+  return <Line data={chartData} options={options} />;
 };
 
 export default RefundsTimeline;

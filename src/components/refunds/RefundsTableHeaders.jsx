@@ -1,17 +1,28 @@
 import React from "react";
 
 const refundsSalesTableHeaders = [
-    { id: "checkbox", label: <input type="checkbox" /> },
-    { id: "refundId", label: "Refund ID" },
+    { id: "createdDate", label: "Date" },
+    { id: "settlementId", label: "Settlement ID" },
     { id: "orderId", label: "Order ID" },
     { id: "sku", label: "SKU" },
-    { id: "amount", label: "Amount" },
-    { id: "reason", label: "Reason" },
+    { id: "quantity", label: "Quantity" },
+    { id: "productSales", label: "Product Sales" },
+    { id: "total", label: "Total" },
     { id: "status", label: "Status" },
-    { id: "createdDate", label: "Created Date" },
-    { id: "actions", label: "Actions" },
+    { id: "actions", label: "Actions" }
 ];
 
+/* 
+POSTED_DATE_DATE
+id (Settlement ID)
+settlement-start-date
+settlement-end-date
+ORDER_ID
+AMOUNT_DESCRIPTION
+amount
+status
+sku
+*/
 const refundsPaymentsTableHeaders = [
     { id: "checkbox", label: <input type="checkbox" /> },
     { id: "order_id", label: "Order ID" },

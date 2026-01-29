@@ -7,6 +7,7 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Filler
 } from "chart.js";
 
@@ -18,5 +19,6 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement, 
   Filler
 );
