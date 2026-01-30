@@ -1,58 +1,72 @@
-import React from 'react'
+import React from "react";
+import { toNumber } from "../../utils/refundMath";
+import StatusBadge from "../ui/StatusBadge";
 
-const OrdersTableBodyPayments = ({ rows }) => {
+const getAmount = (row) =>
+  toNumber(row.AMOUNT ?? row.amount ?? row["AMOUNT"] ?? 0);
+
+const OrdersTableBodyPayments = ({ rows = [], onView }) => {
   if (!rows || rows.length === 0) {
     return (
-      <tbody>
-        <tr>
-          <td colSpan={7} style={{ textAlign: 'center', padding: 20 }}>
-            No payments found
-          </td>
-        </tr>
-      </tbody>
-    )
+      <tr>
+        <td colSpan={7} style={{ textAlign: "center", padding: 20 }}>
+          No payments found
+        </td>
+      </tr>
+    );
   }
 
   return (
-    <tbody>
-      {rows.map((row, idx) => (
-        <tr key={`${row.ORDER_ID}-${row.AMOUNT_DESCRIPTION}-${idx}`}>
-          {/* Order ID */}
-          <td>{row.ORDER_ID || row.order_id}</td>
+    <>
+      {rows.map((row, idx) => {
+        const amount = getAmount(row);
+        const totalAmount = toNumber(
+          row["total-amount"] ?? row.TOTAL_AMOUNT ?? row.total_amount ?? 0
+        );
 
-          {/* SKU */}
-          <td>{row.sku || '-'}</td>
+        return (
+          <tr key={`${row.ORDER_ID || row.order_id}-${idx}`}>
+            <td>{row.ORDER_ID || row.order_id || "-"}</td>
+            <td>{row.SKU || row.sku || "-"}</td>
+            <td>{row.POSTED_DATE || row.posted_date || "-"}</td>
+            <td>{row.AMOUNT_DESCRIPTION || row.description || "-"}</td>
 
-          {/* Amount description */}
-          <td title={row.AMOUNT_DESCRIPTION}>
-            {row.AMOUNT_DESCRIPTION}
-          </td>
+            {/* Amount */}
+            <td
+              style={{
+                color: amount < 0 ? "#dc2626" : "inherit",
+                fontWeight: amount < 0 ? 600 : "normal",
+              }}
+            >
+              {amount !== 0 ? `$${amount.toFixed(2)}` : "-"}
+            </td>
 
-          {/* Amount */}
-          <td>
-            {typeof row.amount === 'number'
-              ? `$${row.amount.toFixed(2)}`
-              : '-'}
-          </td>
+            {/* Status */}
+            <td>
+              <StatusBadge status={row.STATUS || row.status} />
+            </td>
 
-          {/* Status */}
-          <td>{row.status}</td>
+            {/* Total Amount
+            <td
+              style={{
+                color: totalAmount < 0 ? "#dc2626" : "inherit",
+                fontWeight: totalAmount < 0 ? 600 : "normal",
+              }}
+            >
+              {totalAmount !== 0 ? `$${totalAmount.toFixed(2)}` : "-"}
+            </td> */}
 
-          {/* Total Amount */}
-          <td>
-            {typeof row['total-amount'] === 'number'
-              ? `$${row['total-amount'].toLocaleString()}`
-              : '-'}
-          </td>
+            {/* Actions */}
+            <td>
+              <button className="btn btn-sm" onClick={() => onView?.(row)}>
+                Details
+              </button>
+            </td>
+          </tr>
+        );
+      })}
+    </>
+  );
+};
 
-          {/* Actions */}
-          <td>
-            <button className="btn btn-sm">View</button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  )
-}
-
-export default OrdersTableBodyPayments
+export default OrdersTableBodyPayments;

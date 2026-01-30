@@ -1,0 +1,54 @@
+/* === Orders Table Skeleton === */
+
+.orders-skeleton-row td {
+  padding: 12px;
+}
+
+.orders-skeleton {
+  height: 12px;
+  border-radius: 10px;
+  background: #e9ecef;
+  position: relative;
+  overflow: hidden;
+}
+
+/* shimmer */
+.orders-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+  animation: orders-shimmer 1.2s infinite;
+}
+
+@keyframes orders-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* widths */
+.skeleton-w-xs { width: 35%; }
+.skeleton-w-sm { width: 55%; }
+.skeleton-w-md { width: 75%; }
+.skeleton-w-lg { width: 95%; }
+
+/* actions column (button-like) */
+.skeleton-w-btn {
+  width: 48px;
+  height: 28px;
+  border-radius: 10px;
+}
+
+/* empty state */
+.orders-empty {
+  text-align: center;
+  padding: 18px;
+  color: #666;
+}

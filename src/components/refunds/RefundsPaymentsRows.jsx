@@ -4,9 +4,9 @@ import { onlyDate } from "../../utils/dateUtils";
 const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
   return (
     <>
-      {payments.map((p, idx) => {
+      {payments.map((p) => {
         const posted = p.POSTED_DATE_DATE || p.POSTED_DATE || "-";
-        const settlementId = p.SETTLEMENT_ID || p.settlementId || p.id || "-"; // por si no viene
+        const settlementId = p.SETTLEMENT_ID || p.settlementId || p.id || "-";
         const startDate = p["settlement-start-date"] || p.settlementStartDate || "-";
         const endDate = p["settlement-end-date"] || p.settlementEndDate || "-";
         const orderId = p.ORDER_ID || p.order_id || "-";
@@ -14,16 +14,7 @@ const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
         const amount = typeof p.amount === "number" ? p.amount : null;
         const status = p.status || p.STATUS || "-";
 
-        const rowKey = [
-          p.id,
-          orderId,
-          p.sku || p.SKU,
-          reason,
-          posted,
-          amount
-        ]
-          .filter(Boolean)
-          .join("|");
+        const rowKey = [p.id, orderId, p.sku || p.SKU, reason, posted, amount].filter(Boolean).join("|");
 
         return (
           <tr key={rowKey}>
@@ -55,10 +46,7 @@ const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
 
             {/* Status */}
             <td>
-              <span
-                className={`status-badge ${status === "P" ? "status-pending" : "status-success"
-                  }`}
-              >
+              <span className={`status-badge ${status === "P" ? "status-pending" : "status-success"}`}>
                 {status === "P" ? "Pending" : "Completed"}
               </span>
             </td>

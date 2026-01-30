@@ -1,0 +1,30 @@
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* estados */
+.status-success {
+  background: #e6f7ef;
+  color: #0f8a5f;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-error {
+  background: #fdecea;
+  color: #b42318;
+}
+
+.status-default {
+  background: #f1f3f5;
+  color: #495057;
+}

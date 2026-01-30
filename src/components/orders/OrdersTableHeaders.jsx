@@ -18,10 +18,10 @@ const ORDER_COLUMNS_SALES = [
 const ORDER_COLUMNS_PAYMENTS = [
     { id: 'order_id', label: 'Order ID' },
     { id: 'sku', label: 'SKU' },
+    { id: 'posted_date', label: 'Posted date' },
     { id: 'description', label: 'Amount description' },
     { id: 'amount', label: 'Amount' },
     { id: 'status', label: 'Status' },
-    { id: 'total', label: 'Total Amount' },
     { id: 'actions', label: 'Actions' }
 ]
 

@@ -1,5 +1,11 @@
 export const toNumber = (v) => {
-  const n = Number(v);
+  if (v === null || v === undefined || v === "") return 0;
+
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+
+  const cleaned = String(v).replace(/[^0-9.-]/g, ""); // saca $, comas, espacios, etc.
+  const n = Number(cleaned);
+
   return Number.isFinite(n) ? n : 0;
 };
 

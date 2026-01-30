@@ -2,7 +2,6 @@ import React from "react";
 import "../../styles/filters.css";
 
 const RefundsFiltersBar = ({ from, to, onFromChange, onToChange, status, onStatusChange, sku, onSkuChange, orderId, onOrderIdChange, settlement, onSettlementChange, onClear }) => {
-  console.log(from, to)
   return (
     <div className="filters-card">
       <div className="filters-row">

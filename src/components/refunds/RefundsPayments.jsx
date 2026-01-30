@@ -37,16 +37,16 @@ const RefundsPayments = () => {
 
     // filters
     const DEFAULT_FROM = "2024-10-01";
-const DEFAULT_TO = "2024-10-31";
+    const DEFAULT_TO = "2024-10-31";
 
-const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
-const [dateTo, setDateTo] = useState(DEFAULT_TO);
+    const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
+    const [dateTo, setDateTo] = useState(DEFAULT_TO);
 
-const [settlementFilter, setSettlementFilter] = useState("");
-const [orderIdFilter, setOrderIdFilter] = useState("");
-const [skuFilter, setSkuFilter] = useState("");
-const [statusFilter, setStatusFilter] = useState("");
-const [reasonFilters, setReasonFilters] = useState([]); // multi
+    const [settlementFilter, setSettlementFilter] = useState("");
+    const [orderIdFilter, setOrderIdFilter] = useState("");
+    const [skuFilter, setSkuFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [reasonFilters, setReasonFilters] = useState([]); // multi
 
     // details
     const [selectedPayment, setSelectedPayment] = useState(null);
@@ -142,56 +142,56 @@ const [reasonFilters, setReasonFilters] = useState([]); // multi
 
     // filters
     const reasonOptions = useMemo(() => {
-  const set = new Set();
-  for (const p of refundsAll) {
-    if (p.AMOUNT_DESCRIPTION) set.add(p.AMOUNT_DESCRIPTION);
-  }
-  return Array.from(set).sort((a, b) => a.localeCompare(b));
-}, [refundsAll]);
+        const set = new Set();
+        for (const p of refundsAll) {
+            if (p.AMOUNT_DESCRIPTION) set.add(p.AMOUNT_DESCRIPTION);
+        }
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [refundsAll]);
 
-const paymentsFiltered = useMemo(() => {
-  const fromTs = dateFrom ? dateToTs(dateFrom) : null;
-  const toTs = dateTo ? dateToTsEnd(dateTo) : null;
+    const paymentsFiltered = useMemo(() => {
+        const fromTs = dateFrom ? dateToTs(dateFrom) : null;
+        const toTs = dateTo ? dateToTsEnd(dateTo) : null;
 
-  const norm = (v) => String(v ?? "").toLowerCase().trim();
+        const norm = (v) => String(v ?? "").toLowerCase().trim();
 
-  return refundsAll.filter((p) => {
-    const posted = p.POSTED_DATE_DATE || p.POSTED_DATE; // "YYYY-MM-DD"
-    const postedTs = posted ? dateToTs(posted) : null;
+        return refundsAll.filter((p) => {
+            const posted = p.POSTED_DATE_DATE || p.POSTED_DATE; // "YYYY-MM-DD"
+            const postedTs = posted ? dateToTs(posted) : null;
 
-    const settlementId = p.SETTLEMENT_ID || p.settlementId || p.id || "";
+            const settlementId = p.SETTLEMENT_ID || p.settlementId || p.id || "";
 
-    const matchFrom = !fromTs || (postedTs !== null && postedTs >= fromTs);
-    const matchTo = !toTs || (postedTs !== null && postedTs <= toTs);
+            const matchFrom = !fromTs || (postedTs !== null && postedTs >= fromTs);
+            const matchTo = !toTs || (postedTs !== null && postedTs <= toTs);
 
-    const matchSettlement = !settlementFilter || norm(settlementId).includes(norm(settlementFilter));
-    const matchOrder = !orderIdFilter || norm(p.ORDER_ID || p.order_id).includes(norm(orderIdFilter));
-    const matchSku = !skuFilter || norm(p.sku || p.SKU).includes(norm(skuFilter));
+            const matchSettlement = !settlementFilter || norm(settlementId).includes(norm(settlementFilter));
+            const matchOrder = !orderIdFilter || norm(p.ORDER_ID || p.order_id).includes(norm(orderIdFilter));
+            const matchSku = !skuFilter || norm(p.sku || p.SKU).includes(norm(skuFilter));
 
-    const st = String(p.status || p.STATUS || "");
-    const matchStatus = !statusFilter || st === statusFilter;
+            const st = String(p.status || p.STATUS || "");
+            const matchStatus = !statusFilter || st === statusFilter;
 
-    const reason = String(p.AMOUNT_DESCRIPTION || "");
-    const matchReason = reasonFilters.length === 0 || reasonFilters.includes(reason);
+            const reason = String(p.AMOUNT_DESCRIPTION || "");
+            const matchReason = reasonFilters.length === 0 || reasonFilters.includes(reason);
 
-    return matchFrom && matchTo && matchSettlement && matchOrder && matchSku && matchStatus && matchReason;
-  });
-}, [refundsAll, dateFrom, dateTo, settlementFilter, orderIdFilter, skuFilter, statusFilter, reasonFilters]);
+            return matchFrom && matchTo && matchSettlement && matchOrder && matchSku && matchStatus && matchReason;
+        });
+    }, [refundsAll, dateFrom, dateTo, settlementFilter, orderIdFilter, skuFilter, statusFilter, reasonFilters]);
 
-const hasAnyFilter =
-  Boolean(settlementFilter) ||
-  Boolean(orderIdFilter) ||
-  Boolean(skuFilter) ||
-  Boolean(statusFilter) ||
-  reasonFilters.length > 0 ||
-  (dateFrom && dateFrom !== DEFAULT_FROM) ||
-  (dateTo && dateTo !== DEFAULT_TO);
+    const hasAnyFilter =
+        Boolean(settlementFilter) ||
+        Boolean(orderIdFilter) ||
+        Boolean(skuFilter) ||
+        Boolean(statusFilter) ||
+        reasonFilters.length > 0 ||
+        (dateFrom && dateFrom !== DEFAULT_FROM) ||
+        (dateTo && dateTo !== DEFAULT_TO);
 
-const refundsToRender = useMemo(() => {
-  return hasAnyFilter ? paymentsFiltered : paymentsFiltered.slice(0, 10);
-}, [hasAnyFilter, paymentsFiltered]);
+    const refundsToRender = useMemo(() => {
+        return hasAnyFilter ? paymentsFiltered : paymentsFiltered.slice(0, 10);
+    }, [hasAnyFilter, paymentsFiltered]);
 
-  const base = paymentsFiltered;
+    const base = paymentsFiltered;
 
     useEffect(() => {
         const fetchRefundsPayments = async () => {
@@ -201,7 +201,6 @@ const refundsToRender = useMemo(() => {
                     fecha_hasta: fechaHasta,
                 });
                 setRefundsAll(data || []);
-                console.log("payments: ", data);
             } catch (error) {
                 console.error("Error fetching payments refunds:", error);
                 setRefundsAll([]);
@@ -228,33 +227,33 @@ const refundsToRender = useMemo(() => {
                 <KPICard title="Tax refunded" value={loading ? "—" : formatMoney(taxRefunded)} change="Tax refunds" />
             </div>
 
-             {/* Filters */}
-      <RefundsPaymentsFiltersBar
-        from={dateFrom}
-        to={dateTo}
-        onFromChange={setDateFrom}
-        onToChange={setDateTo}
-        settlement={settlementFilter}
-        onSettlementChange={setSettlementFilter}
-        orderId={orderIdFilter}
-        onOrderIdChange={setOrderIdFilter}
-        sku={skuFilter}
-        onSkuChange={setSkuFilter}
-        status={statusFilter}
-        onStatusChange={setStatusFilter}
-        reasons={reasonFilters}
-        reasonOptions={reasonOptions}
-        onReasonsChange={setReasonFilters}
-        onClear={() => {
-          setDateFrom(DEFAULT_FROM);
-          setDateTo(DEFAULT_TO);
-          setSettlementFilter("");
-          setOrderIdFilter("");
-          setSkuFilter("");
-          setStatusFilter("");
-          setReasonFilters([]);
-        }}
-      />
+            {/* Filters */}
+            <RefundsPaymentsFiltersBar
+                from={dateFrom}
+                to={dateTo}
+                onFromChange={setDateFrom}
+                onToChange={setDateTo}
+                settlement={settlementFilter}
+                onSettlementChange={setSettlementFilter}
+                orderId={orderIdFilter}
+                onOrderIdChange={setOrderIdFilter}
+                sku={skuFilter}
+                onSkuChange={setSkuFilter}
+                status={statusFilter}
+                onStatusChange={setStatusFilter}
+                reasons={reasonFilters}
+                reasonOptions={reasonOptions}
+                onReasonsChange={setReasonFilters}
+                onClear={() => {
+                    setDateFrom(DEFAULT_FROM);
+                    setDateTo(DEFAULT_TO);
+                    setSettlementFilter("");
+                    setOrderIdFilter("");
+                    setSkuFilter("");
+                    setStatusFilter("");
+                    setReasonFilters([]);
+                }}
+            />
 
             {/* Tabla */}
             <div className="data-table">

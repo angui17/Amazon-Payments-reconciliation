@@ -93,26 +93,26 @@ const RefundsPaymentsFiltersBar = ({
           </div>
         </div>
 
-  <div className="filter-group">
-            <label className="filter-label">Reason</label>
-            <select
-              className="filter-input"
-              multiple
-              value={reasons || []}
-              onChange={(e) => {
-                const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-                onReasonsChange?.(selected);
-              }}
-              style={{ minHeight: 90 }} // multi-select usable
-            >
-              {reasonOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
-          
+        <div className="filter-group">
+          <label className="filter-label">Reason</label>
+          <select
+            className="filter-input"
+            multiple
+            value={reasons || []}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
+              onReasonsChange?.(selected);
+            }}
+            style={{ minHeight: 90 }} // multi-select usable
+          >
+            {reasonOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="filters-actions">
           <button className="btn btn-sm btn-outline" onClick={onClear} type="button">
             Clear
