@@ -21,3 +21,14 @@ export const parseDateUTC = (dateStr, endOfDay = false) => {
 
 export const dateToTs = (dateStr) => parseDateUTC(dateStr, false);
 export const dateToTsEnd = (dateStr) => parseDateUTC(dateStr, true);
+
+export const onlyDate = (value) => {
+  if (!value) return "-";
+
+  // Si viene tipo "2024-11-03 17:44:52 UTC"
+  if (typeof value === "string") {
+    return value.split(" ")[0];
+  }
+
+  return "-";
+};

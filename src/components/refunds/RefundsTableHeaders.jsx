@@ -12,25 +12,16 @@ const refundsSalesTableHeaders = [
     { id: "actions", label: "Actions" }
 ];
 
-/* 
-POSTED_DATE_DATE
-id (Settlement ID)
-settlement-start-date
-settlement-end-date
-ORDER_ID
-AMOUNT_DESCRIPTION
-amount
-status
-sku
-*/
 const refundsPaymentsTableHeaders = [
-    { id: "checkbox", label: <input type="checkbox" /> },
-    { id: "order_id", label: "Order ID" },
-    { id: "sku", label: "SKU" },
-    { id: "amount", label: "Amount" },
-    { id: "AMOUNT_DESCRIPTION", label: "Reason" },
-    { id: "status", label: "Status" },
     { id: "POSTED_DATE", label: "Created Date" },
+    { id: "sku", label: "SKU" },
+    { id: "settlementId", label: "Settlement ID" },
+    { id: "settlementStartDate", label: "Settlement Start Date" },
+    { id: "settlementEndDate", label: "Settlement End Date" },
+    { id: "order_id", label: "Order ID" },
+    { id: "AMOUNT_DESCRIPTION", label: "Reason" },
+    { id: "amount", label: "Amount" },
+    { id: "status", label: "Status" },
     { id: "actions", label: "Actions" },
 ]
 
