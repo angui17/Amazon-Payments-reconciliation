@@ -42,7 +42,6 @@ const InpaymentsFees = () => {
   const DEFAULT_FROM = "2024-10-01";
   const DEFAULT_TO = "2024-10-31";
 
-
   const [draftFilters, setDraftFilters] = useState({
     from: DEFAULT_FROM,
     to: DEFAULT_TO,

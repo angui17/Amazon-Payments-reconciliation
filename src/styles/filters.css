@@ -270,3 +270,45 @@ select.filter-input--multi[multiple] {
     width: 100%;
   }
 }
+
+
+/* ===== Sales inline layout ===== */
+
+.filters-card--sales .filters-inline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+/* Settlement un poco más ancho */
+.filters-card--sales .filters-inline__settlement {
+  min-width: 220px;
+}
+
+/* Acciones alineadas como un campo más */
+.filters-card--sales .filters-actions--inline {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .filters-card--sales .filters-inline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-card--sales .filters-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-card--sales .filters-actions--inline {
+    justify-content: stretch;
+  }
+
+  .filters-card--sales .filters-actions--inline .btn {
+    width: 100%;
+  }
+}
