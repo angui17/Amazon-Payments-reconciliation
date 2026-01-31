@@ -1,44 +1,102 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../../styles/dashboard.css';
 import { getErrors, getErrorsSummary279 } from '../../api/error';
+
 import { isEmptySummary } from '../../utils/isEmptySummary';
 import { ymdToMdy } from "../../utils/dateUtils";
 
+// details 
+import ErrorsDetailsModal from "../errors/ErrorsDetailsModal";
+
 const DEFAULT_FILTERS = {
-  fecha_desde: "2025-01-01",
+  fecha_desde: "2024-01-01",
   fecha_hasta: "2025-01-31",
   status: "ALL",
   limit_records: 50,
 };
 
+// kpi cards
+import ErrorsKPIs from "../errors/ErrorsKPIs";
+
+// table
+import ErrorsTable from "../errors/ErrorsTable";
+import ErrorsTableSkeleton from "../errors/ErrorsTableSkeleton";
+import ErrorsCharts from '../errors/ErrorsCharts';
+
+// filters
+import ErrorsFilters from "../errors/ErrorsFilters";
+
 const Errors = () => {
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
+  // kpi cards 
+  const [summary267, setSummary267] = useState(null);
+  const [summary279, setSummary279] = useState(null);
+
+  // table
+  const [rows, setRows] = useState(null);
+
+  // details
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // charts
+  const [charts, setCharts] = useState(null);
+
+  // filters
+  const toApiFilters = (ui) => ({
+    ...ui,
+    fecha_desde: ymdToMdy(ui.fecha_desde),
+    fecha_hasta: ymdToMdy(ui.fecha_hasta),
+  });
+
+  const handleApply = () => {
+    if (!canApply) return;
+
+    onApply({
+      ...draft,
+      limit_records: draft.limit_records === "" ? 50 : draft.limit_records,
+      status: draft.status || "ALL",
+    });
+  };
+
+  const handleApplyFilters = (nextUiFilters) => {
+    setFilters(nextUiFilters);
+    fetchErrors(nextUiFilters);
+  };
+
+  const fetchErrors = async (uiFilters) => {
+    setLoading(true);
+    setSummary267(null);
+    setSummary279(null);
+    setRows(null);
+    setCharts(null);
+
+    try {
+      const apiFilters = toApiFilters(uiFilters);
+
+      const resp267 = await getErrors(apiFilters);
+      setSummary267(resp267.summary);
+      setRows(resp267.rows || []);
+      setCharts(resp267.charts);
+
+      if (isEmptySummary(resp267?.summary)) {
+        const resp279 = await getErrorsSummary279(apiFilters);
+        setSummary279(resp279.summary);
+      } else {
+        setSummary279(null);
+      }
+    } catch (e) {
+      console.error("Error fetching errors:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchErrors = async () => {
-      try {
-        const apiFilters = {
-          ...DEFAULT_FILTERS,
-          fecha_desde: ymdToMdy(DEFAULT_FILTERS.fecha_desde),
-          fecha_hasta: ymdToMdy(DEFAULT_FILTERS.fecha_hasta),
-        };
-
-        const resp267 = await getErrors(apiFilters);
-        console.log("ERRORS WS 267:", resp267);
-
-        if (isEmptySummary(resp267?.summary)) {
-          const resp279 = await getErrorsSummary279(apiFilters);
-          console.log("WS 279 (fallback):", resp279);
-        }
-
-      } catch (e) {
-        console.error("Error fetching errors:", e);
-      }
-    };
-
-    fetchErrors();
+    fetchErrors(filters);
   }, []);
-
-
 
   return (
     <div className="main-content page active" id="errors-page">
@@ -47,114 +105,30 @@ const Errors = () => {
         <p>Identify and resolve reconciliation errors</p>
       </div>
 
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div>Total Errors</div>
-          <div className="kpi-value">47</div>
-          <div className="kpi-label">Active issues</div>
-        </div>
-        <div className="kpi-card">
-          <div>Critical</div>
-          <div className="kpi-value">12</div>
-          <div className="kpi-label">Require immediate attention</div>
-        </div>
-        <div className="kpi-card">
-          <div>Resolved Today</div>
-          <div className="kpi-value">8</div>
-          <div className="kpi-label">Successfully fixed</div>
-        </div>
-      </div>
+      {/* KPi cards */}
+      <ErrorsKPIs summary267={summary267} summary279={summary279} loading={loading} />
 
-      <div className="data-table">
-        <div className="table-header">
-          <h3>Error Log</h3>
-          <div className="table-actions">
-            <button className="btn btn-outline">Export Log</button>
-            <button className="btn btn-primary">Bulk Resolve</button>
-          </div>
-        </div>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th><input type="checkbox" /></th>
-                <th>Error ID</th>
-                <th>Type</th>
-                <th>Severity</th>
-                <th>Description</th>
-                <th>Source</th>
-                <th>Timestamp</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><input type="checkbox" /></td>
-                <td>ERR-2025-00456</td>
-                <td>Data Validation</td>
-                <td><span className="status-badge status-error">Critical</span></td>
-                <td>Invalid order amount format</td>
-                <td>Amazon API</td>
-                <td>2025-09-20 10:15</td>
-                <td className="action-buttons">
-                  <button className="action-btn action-view">Details</button>
-                  <button className="action-btn action-edit">Resolve</button>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" /></td>
-                <td>ERR-2025-00457</td>
-                <td>Connection</td>
-                <td><span className="status-badge status-error">Critical</span></td>
-                <td>SAP DI API timeout</td>
-                <td>SAP Integration</td>
-                <td>2025-09-20 09:45</td>
-                <td className="action-buttons">
-                  <button className="action-btn action-view">Details</button>
-                  <button className="action-btn action-edit">Resolve</button>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" /></td>
-                <td>ERR-2025-00458</td>
-                <td>File Processing</td>
-                <td><span className="status-badge status-warning">Warning</span></td>
-                <td>Missing required columns in CSV</td>
-                <td>File Upload</td>
-                <td>2025-09-20 09:30</td>
-                <td className="action-buttons">
-                  <button className="action-btn action-view">Details</button>
-                  <button className="action-btn action-edit">Resolve</button>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" /></td>
-                <td>ERR-2025-00459</td>
-                <td>Data Mapping</td>
-                <td><span className="status-badge status-info">Info</span></td>
-                <td>Currency conversion rate missing</td>
-                <td>Payment Processing</td>
-                <td>2025-09-19 16:20</td>
-                <td className="action-buttons">
-                  <button className="action-btn action-view">Details</button>
-                  <button className="action-btn action-edit">Resolve</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/*  filters */}
+      <ErrorsFilters value={filters} onApply={handleApplyFilters} loading={loading} />
 
-      <div className="charts-row">
-        <div className="chart-container">
-          <div className="chart-title">Errors by Category</div>
-          <div className="chart-placeholder">Bar Chart: Error distribution by type</div>
-        </div>
-        <div className="chart-container">
-          <div className="chart-title">Error Trend</div>
-          <div className="chart-placeholder">Line Chart: Daily error occurrences</div>
-        </div>
-      </div>
+      {/* table */}
+      {loading || rows === null ? (
+        <ErrorsTableSkeleton rows={6} />
+      ) : (
+        <ErrorsTable
+          rows={rows}
+          onDetails={(row) => {
+            setSelectedRow(row);
+            setDetailsOpen(true);
+          }}
+        />
+      )}
+
+      {/* charts */}
+      <ErrorsCharts charts={charts} loading={loading} />
+
+      {/* Modal details */}
+      <ErrorsDetailsModal open={detailsOpen} row={selectedRow} onClose={() => setDetailsOpen(false)} />
     </div>
   );
 };
