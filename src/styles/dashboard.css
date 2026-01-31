@@ -480,6 +480,10 @@ th {
   color: var(--text-dark);
 }
 
+td {
+    background-color: white;
+}
+
 .status-badge {
   padding: 4px 8px;
   border-radius: 12px;

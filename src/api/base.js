@@ -20,13 +20,16 @@ function normalizeItem(item) {
   };
 }
 
-export async function idaRequest({ id, type, params = {}, limit }) {
+export async function idaRequest({ id, type, types, params = {}, limit }) {
   const token = import.meta?.env?.VITE_IDA_TOKEN || FALLBACK_TOKEN;
 
   const body = {
-    engine: "Worker",
-    type,
+    engine: "Worker"
   };
+
+    // soportar ambos nombres (por compatibilidad)
+  if (types) body.types = types;
+  if (type) body.type = type;
 
   if (params.fecha_desde) body.fecha_desde = params.fecha_desde;
   if (params.fecha_hasta) body.fecha_hasta = params.fecha_hasta;
