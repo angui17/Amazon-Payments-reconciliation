@@ -1,7 +1,45 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../../styles/dashboard.css';
+import { getErrors, getErrorsSummary279 } from '../../api/error';
+import { isEmptySummary } from '../../utils/isEmptySummary';
+import { ymdToMdy } from "../../utils/dateUtils";
+
+const DEFAULT_FILTERS = {
+  fecha_desde: "2025-01-01",
+  fecha_hasta: "2025-01-31",
+  status: "ALL",
+  limit_records: 50,
+};
 
 const Errors = () => {
+
+  useEffect(() => {
+    const fetchErrors = async () => {
+      try {
+        const apiFilters = {
+          ...DEFAULT_FILTERS,
+          fecha_desde: ymdToMdy(DEFAULT_FILTERS.fecha_desde),
+          fecha_hasta: ymdToMdy(DEFAULT_FILTERS.fecha_hasta),
+        };
+
+        const resp267 = await getErrors(apiFilters);
+        console.log("ERRORS WS 267:", resp267);
+
+        if (isEmptySummary(resp267?.summary)) {
+          const resp279 = await getErrorsSummary279(apiFilters);
+          console.log("WS 279 (fallback):", resp279);
+        }
+
+      } catch (e) {
+        console.error("Error fetching errors:", e);
+      }
+    };
+
+    fetchErrors();
+  }, []);
+
+
+
   return (
     <div className="main-content page active" id="errors-page">
       <div className="content-header">
