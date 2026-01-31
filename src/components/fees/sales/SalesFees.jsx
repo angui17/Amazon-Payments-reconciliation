@@ -107,7 +107,7 @@ const SalesFees = () => {
       if (fh) params.fecha_hasta = fh;
 
       const data = await getFeesSales(params);
-      console.log(data)
+    //   console.log(data)
       setFeesAll(data || []);
       setPage(1);
     } catch (err) {

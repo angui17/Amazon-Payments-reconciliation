@@ -1,0 +1,47 @@
+/* ===========================
+   KPI Cards Skeleton Styles
+   =========================== */
+
+.kpi-skeleton {
+  background: #f5f6f8;
+  border-left: 4px solid #e0e0e0;
+}
+
+/* shimmer base */
+.kpi-skeleton .skeleton {
+  background: linear-gradient(
+    90deg,
+    #e0e0e0 25%,
+    #f0f0f0 37%,
+    #e0e0e0 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}
+
+.kpi-skeleton .skeleton-title {
+  height: 14px;
+  width: 60%;
+  margin-bottom: 12px;
+}
+
+.kpi-skeleton .skeleton-value {
+  height: 28px;
+  width: 40%;
+  margin-bottom: 10px;
+}
+
+.kpi-skeleton .skeleton-change {
+  height: 12px;
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

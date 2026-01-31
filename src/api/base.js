@@ -20,14 +20,14 @@ function normalizeItem(item) {
   };
 }
 
-export async function idaRequest({ id, type, types, params = {}, limit }) {
+export async function idaRequest({ id, type, types, params = {}, limit, raw = false }) {
   const token = import.meta?.env?.VITE_IDA_TOKEN || FALLBACK_TOKEN;
 
   const body = {
     engine: "Worker"
   };
 
-    // soportar ambos nombres (por compatibilidad)
+  // soportar ambos nombres (por compatibilidad)
   if (types) body.types = types;
   if (type) body.type = type;
 
@@ -52,6 +52,7 @@ export async function idaRequest({ id, type, types, params = {}, limit }) {
   }
 
   const json = await res.json();
+  if (raw) return json;
 
   const normalized = Array.isArray(json)
     ? json.map(normalizeItem).filter(Boolean)

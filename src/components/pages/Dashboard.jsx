@@ -1,13 +1,11 @@
-import React from 'react'
-import KPICard from '../common/KPICard'
+import React, { useEffect, useState } from 'react'
+import { getDashboard } from '../../api/dashboard'
+
+// kpi cards
+import DashboardKPIs from "../dashboard/DashboardKPIs";
 
 const Dashboard = () => {
-  const kpiData = [
-    { title: 'Total Invoices', value: '1,247', change: '+12% from last week', trend: 'up' },
-    { title: 'Pending Payments', value: '48', change: '5 require attention', trend: 'warning' },
-    { title: 'Errors Detected', value: '12', change: '3 critical', trend: 'down' },
-    { title: 'Success Rate', value: '96.5%', change: '+2.3% from yesterday', trend: 'up' }
-  ]
+  const [summary, setSummary] = useState(null);
 
   const alerts = [
     { id: 1, title: 'Failed CSV Upload - Invalid format', time: '10 minutes ago', critical: true },
@@ -15,6 +13,26 @@ const Dashboard = () => {
     { id: 3, title: 'Amazon API quota nearing limit', time: '1 hour ago', critical: false }
   ]
 
+  useEffect(() => {
+    const fetchInfo = async () => {
+      try {
+        const resp = await getDashboard({
+          fecha_desde: "01-01-2025",
+          fecha_hasta: "01-31-2025",
+          limit: 50,
+          status: "ALL",
+        })
+        console.log("SUMMARY:", resp.summary);
+        setSummary(resp.summary);
+        console.log("CHARTS:", resp.charts);
+        console.log("ROWS:", resp.rows);
+      } catch (e) {
+        console.error("ERROR dashboard:", e);
+      }
+    }
+
+    fetchInfo()
+  }, [])
   return (
     <>
       <div className="content-header">
@@ -22,17 +40,7 @@ const Dashboard = () => {
         <p>Overview of Amazon Payments reconciliation status</p>
       </div>
 
-      <div className="kpi-cards">
-        {kpiData.map((kpi, index) => (
-          <KPICard
-            key={index}
-            title={kpi.title}
-            value={kpi.value}
-            change={kpi.change}
-            trend={kpi.trend}
-          />
-        ))}
-      </div>
+      <DashboardKPIs summary={summary} />
 
       <div className="dashboard-grid">
         <div className="grid-column">
@@ -48,7 +56,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="card">
             <div className="card-header">
               <h3>Recent Alerts</h3>
@@ -68,7 +76,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="grid-column">
           <div className="card">
             <div className="card-header">
@@ -112,7 +120,7 @@ const Dashboard = () => {
               </table>
             </div>
           </div>
-          
+
           <div className="card">
             <div className="card-header">
               <h3>Processing Pipeline</h3>
