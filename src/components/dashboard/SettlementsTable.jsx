@@ -1,0 +1,87 @@
+import React from "react";
+import {
+    money,
+    onlyYMD,
+    formatPeriod,
+    mapStatus,
+    diffClass,
+    isReconciled,
+} from "../../utils/settlementsTableUtils";
+
+import "../../styles/settlements-table.css";
+
+const StatusPill = ({ status }) => {
+    const { label, className } = mapStatus(status);
+    return <span className={`status-pill ${className}`}>{label}</span>;
+};
+
+const SettlementsTable = ({ rows = [], onDetails }) => {
+    return (
+        <div className="card table-card">
+            <div className="card-header table-header">
+                <h3>Settlements</h3>
+                <div className="table-meta">{rows.length} results</div>
+            </div>
+
+            <div className="table-container">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Settlement ID</th>
+                            <th>Deposit Date</th>
+                            <th>Period</th>
+                            <th>Status</th>
+                            <th className="th-right">Amazon Total</th>
+                            <th className="th-right">SAP Total</th>
+                            <th className="th-right">Diff</th>
+                            <th>Reconciled</th>
+                            <th className="th-right">Exceptions</th>
+                            <th className="th-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {rows.map((r, idx) => (
+                            <tr key={`${r.settlementId ?? "row"}-${idx}`}>
+                                <td className="mono">{r.settlementId ?? "-"}</td>
+                                <td>{r.depositDateDate ?? onlyYMD(r.depositDate)}</td>
+                                <td className="muted">
+                                    {formatPeriod(r.settlementStart, r.settlementEnd)}
+                                </td>
+                                <td><StatusPill status={r.status} /></td>
+
+                                <td className="th-right">{money(r.amazonTotalReported)}</td>
+                                <td className="th-right">{money(r.sapPaymentsTotal)}</td>
+                                <td className={`th-right ${diffClass(r.difference)} ${Number(r.difference) < 0 ? "negative" : ""}`}>
+                                    {money(r.difference)}
+                                </td>
+
+                                <td>{isReconciled(r.reconciled)}</td>
+                                <td className="th-center">{r.exceptionsCount ?? 0}</td>
+
+                                <td className="th-center">
+                                    <button
+                                        className="btn btn-sm"
+                                        onClick={() => onDetails?.(r)}
+                                    >
+                                        Details
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+
+                        {rows.length === 0 && (
+                            <tr>
+                                <td colSpan={10} className="empty-row">
+                                    No settlements found for selected filters.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default SettlementsTable;

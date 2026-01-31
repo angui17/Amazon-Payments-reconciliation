@@ -1,0 +1,176 @@
+/* =========================
+   Settlements Table
+   ========================= */
+
+.table-card {
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.table-container {
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.data-table thead th {
+  text-align: left;
+  font-size: 12px;
+  color: #6b7280;  
+  font-weight: 700;
+  padding: 12px 14px;
+ background: #f9fafb;   
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #111827;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.th-right {
+  text-align: right;
+}
+
+.th-center {
+  text-align: center;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 18px 14px;
+  color: #6b7280;
+}
+
+/* ===== Status pill ===== */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.status-warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+}
+
+.status-neutral {
+  background: rgba(148, 163, 184, 0.2);
+  color: #334155;
+}
+
+/* ===== Diff colors ===== */
+
+.diff-ok {
+  color: #047857;
+  font-weight: 700;
+}
+
+.diff-warn {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.diff-bad {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* =========================
+   Skeleton
+   ========================= */
+
+.sk-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.sk-pill {
+  width: 86px;
+  height: 32px;
+  border-radius: 10px;
+  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.sk-row td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* Montos negativos en rojo */
+.data-table td:has-text("-"),
+.data-table td.negative {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* Monto negativo */
+.negative {
+  color: #b91c1c;     
+  font-weight: 700;
+}
