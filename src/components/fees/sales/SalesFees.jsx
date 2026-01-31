@@ -133,7 +133,6 @@ const SalesFees = () => {
                     };
 
                     if (next.last) {
-                        // ancla: si el user ya eligió un "to", usalo; sino, el default del dashboard
                         const anchor = next.to || DEFAULT_TO;
                         const r = lastNDaysRange(next.last, anchor);
                         next.from = r.from;
@@ -149,6 +148,7 @@ const SalesFees = () => {
                     setPage(1);
                 }}
             /> */}
+
 
             {/* Table */}
             <div className="data-table">

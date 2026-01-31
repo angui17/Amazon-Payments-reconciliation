@@ -63,7 +63,7 @@ const SalesFeesTable = ({ rows = [], onView = () => { } }) => {
 
                         <td style={{ textAlign: "right" }}>
                             <button
-                                className="simple-pagination-btn"
+                                className="btn btn-sm"
                                 onClick={() => onView(r)}
                                 style={{ padding: "6px 10px" }}
                             >

@@ -46,15 +46,6 @@ const OrdersTableBodyPayments = ({ rows = [], onView }) => {
               <StatusBadge status={row.STATUS || row.status} />
             </td>
 
-            {/* Total Amount
-            <td
-              style={{
-                color: totalAmount < 0 ? "#dc2626" : "inherit",
-                fontWeight: totalAmount < 0 ? 600 : "normal",
-              }}
-            >
-              {totalAmount !== 0 ? `$${totalAmount.toFixed(2)}` : "-"}
-            </td> */}
 
             {/* Actions */}
             <td>
