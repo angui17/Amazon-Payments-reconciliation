@@ -32,3 +32,24 @@ export const onlyDate = (value) => {
 
   return "-";
 };
+
+
+// utils/dateUtils.js
+export const ymdToMdy = (ymd) => {
+  if (!ymd) return "";
+  const s = String(ymd).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+
+  const [y, m, d] = s.split("-");
+  return `${m}-${d}-${y}`; // MM-DD-YYYY
+};
+
+
+export const mdyToYmd = (mdy) => {
+  if (!mdy) return "";
+  const s = String(mdy).trim();
+  if (!/^\d{2}-\d{2}-\d{4}$/.test(s)) return "";
+
+  const [m, d, y] = s.split("-");
+  return `${y}-${m}-${d}`; // YYYY-MM-DD
+};

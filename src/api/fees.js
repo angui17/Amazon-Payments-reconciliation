@@ -10,10 +10,11 @@ export const getFeesSales = () => {
   });
 };
 
-export const getFeesPayments = () => {
+export const getFeesPayments = (params = {}) => {
   return idaRequest({
     id: 264,
     types: "ADJUSTMENT,AMAZON FEES,FBA INVENTORY FEE,FBA INVENTORY FEE - REVERSAL,FBA TRANSACTION FEES,FEE ADJUSTMENT,LIQUIDATIONS,LIQUIDATIONS ADJUSTMENTS,ORDER_RETROCHARGE,REFUND_RETROCHARGE,SERVICE FEE",
-    last: 50
+    last: 50,
+    params,
   });
 };

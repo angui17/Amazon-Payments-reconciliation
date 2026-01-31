@@ -8,11 +8,17 @@ const fmtAmount = (v) => {
   return n.toFixed(2);
 };
 
-const InpaymentsFeesTable = ({ rows = [], onView = () => {}  }) => {
+const rowKey = (r, idx) =>
+  r._id ??
+  `${r.id ?? "noid"}-${r.ORDER_ID ?? r.order_id ?? "noorder"}-${r.AMOUNT_DESCRIPTION ?? "nodesc"
+  }-${idx}`;
+
+
+const InpaymentsFeesTable = ({ rows = [], onView = () => { } }) => {
   return (
     <>
       {rows.map((r, idx) => (
-        <tr key={r.order_id ?? r.ORDER_ID ?? `${r.id}-${idx}`}>
+        <tr key={rowKey(r, idx)}>
           <td>{r.POSTED_DATE_DATE ?? r.POSTED_DATE ?? "-"}</td>
           <td>{r.ORDER_ID ?? r.order_id ?? "-"}</td>
           <td>{r.sku == "" ? "N/A" : r.sku}</td>

@@ -1,6 +1,16 @@
 import { parseDateUTC } from "./dateUtils";
 
 const normalize = (v) => String(v ?? "").trim().toLowerCase();
+// fee.DATE viene "MM-DD-YYYY"
+const feeDateToTs = (fee) =>
+  parseDateUTC(
+    fee?.POSTED_DATE_DATE ??
+    fee?.POSTED_DATE ??
+    fee?.date ??
+    fee?.DATE ??
+    "",
+    false
+  );
 
 export const lastNDaysRange = (n, anchorYMD) => {
   const days = Number(n || 30);
@@ -17,13 +27,13 @@ export const lastNDaysRange = (n, anchorYMD) => {
   return { from: toYMD(start), to: toYMD(end) };
 };
 
-// fee.DATE viene "MM-DD-YYYY"
-const feeDateToTs = (fee) => parseDateUTC(fee?.DATE, false);
-
 export const filterFees = (fees = [], filters = {}) => {
   const settlementQ = normalize(filters.settlementId);
   const descQ = normalize(filters.description);
+  const amountDesc = normalize(filters.amountDesc);
   const status = filters.status || "";
+
+  const type = String(filters.type || "").trim();
   const types = new Set(filters.types || []);
 
   // rango final a aplicar
@@ -43,19 +53,47 @@ export const filterFees = (fees = [], filters = {}) => {
 
     // 2) settlement id contains
     if (settlementQ) {
-      const s = normalize(f.SETTLEMENT_ID || f.settlement_id);
+      const s = normalize(
+        f.SETTLEMENT_ID ??
+        f.settlement_id ??
+        f.id ??
+        f.SETTLEMENT ??
+        ""
+      );
+
       if (!s.includes(settlementQ)) return false;
     }
 
     // 3) type multi
+    if (type) {
+      const t = String(f.TYPE ?? f.type ?? "").trim();
+      if (t !== type) return false;
+    }
+
     if (types.size > 0) {
-      const t = String(f.TYPE || "").trim();
+      const t = String(f.TYPE ?? f.type ?? "").trim();
       if (!types.has(t)) return false;
     }
 
+    if (amountDesc) {
+      const d = normalize(
+        f.AMOUNT_DESCRIPTION ??
+        f.amount_description ??
+        f.DESCRIPTION ??
+        f.description
+      );
+      if (d !== amountDesc) return false;
+    }
+
+
     // 4) description contains
     if (descQ) {
-      const d = normalize(f.DESCRIPTION);
+      const d = normalize(
+        f.AMOUNT_DESCRIPTION ??
+        f.amount_description ??
+        f.DESCRIPTION ??
+        f.description
+      );
       if (!d.includes(descQ)) return false;
     }
 

@@ -207,3 +207,66 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Inpayments inline layout (no afecta a Orders) ===== */
+
+.filters-card--inpay .filters-inline {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.filters-card--inpay .filters-inline__settlement {
+  min-width: 220px;
+}
+
+/* Multi select compacto: se ve como input pero con altura controlada */
+.filter-input--multi {
+  height: 36px;           /* mantiene la estética */
+  padding: 6px 10px;
+  overflow: auto;
+}
+
+/* Cuando es multiple, el browser le mete altura; la forzamos */
+select.filter-input--multi[multiple] {
+  height: 36px;
+}
+
+/* Hint mini debajo del multi */
+.filters-hint-inline {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Acciones alineadas como un campo más */
+.filters-actions--inline {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Responsive específico para este filtro */
+@media (max-width: 1100px) {
+  .filters-card--inpay .filters-inline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .filters-card--inpay .filters-inline__settlement {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-card--inpay .filters-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-actions--inline {
+    justify-content: stretch;
+  }
+
+  .filters-actions--inline .btn {
+    width: 100%;
+  }
+}
