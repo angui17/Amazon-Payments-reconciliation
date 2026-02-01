@@ -14,6 +14,9 @@ import AccountingDetailsModal from "../accounting/AccountingDetailsModal";
 // charts
 import AccountingCharts from "../accounting/AccountingCharts";
 
+// filters
+import AccountingFilters, { DEFAULT_ACCOUNTING_FILTERS } from "../accounting/AccountingFilters";
+
 const DEFAULT_FILTERS = {
 	fecha_desde: "2025-01-01",
 	fecha_hasta: "2025-01-31",
@@ -33,26 +36,30 @@ const Accounting = () => {
 
 	// charts
 	const [charts, setCharts] = useState(null);
+	// filters
+	const [filters, setFilters] = useState(DEFAULT_ACCOUNTING_FILTERS);
 
-
-	const fetchAccounting = async () => {
+	const fetchAccounting = async (f) => {
 		setLoading(true);
 		setSummary(null);
-		setRows(null)
+		setRows(null);
 		setCharts(null);
-		
+
 		try {
 			const apiFilters = {
-				...DEFAULT_FILTERS,
-				fecha_desde: ymdToMdy(DEFAULT_FILTERS.fecha_desde),
-				fecha_hasta: ymdToMdy(DEFAULT_FILTERS.fecha_hasta),
+				...f,
+				fecha_desde: ymdToMdy(f.fecha_desde),
+				fecha_hasta: ymdToMdy(f.fecha_hasta),
 			};
 
 			const resp = await getAccounting(apiFilters);
+
 			setSummary(resp.summary);
 			setRows(resp.rows || []);
 			setCharts(resp.charts || null);
-			console.log("ACCOUNTING WS 269:", resp);
+
+			console.log("UI filters:", apiFilters);
+
 		} catch (e) {
 			console.error("Error fetching accounting:", e);
 		} finally {
@@ -62,8 +69,32 @@ const Accounting = () => {
 
 
 	useEffect(() => {
-		fetchAccounting();
+		fetchAccounting(filters);
 	}, []);
+
+
+	const handleApply = (nextFilters) => {
+		setFilters(nextFilters);
+		fetchAccounting(nextFilters);
+	};
+
+	const getRowStatus = (r) => {
+		const raw = r?.status ?? r?.STATUS ?? r?.Status ?? "";
+		return String(raw).toUpperCase();
+	};
+
+	const allRows = rows || [];
+
+	// 1) status filter
+	const statusFiltered =
+		filters.status === "ALL"
+			? allRows
+			: allRows.filter((r) => getRowStatus(r) === String(filters.status).toUpperCase());
+
+	// 2) limit_records 
+	const limitN = Math.max(1, Number(filters.limit_records) || 50);
+
+	const filteredRows = statusFiltered.slice(0, limitN);
 
 	return (
 		<div className="main-content page active">
@@ -73,19 +104,24 @@ const Accounting = () => {
 			</div>
 
 			{/* kpi cards */}
-			<AccountingKPIs summary={summary} loading={loading} />
+			{filteredRows.length > 0 ? <AccountingKPIs summary={summary} rows={filteredRows} loading={loading} /> : null}
 
 			{/* filters */}
+			<AccountingFilters value={filters} onApply={handleApply} />
 
 			{/* table */}
-			{loading || rows === null ? (
+			{loading || filteredRows === null ? (
 				<AccountingTableSkeleton rows={6} />
+			) : filteredRows.length === 0 ? (
+				<div className="orders-empty">
+					No records found for the selected filters.
+				</div>
 			) : (
-				<AccountingTable rows={rows} onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }} />
+				<AccountingTable rows={filteredRows} onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }} />
 			)}
 
 			{/* charts */}
-			<AccountingCharts charts={charts} loading={loading} />
+			{filteredRows.length > 0 ? <AccountingCharts charts={charts} rows={filteredRows} loading={loading} /> : null}
 
 			{/* details */}
 			<AccountingDetailsModal

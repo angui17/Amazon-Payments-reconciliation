@@ -1,12 +1,80 @@
-import React from "react";
+import React, { useMemo } from "react";
 import KPICard from "../common/KPICard";
 import KPICardSkeleton from "../dashboard/KPICardSkeleton";
-
 import { safeNum, formatMoney } from "../../utils/numberUtils";
 
-const AccountingKPIs = ({ summary, loading }) => {
-  // Skeleton mientras carga o no hay summary
-  if (loading || !summary) {
+const getStatus = (r) => String(r?.status ?? r?.STATUS ?? r?.Status ?? "").toUpperCase();
+
+const toNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const sumField = (arr, candidates) =>
+  arr.reduce((acc, r) => {
+    for (const k of candidates) {
+      const v = r?.[k];
+      if (v !== undefined && v !== null && v !== "") return acc + toNum(v);
+    }
+    return acc;
+  }, 0);
+
+const countTruthy = (arr, candidates) =>
+  arr.reduce((acc, r) => {
+    for (const k of candidates) {
+      const v = r?.[k];
+      if (v === true) return acc + 1;
+      if (typeof v === "string" && ["1", "true", "yes", "y"].includes(v.toLowerCase())) return acc + 1;
+      if (typeof v === "number" && v !== 0) return acc + 1;
+    }
+    return acc;
+  }, 0);
+
+const AccountingKPIs = ({ summary, rows, loading }) => {
+  const hasRows = Array.isArray(rows);
+
+  const kpi = useMemo(() => {
+    if (hasRows) {
+      // ⚠️ Estos keys son “best effort”.
+      // Si me pasás 1 row real del WS269, los afinamos a la perfección.
+      const settlements = rows.length;
+      const pending = rows.filter((r) => getStatus(r) === "P").length;
+
+      const amazonTotal = sumField(rows, ["amazonTotal", "amazon_total", "AMAZON_TOTAL"]);
+      const sapPaymentsTotal = sumField(rows, ["sapPaymentsTotal", "sap_payments_total", "SAP_PAYMENTS_TOTAL"]);
+      const diffPaymentsTotal = sumField(rows, ["diffPaymentsTotal", "diff_payments_total", "DIFF_PAYMENTS_TOTAL"]);
+
+      const missingJournal = countTruthy(rows, ["missingJournal", "missing_journal", "MISSING_JOURNAL"]);
+      const missingPayments = countTruthy(rows, ["missingPayments", "missing_payments", "MISSING_PAYMENTS"]);
+      const unbalancedJournals = countTruthy(rows, ["unbalancedJournal", "unbalanced_journal", "UNBALANCED_JOURNAL"]);
+
+      return {
+        settlements,
+        pending,
+        amazonTotal,
+        sapPaymentsTotal,
+        diffPaymentsTotal,
+        missingJournal,
+        missingPayments,
+        unbalancedJournals,
+      };
+    }
+
+    // fallback a summary del WS
+    return {
+      settlements: safeNum(summary?.settlementsCount),
+      pending: safeNum(summary?.pendingCount),
+      amazonTotal: safeNum(summary?.amazonTotal),
+      sapPaymentsTotal: safeNum(summary?.sapPaymentsTotal),
+      diffPaymentsTotal: safeNum(summary?.diffPaymentsTotal),
+      missingJournal: safeNum(summary?.missingJournalCount),
+      missingPayments: safeNum(summary?.missingPaymentsCount),
+      unbalancedJournals: safeNum(summary?.unbalancedJournalCount),
+    };
+  }, [hasRows, rows, summary]);
+
+  // Skeleton mientras carga o no hay data en ninguno de los dos
+  if (loading || (!hasRows && !summary)) {
     return (
       <div className="kpi-cards">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -16,17 +84,16 @@ const AccountingKPIs = ({ summary, loading }) => {
     );
   }
 
-  // ===== Numbers =====
-  const settlements = safeNum(summary.settlementsCount);
-  const pending = safeNum(summary.pendingCount);
-
-  const amazonTotal = safeNum(summary.amazonTotal);
-  const sapPaymentsTotal = safeNum(summary.sapPaymentsTotal);
-  const diffPaymentsTotal = safeNum(summary.diffPaymentsTotal);
-
-  const missingJournal = safeNum(summary.missingJournalCount);
-  const missingPayments = safeNum(summary.missingPaymentsCount);
-  const unbalancedJournals = safeNum(summary.unbalancedJournalCount);
+  const {
+    settlements,
+    pending,
+    amazonTotal,
+    sapPaymentsTotal,
+    diffPaymentsTotal,
+    missingJournal,
+    missingPayments,
+    unbalancedJournals,
+  } = kpi;
 
   return (
     <div className="kpi-cards">

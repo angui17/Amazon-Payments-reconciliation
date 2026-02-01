@@ -1,5 +1,4 @@
 // (WS 269)
-
 import { idaRequest } from "./base";
 
 export const getAccounting = ({ fecha_desde, fecha_hasta, limit_records = 50, status = "ALL" }) => {
