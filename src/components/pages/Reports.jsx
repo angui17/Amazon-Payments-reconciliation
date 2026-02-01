@@ -1,57 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import '../../styles/dashboard.css';
+import React, { useEffect, useMemo, useState } from "react";
+import "../../styles/dashboard.css";
 
-import { getReports } from '../../api/reports';
-import { ymdToMdy } from '../../utils/dateUtils';
+import { getReports } from "../../api/reports";
+import { ymdToMdy } from "../../utils/dateUtils";
 
 // kpi cards
 import ReportsKpiCards from "../reports/ReportsKpiCards";
 import ReportsKpiCardsSkeleton from "../reports/ReportsKpiCardsSkeleton";
 
-//table
-import ReportsMonthlyTableSkeleton from '../reports/ReportsMonthlyTableSkeleton';
-import ReportsMonthlyTable from '../reports/ReportsMonthlyTable';
+// table
+import ReportsMonthlyTableSkeleton from "../reports/ReportsMonthlyTableSkeleton";
+import ReportsMonthlyTable from "../reports/ReportsMonthlyTable";
+
+// filters
+import ReportsFilters from "../reports/ReportsFilters";
+
+const DEFAULT_FROM = "2024-01-01";
+const DEFAULT_TO = "2025-01-30";
+
+const DEFAULT_FILTERS = {
+  fecha_desde: DEFAULT_FROM,
+  fecha_hasta: DEFAULT_TO,
+  status: "ALL",
+  limit_months: 12,
+  top_causes_n: 10,
+};
 
 const Reports = () => {
-  // kpi cards
+  // data
   const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  //table
   const [monthlyRows, setMonthlyRows] = useState([]);
 
-  const DEFAULT_FROM = "2024-01-01";
-  const DEFAULT_TO = "2025-01-30";
+  // ui
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const DEFAULT_PARAMS = ({
-    fecha_desde: ymdToMdy(DEFAULT_FROM),
-    fecha_hasta: ymdToMdy(DEFAULT_TO),
-    limit_records: 50,
-    status: "ALL",
-  })
+  // filters: editable vs applied
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [applied, setApplied] = useState(DEFAULT_FILTERS);
+
+  // params that go to API 
+  const params = useMemo(
+    () => ({
+      fecha_desde: ymdToMdy(applied.fecha_desde),
+      fecha_hasta: ymdToMdy(applied.fecha_hasta),
+      status: applied.status,
+      limit_months: Number(applied.limit_months),
+      top_causes_n: Number(applied.top_causes_n),
+      limit_records: 50,
+    }),
+    [applied]
+  );
 
   const fetchReports = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const res = await getReports(DEFAULT_PARAMS);
-      setSummary(res?.summary ?? null);
-      setMonthlyRows(res?.rows ?? null);
+      const res = await getReports(params);
 
-      console.log(res)
-    } catch (error) {
+      setSummary(res?.summary ?? null);
+      setMonthlyRows(Array.isArray(res?.rows) ? res.rows : []);
+
+      console.log("reports res:", res);
+    } catch (e) {
       console.error(e);
       setError(e?.message || "Error fetching reports");
       setSummary(null);
+      setMonthlyRows([]);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchReports()
-  }, [])
+    fetchReports();
+  }, [params]);
+
+  const handleApply = () => setApplied(filters);
+
+  const handleReset = () => {
+    setFilters(DEFAULT_FILTERS);
+    setApplied(DEFAULT_FILTERS);
+  };
 
   return (
     <div className="main-content page active" id="reports-page">
@@ -60,7 +91,7 @@ const Reports = () => {
         <p>Generate and view reconciliation reports</p>
       </div>
 
-      {/* kpi cards */}
+      {/* KPI cards */}
       {loading ? (
         <ReportsKpiCardsSkeleton count={5} />
       ) : summary ? (
@@ -70,9 +101,17 @@ const Reports = () => {
           {error ? `⚠️ ${error}` : "No summary data"}
         </div>
       )}
-      {/*  filters */}
 
-      {/*  table */}
+      {/* Filters */}
+      <ReportsFilters
+        filters={filters}
+        onChange={setFilters}
+        onApply={handleApply}
+        onReset={handleReset}
+        loading={loading}
+      />
+
+      {/* Table */}
       {loading ? (
         <ReportsMonthlyTableSkeleton rows={6} cols={10} />
       ) : (
@@ -81,29 +120,6 @@ const Reports = () => {
           onViewDetails={(row) => console.log("DETAIL ROW:", row)}
         />
       )}
-      {/*  charts */}
-
-      {/*  details */}
-
-
-      {/* <div className="charts-row">
-        <div className="chart-container">
-          <div className="chart-title">Custom Report Builder</div>
-          <div className="chart-placeholder">
-            <div style={{ textAlign: 'center' }}>
-              <h3>Build Custom Report</h3>
-              <p>Select data sources, filters, and output format</p>
-              <button className="btn btn-primary" style={{ marginTop: '15px' }}>
-                <span>📊</span> Start Building
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="chart-container">
-          <div className="chart-title">Report Usage Statistics</div>
-          <div className="chart-placeholder">Bar Chart: Most frequently accessed reports</div>
-        </div>
-      </div> */}
     </div>
   );
 };
