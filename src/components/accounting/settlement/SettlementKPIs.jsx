@@ -32,33 +32,48 @@ const SettlementKPIs = ({ summary, loading = false }) => {
         title: "Amazon Total",
         value: fmtMoney(amazonTotalReported),
         trend: "neutral",
+         change: "Reported by Amazon",
       },
       {
         title: "SAP Total",
         value: fmtMoney(sapPaymentsTotal),
         trend: "neutral",
+          change: "Recorded in SAP",
       },
       {
         title: "Diff",
         value: fmtMoney(difference),
         trend: trendFromNumber(difference),
-        change: Number(difference) === 0 ? "Balanced" : "Needs review",
+       change:
+      Number(difference) === 0
+        ? "Balanced"
+        : Math.abs(Number(difference)) < 1
+        ? "Minor variance"
+        : "Needs review",
       },
       {
         title: "Reconciled",
         value: reconciled ? "Yes" : "No",
         trend: reconciled ? "up" : "down",
-        change: reconciled ? "All good" : "Not reconciled",
+         change: reconciled ? "Settlement reconciled" : "Pending reconciliation",
       },
       {
         title: "SAP payments count",
         value: Number.isFinite(Number(sapPaymentsCount)) ? String(sapPaymentsCount) : "—",
         trend: "neutral",
+         change:
+      sapPaymentsCount > 0
+        ? "Linked payments"
+        : "No SAP payments found",
       },
       {
         title: "Amazon internal diff",
         value: fmtMoney(amazonInternalDiff),
         trend: trendFromNumber(amazonInternalDiff),
+        change:
+      Number(amazonInternalDiff) === 0
+        ? "No internal variance"
+        : "Amazon internal mismatch",
       },
     ];
   }, [summary]);

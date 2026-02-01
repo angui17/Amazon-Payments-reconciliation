@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import "../../../styles/settlement.css";
 import StatusBadge from "../../common/StatusBadge"
+import { onlyDate } from "../../../utils/dateUtils";
 
 const prettyKey = (k) =>
   String(k)
@@ -30,6 +31,7 @@ const fmtMoney = (v) => {
 const fmtValue = (k, v) => {
   if (v === null || v === undefined || v === "") return "—";
   if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (isDateKey(k)) return onlyDate(v);
   if (isMoneyKey(k)) return fmtMoney(v);
   return String(v);
 };
@@ -42,6 +44,16 @@ const mapStatus = (v) => {
 
   return { label: v, badge: null };
 };
+
+const isDateKey = (k) => {
+  const key = String(k || "").toLowerCase();
+  return (
+    key.includes("date") ||
+    key.includes("start") ||
+    key.includes("end")
+  );
+};
+
 
 const SettlementInfoCard = ({ row, title = "Settlement data" }) => {
   const entries = useMemo(() => (row ? Object.entries(row) : []), [row]);

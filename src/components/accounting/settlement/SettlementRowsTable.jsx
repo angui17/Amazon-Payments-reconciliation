@@ -17,8 +17,8 @@ const mapStatus = (v) => {
 
 const getValue = (row, key) => row?.[key];
 
-const SettlementRowsTable = ({ rows = [], limit = 10 }) => {
-  const view = useMemo(() => (Array.isArray(rows) ? rows.slice(0, limit) : []), [rows, limit]);
+const SettlementRowsTable = ({ rows = [] }) => {
+  const view = Array.isArray(rows) ? rows : [];
 
   if (!view.length) {
     return (
@@ -34,7 +34,7 @@ const SettlementRowsTable = ({ rows = [], limit = 10 }) => {
         <h3>Settlements</h3>
         <div className="table-meta">{rows.length} rows</div>
       </div>
-      
+
       <div className="table-container">
         <table className="data-table">
           <SettlementRowsTableHeaders />

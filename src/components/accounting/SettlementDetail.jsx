@@ -1,42 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-// Info que trae por defecto
 import SettlementInfoCard from "./settlement/SettlementInfoCard";
 import { getAccountingSettlementDetails } from "../../api/accounting";
 
-// kpi cards
 import SettlementKPIs from "./settlement/SettlementKPIs";
-
-// charts
 import SettlementExtras from "./settlement/SettlementExtras";
 
-// table 
 import SettlementRowsTable from "./settlement/SettlementRowsTable";
 import SettlementRowsTableSkeleton from "./settlement/SettlementRowsTableSkeleton";
+
+import SimplePagination from "../common/SimplePagination";
 
 const SettlementDetail = () => {
     const navigate = useNavigate();
     const { settlementId } = useParams();
     const { state } = useLocation();
 
-    // row viene del navigate(..., { state: { row } })
     const row = state?.row || null;
 
+    // ✅ details state 
     const [details, setDetails] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // ✅ paginación state
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const fetchDetails = async () => {
         setLoading(true);
         try {
-            console.log("WS 266 → fetching settlementId:", settlementId);
-
             const resp = await getAccountingSettlementDetails({ settlementId });
-
-            console.log("WS 266 → response:", resp);
             setDetails(resp);
         } catch (err) {
             console.error("WS 266 → error:", err);
+            setDetails(null);
         } finally {
             setLoading(false);
         }
@@ -47,15 +45,36 @@ const SettlementDetail = () => {
         fetchDetails();
     }, [settlementId]);
 
-    // ✅ summary real del WS 266
-    const summary = details?.summary || null;
+    // reset page when changing settlement
+    useEffect(() => {
+        setPage(1);
+    }, [settlementId]);
 
-    // ✅ Info: preferimos summary (más confiable). Fallback: row (lo que vino por state)
+    // derivados 
+    const summary = details?.summary || null;
     const infoSource = summary || row;
+
+    const allRows = details?.rows || [];
+    const totalRows = allRows.length;
+
+    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+    const safePage = Math.min(page, totalPages);
+
+    const start = (safePage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageRows = allRows.slice(start, end);
 
     return (
         <div className="main-content page active">
-            <div className="content-header" style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", gap: 12 }}>
+            <div
+                className="content-header"
+                style={{
+                    marginBottom: "20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                }}
+            >
                 <div>
                     <h1>Settlement: {settlementId}</h1>
                     <p>Detailed accounting information for the selected settlement.</p>
@@ -66,24 +85,45 @@ const SettlementDetail = () => {
                 </button>
             </div>
 
-            {/* Info que trae por defecto */}
+            {/* Info */}
             <SettlementInfoCard
                 row={infoSource}
-                allowKeys={["settlementId", "depositDateDate", "status", "amazonTotalReported", "sapPaymentsTotal", "difference", "sapPaymentsCount", "amazonInternalDiff", "reconciled"]} />
+                allowKeys={[
+                    "settlementId",
+                    "depositDateDate",
+                    "status",
+                    "amazonTotalReported",
+                    "sapPaymentsTotal",
+                    "difference",
+                    "sapPaymentsCount",
+                    "amazonInternalDiff",
+                    "reconciled",
+                ]}
+            />
 
-            {/* kpi cards */}
+            {/* KPIs */}
             <SettlementKPIs summary={summary} loading={loading} />
 
-            {/* Table */}
-           
-  {loading ? (
-    <SettlementRowsTableSkeleton rows={10} />
-  ) : (
-    <SettlementRowsTable rows={details?.rows || []} limit={10} />
-  )}
+            {/* Table paginada */}
+            {loading ? (
+                <SettlementRowsTableSkeleton rows={pageSize} />
+            ) : (
+                <SettlementRowsTable rows={pageRows} />
+            )}
 
+            {/* Pagination */}
+            <SimplePagination
+                page={safePage}
+                totalItems={totalRows}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(n) => {
+                    setPageSize(n);
+                    setPage(1);
+                }}
+            />
 
-            {/* charts */}
+            {/* Charts */}
             <SettlementExtras details={details} summary={summary} loading={loading} />
         </div>
     );
