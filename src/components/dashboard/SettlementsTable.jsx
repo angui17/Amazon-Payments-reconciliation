@@ -9,6 +9,7 @@ import {
 } from "../../utils/settlementsTableUtils";
 
 import "../../styles/settlements-table.css";
+import { Link } from "react-router-dom";
 
 const StatusPill = ({ status }) => {
     const { label, className } = mapStatus(status);
@@ -39,11 +40,14 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
                             <th className="th-center">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         {rows.map((r, idx) => (
                             <tr key={`${r.settlementId ?? "row"}-${idx}`}>
-                                <td className="mono">{r.settlementId ?? "-"}</td>
+                                <td className="mono">
+                                    <Link to={`/settlements/${r.settlementId}`} state={{ row: r }} className="link-settlement">
+                                        {r.settlementId ?? "-"}
+                                    </Link>
+                                </td>
                                 <td>{r.depositDateDate ?? onlyYMD(r.depositDate)}</td>
                                 <td className="muted">
                                     {formatPeriod(r.settlementStart, r.settlementEnd)}

@@ -1,6 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
-
 import AccountingTableHeaders from "./AccountingTableHeaders";
 import "../../styles/settlementsTable.css";
 
@@ -51,15 +49,7 @@ const AccountingTable = ({ rows = [], onDetails }) => {
 
                             return (
                                 <tr key={r.settlementId}>
-                                    <td className="mono">
-                                        <Link
-                                            to={`/settlements/${r.settlementId}`}
-                                            state={{ row: r }}
-                                            className="link-settlement"
-                                        >
-                                            {r.settlementId}
-                                        </Link>
-                                    </td>
+                                    <td className="mono">{r.settlementId}</td>
                                     <td>{r.depositDateDate}</td>
 
                                     <td className={`th-center ${Number(r.amazonTotalReported) < 0 ? "negative" : ""}`}>
