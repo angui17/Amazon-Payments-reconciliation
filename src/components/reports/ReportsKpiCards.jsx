@@ -1,29 +1,7 @@
 import React, { useMemo } from "react";
 import KPICard from "../common/KPICard";
 
-const money = (n) => {
-  const val = Number(n);
-  if (Number.isNaN(val)) return "-";
-  return val.toLocaleString("en-US", { style: "currency", currency: "USD" });
-};
-
-const int = (n) => {
-  const val = Number(n);
-  if (Number.isNaN(val)) return "-";
-  return val.toLocaleString("en-US");
-};
-
-const pct = (n) => {
-  const val = Number(n);
-  if (Number.isNaN(val)) return "-";
-  return `${val.toFixed(2)}%`;
-};
-
-const trendByDiff = (diff) => {
-  const val = Number(diff);
-  if (Number.isNaN(val) || val === 0) return "neutral";
-  return val < 0 ? "down" : "up"; // negativo = mala noticia (ej: SAP > Amazon)
-};
+import { money, int, pct, trendByDiff } from "../../utils/kpicards";
 
 const ReportsKpiCards = ({ summary }) => {
   const cards = useMemo(() => {
