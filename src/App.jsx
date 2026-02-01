@@ -19,6 +19,7 @@ import AccountSettings from './components/pages/AccountSettings'
 import Security from './components/pages/Security'
 import Notifications from './components/pages/Notifications'
 import './styles/dashboard.css'
+import SettlementDetail from './components/accounting/SettlementDetail'
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -59,6 +60,7 @@ function App() {
             <Route path="errors" element={<Errors />} />
             <Route path="reports" element={<Reports />} />
             <Route path="accounting" element={<Accounting />} />
+            <Route path="settlements/:settlementId" element={<SettlementDetail />} />
             <Route path="monitoring" element={<Monitoring />} />
             <Route path="admin" element={<Admin />} />
             <Route path="user-profile" element={<UserProfile />} />

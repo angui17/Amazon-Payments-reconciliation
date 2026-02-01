@@ -211,3 +211,14 @@
   color: #b91c1c;
   border-color: rgba(185, 28, 28, 0.18);
 }
+
+.link-settlement {
+  color: var(--orange-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.link-settlement:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}

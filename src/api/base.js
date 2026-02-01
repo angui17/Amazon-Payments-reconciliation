@@ -34,6 +34,7 @@ export async function idaRequest({ id, type, types, params = {}, limit, raw = fa
   if (params.fecha_desde) body.fecha_desde = params.fecha_desde;
   if (params.fecha_hasta) body.fecha_hasta = params.fecha_hasta;
   if (limit) body.limit = limit;
+  if (params.settlementId) body.settlementId = params.settlementId;
 
   const res = await fetch(PROXY_PATH, {
     method: "POST",

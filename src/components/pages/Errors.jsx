@@ -115,14 +115,7 @@ const Errors = () => {
       {loading || rows === null ? (
         <ErrorsTableSkeleton rows={6} />
       ) : (
-        <ErrorsTable
-          rows={rows}
-          onDetails={(row) => {
-            setSelectedRow(row);
-            setDetailsOpen(true);
-          }}
-        />
-      )}
+        <ErrorsTable rows={rows} onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }} />)}
 
       {/* charts */}
       <ErrorsCharts charts={charts} loading={loading} />

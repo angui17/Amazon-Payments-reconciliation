@@ -1,0 +1,79 @@
+/* ===========================
+   Settlement – Detail styles
+   =========================== */
+
+/* Compact key/value grid */
+.settlement-kv {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 10px;
+}
+
+.settlement-kv-item {
+  grid-column: span 2; 
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 8px;        
+  background: #fff;
+}
+
+.settlement-kv-key {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.settlement-kv-value {
+  margin-top: 4px;
+  font-weight: 800;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty state */
+.settlement-empty-title {
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.settlement-empty-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .settlement-kv-item {
+    grid-column: span 6; /* 2 columns */
+  }
+}
+
+@media (max-width: 520px) {
+  .settlement-kv-item {
+    grid-column: span 12; /* 1 column */
+  }
+}
+
+/* 6 KPI cards per row */
+.settlement-kpis-grid{
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1200px){
+  .settlement-kpis-grid{ grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 900px){
+  .settlement-kpis-grid{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 520px){
+  .settlement-kpis-grid{ grid-template-columns: repeat(2, 1fr); }
+}
