@@ -33,11 +33,11 @@ const TopNav = () => {
         { path: '/fees/payments', label: 'Fees' },
       ],
     },
-    { path: '/files', label: 'Files' },
+    // { path: '/files', label: 'Files' },
     { path: '/errors', label: 'Errors' },
     { path: '/reports', label: 'Reports' },
     { path: '/accounting', label: 'Accounting' },
-    { path: '/monitoring', label: 'Monitoring' },
+    // { path: '/monitoring', label: 'Monitoring' },
     { path: '/admin', label: 'Admin' },
   ]
 

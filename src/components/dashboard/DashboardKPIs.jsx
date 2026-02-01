@@ -53,7 +53,7 @@ const DashboardKPIs = ({ summary }) => {
             />
 
             <KPICard
-                title="Pending (Status=P)"
+                title="Status: Pending"
                 value={pendingCount}
                 change="Pending settlements awaiting final reconciliation"
                 trend={pendingCount > 0 ? "warning" : "up"}

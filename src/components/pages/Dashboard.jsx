@@ -72,6 +72,23 @@ const Dashboard = () => {
     fetchDashboard(filters);
   }, [])
 
+  const getRowStatus = (r) => {
+    const raw = r?.status ?? r?.STATUS ?? r?.Status ?? "";
+    return String(raw).toUpperCase();
+  };
+
+  const allRows = rows || [];
+
+  // 1) status filter
+  const statusFiltered =
+    filters.status === "ALL"
+      ? allRows
+      : allRows.filter((r) => getRowStatus(r) === String(filters.status).toUpperCase());
+
+  // 2) limit_records
+  const limitN = Math.max(1, Number(filters.limit_records) || 50);
+  const filteredRows = statusFiltered.slice(0, limitN);
+
 
   return (
     <>
@@ -81,7 +98,7 @@ const Dashboard = () => {
       </div>
 
       {/* KPI charts */}
-      <DashboardKPIs summary={summary} />
+      {filteredRows.length > 0 ? <DashboardKPIs summary={summary} rows={filteredRows} /> : null }
 
       {/* Filters */}
       <DashboardFilters value={filters} onApply={handleApply} />
@@ -95,9 +112,13 @@ const Dashboard = () => {
       {/* Tables */}
       {rows === null ? (
         <SettlementsTableSkeleton rows={6} />
+      ) : filteredRows.length === 0 ? (
+        <div className="orders-empty">
+          No records found for the selected filters.
+        </div>
       ) : (
         <SettlementsTable
-          rows={rows}
+          rows={filteredRows}
           onDetails={(row) => {
             setSelectedRow(row);
             setDetailsOpen(true);
@@ -105,8 +126,9 @@ const Dashboard = () => {
         />
       )}
 
+
       {/* Charts */}
-      <DashboardCharts charts={charts} />
+      { filteredRows.length > 0 ?  <DashboardCharts charts={charts} rows={filteredRows} /> : null }
 
       <SettlementDetailsModal
         open={detailsOpen}

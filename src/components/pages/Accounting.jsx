@@ -17,13 +17,6 @@ import AccountingCharts from "../accounting/AccountingCharts";
 // filters
 import AccountingFilters, { DEFAULT_ACCOUNTING_FILTERS } from "../accounting/AccountingFilters";
 
-const DEFAULT_FILTERS = {
-	fecha_desde: "2025-01-01",
-	fecha_hasta: "2025-01-31",
-	status: "ALL",
-	limit_records: 50,
-};
-
 const Accounting = () => {
 	// kpi cards 
 	const [loading, setLoading] = useState(false);
@@ -57,9 +50,6 @@ const Accounting = () => {
 			setSummary(resp.summary);
 			setRows(resp.rows || []);
 			setCharts(resp.charts || null);
-
-			console.log("UI filters:", apiFilters);
-
 		} catch (e) {
 			console.error("Error fetching accounting:", e);
 		} finally {

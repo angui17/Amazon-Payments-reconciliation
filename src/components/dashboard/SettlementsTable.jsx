@@ -31,15 +31,16 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
                             <th>Settlement ID</th>
                             <th>Deposit Date</th>
                             <th>Period</th>
-                            <th>Status</th>
                             <th className="th-right">Amazon Total</th>
                             <th className="th-right">SAP Total</th>
                             <th className="th-right">Diff</th>
                             <th>Reconciled</th>
                             <th className="th-right">Exceptions</th>
+                            <th>Status</th>
                             <th className="th-center">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {rows.map((r, idx) => (
                             <tr key={`${r.settlementId ?? "row"}-${idx}`}>
@@ -52,8 +53,6 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
                                 <td className="muted">
                                     {formatPeriod(r.settlementStart, r.settlementEnd)}
                                 </td>
-                                <td><StatusPill status={r.status} /></td>
-
                                 <td className="th-right">{money(r.amazonTotalReported)}</td>
                                 <td className="th-right">{money(r.sapPaymentsTotal)}</td>
                                 <td className={`th-right ${diffClass(r.difference)} ${Number(r.difference) < 0 ? "negative" : ""}`}>
@@ -62,7 +61,7 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
 
                                 <td>{isReconciled(r.reconciled)}</td>
                                 <td className="th-center">{r.exceptionsCount ?? 0}</td>
-
+  <td><StatusPill status={r.status} /></td>
                                 <td className="th-center">
                                     <button
                                         className="btn btn-sm"
