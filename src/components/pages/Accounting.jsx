@@ -9,8 +9,10 @@ import AccountingKPIs from "../accounting/AccountingKPIs";
 // table
 import AccountingTable from '../accounting/AccountingTable';
 import AccountingTableSkeleton from '../accounting/AccountingTableSkeleton';
+
 // details
 import AccountingDetailsModal from "../accounting/AccountingDetailsModal";
+
 // charts
 import AccountingCharts from "../accounting/AccountingCharts";
 
@@ -26,7 +28,6 @@ const Accounting = () => {
 	//details
 	const [selectedRow, setSelectedRow] = useState(null);
 	const [detailsOpen, setDetailsOpen] = useState(false);
-
 	// charts
 	const [charts, setCharts] = useState(null);
 	// filters

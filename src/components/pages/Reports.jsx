@@ -1,7 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../../styles/dashboard.css';
 
+import { getReports } from '../../api/reports';
+import { ymdToMdy } from '../../utils/dateUtils';
+
+// kpi cards
+import ReportsKpiCards from "../reports/ReportsKpiCards";
+import ReportsKpiCardsSkeleton from "../reports/ReportsKpiCardsSkeleton";
+
 const Reports = () => {
+  // kpi cards
+  const [summary, setSummary] = useState(null);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [error, setError] = useState("");
+
+  const DEFAULT_FROM = "2024-01-01";
+  const DEFAULT_TO = "2025-01-30";
+
+  const DEFAULT_PARAMS = ({
+    fecha_desde: ymdToMdy(DEFAULT_FROM),
+    fecha_hasta: ymdToMdy(DEFAULT_TO),
+    limit_records: 50,
+    status: "ALL",
+  })
+
+  const fetchReports = async () => {
+    try {
+      setLoadingSummary(true);
+      setError("");
+      const res = await getReports(DEFAULT_PARAMS);
+      setSummary(res?.summary ?? null);
+      console.log(res)
+    } catch (error) {
+      console.error(e);
+      setError(e?.message || "Error fetching reports");
+      setSummary(null);
+    } finally {
+      setLoadingSummary(false);
+    }
+  }
+
   const reports = [
     {
       name: 'Daily Reconciliation Summary',
@@ -33,6 +71,11 @@ const Reports = () => {
     }
   ];
 
+
+  useEffect(() => {
+    fetchReports()
+  }, [])
+
   return (
     <div className="main-content page active" id="reports-page">
       <div className="content-header">
@@ -40,23 +83,25 @@ const Reports = () => {
         <p>Generate and view reconciliation reports</p>
       </div>
 
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div>Available Reports</div>
-          <div className="kpi-value">15</div>
-          <div className="kpi-label">Pre-defined templates</div>
+      {/* kpi cards */}
+{loadingSummary ? (
+        <ReportsKpiCardsSkeleton count={5} />
+      ) : summary ? (
+        <ReportsKpiCards summary={summary} />
+      ) : (
+        <div style={{ padding: 12 }}>
+          {error ? `⚠️ ${error}` : "No summary data"}
         </div>
-        <div className="kpi-card">
-          <div>Generated Today</div>
-          <div className="kpi-value">7</div>
-          <div className="kpi-label">Reports created</div>
-        </div>
-        <div className="kpi-card">
-          <div>Scheduled</div>
-          <div className="kpi-value">4</div>
-          <div className="kpi-label">Automated reports</div>
-        </div>
-      </div>
+      )}
+      {/*  filters */}
+
+      {/*  table */}
+
+      {/*  charts */}
+
+      {/*  details */}
+
+    
 
       <div className="data-table">
         <div className="table-header">
@@ -106,10 +151,10 @@ const Reports = () => {
         <div className="chart-container">
           <div className="chart-title">Custom Report Builder</div>
           <div className="chart-placeholder">
-            <div style={{textAlign: 'center'}}>
+            <div style={{ textAlign: 'center' }}>
               <h3>Build Custom Report</h3>
               <p>Select data sources, filters, and output format</p>
-              <button className="btn btn-primary" style={{marginTop: '15px'}}>
+              <button className="btn btn-primary" style={{ marginTop: '15px' }}>
                 <span>📊</span> Start Building
               </button>
             </div>
