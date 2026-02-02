@@ -68,6 +68,12 @@ const Dashboard = () => {
     fetchDashboard(nextFilters);
   };
 
+  const handleClear = () => {
+  setFilters(DEFAULT_FILTERS);
+  fetchDashboard(DEFAULT_FILTERS);
+};
+
+
   useEffect(() => {
     fetchDashboard(filters);
   }, [])
@@ -101,7 +107,11 @@ const Dashboard = () => {
       {filteredRows.length > 0 ? <DashboardKPIs summary={summary} rows={filteredRows} /> : null}
 
       {/* Filters */}
-      <DashboardFilters value={filters} onApply={handleApply} />
+      <DashboardFilters
+  value={filters}
+  onApply={handleApply}
+  onClear={handleClear}
+/>
 
       {error ? (
         <div className="card" style={{ padding: 16 }}>

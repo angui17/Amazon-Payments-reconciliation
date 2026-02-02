@@ -8,10 +8,9 @@ const STATUS_OPTIONS = [
 ];
 
 
-const DashboardFilters = ({ value, onApply }) => {
+const DashboardFilters = ({ value, onApply, onClear }) => {
     const [draft, setDraft] = useState(value);
 
-    // sync si el padre cambia (reset, defaults, etc.)
     useEffect(() => setDraft(value), [value]);
 
     const canApply = useMemo(() => {
@@ -96,6 +95,10 @@ const DashboardFilters = ({ value, onApply }) => {
                         title={!canApply ? "Select From/To dates to apply" : "Apply filters"}
                     >
                         Apply
+                    </button>
+
+                    <button className="btn btn-sm" onClick={() => { setDraft(value), onClear?.() }} type="button" title="Clear filters" >
+                        Clear
                     </button>
                 </div>
             </div>
