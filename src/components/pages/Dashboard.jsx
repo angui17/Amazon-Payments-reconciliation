@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { getDashboard } from '../../api/dashboard'
 
+// exportacion a pdf
+// import { exportSettlementsToPdf } from "../../utils/exportTableToPdf";
+import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
+import { settlementsPdfColumns } from "../../utils/pdfExport/dashboardPDFColumns";
+
+
 // kpi cards
 import DashboardKPIs from "../dashboard/DashboardKPIs";
 
@@ -161,6 +167,14 @@ const Dashboard = () => {
             setSelectedRow(row);
             setDetailsOpen(true);
           }}
+          onExportPdf={() =>
+            exportRowsToPdf({
+              rows: pagedRows,
+              columns: settlementsPdfColumns,
+              title: "Dashboard Settlements",
+              fileName: "settlements-page.pdf",
+            })
+          }
         />
       )}
 

@@ -16,12 +16,24 @@ const StatusPill = ({ status }) => {
     return <span className={`status-pill ${className}`}>{label}</span>;
 };
 
-const SettlementsTable = ({ rows = [], onDetails }) => {
+const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
     return (
         <div className="card table-card">
             <div className="card-header table-header">
                 <h3>Settlements</h3>
                 <div className="table-meta">{rows.length} results</div>
+
+                {onExportPdf ? (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => onExportPdf?.()}
+              disabled={rows.length === 0}
+              type="button"
+              title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
+            >
+              Export PDF
+            </button>
+          ) : null}
             </div>
 
             <div className="table-container">

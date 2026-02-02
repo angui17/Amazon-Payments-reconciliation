@@ -10,6 +10,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .table-meta {
@@ -30,10 +31,10 @@
 .data-table thead th {
   text-align: left;
   font-size: 12px;
-  color: #6b7280;  
+  color: #6b7280;
   font-weight: 700;
   padding: 12px 14px;
- background: #f9fafb;   
+  background: #f9fafb;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -123,12 +124,10 @@
 .sk-line {
   height: 12px;
   border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    #e5e7eb 25%,
-    #f3f4f6 37%,
-    #e5e7eb 63%
-  );
+  background: linear-gradient(90deg,
+      #e5e7eb 25%,
+      #f3f4f6 37%,
+      #e5e7eb 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
@@ -138,12 +137,10 @@
   height: 32px;
   border-radius: 10px;
   margin: 0 auto;
-  background: linear-gradient(
-    90deg,
-    #e5e7eb 25%,
-    #f3f4f6 37%,
-    #e5e7eb 63%
-  );
+  background: linear-gradient(90deg,
+      #e5e7eb 25%,
+      #f3f4f6 37%,
+      #e5e7eb 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
@@ -157,6 +154,7 @@
   0% {
     background-position: 100% 0;
   }
+
   100% {
     background-position: -100% 0;
   }
@@ -171,7 +169,7 @@
 
 /* Monto negativo */
 .negative {
-  color:  #b91c1c;
+  color: #b91c1c;
   font-weight: 700;
 }
 
@@ -221,4 +219,10 @@
 .link-settlement:hover {
   text-decoration: underline;
   opacity: 0.9;
+}
+
+.table-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
