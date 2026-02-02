@@ -45,7 +45,7 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
                         {rows.map((r, idx) => (
                             <tr key={`${r.settlementId ?? "row"}-${idx}`}>
                                 <td className="mono">
-                                    <Link to={`/settlements/${r.settlementId}`} state={{ row: r }} className="link-settlement">
+                                    <Link to={`/dashboard/settlements/${r.settlementId}`} state={{ row: r }} className="link-settlement">
                                         {r.settlementId ?? "-"}
                                     </Link>
                                 </td>
