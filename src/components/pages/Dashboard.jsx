@@ -13,7 +13,7 @@ import { ymdToMdy } from "../../utils/dateUtils";
 
 const DEFAULT_FILTERS = {
   fecha_desde: "2025-01-01",
-  fecha_hasta: "2025-01-31",
+  fecha_hasta: "2026-01-31",
   status: "ALL",
   limit_records: 50,
 };
@@ -98,7 +98,7 @@ const Dashboard = () => {
       </div>
 
       {/* KPI charts */}
-      {filteredRows.length > 0 ? <DashboardKPIs summary={summary} rows={filteredRows} /> : null }
+      {filteredRows.length > 0 ? <DashboardKPIs summary={summary} rows={filteredRows} /> : null}
 
       {/* Filters */}
       <DashboardFilters value={filters} onApply={handleApply} />
@@ -128,7 +128,7 @@ const Dashboard = () => {
 
 
       {/* Charts */}
-      { filteredRows.length > 0 ?  <DashboardCharts charts={charts} rows={filteredRows} /> : null }
+      {filteredRows.length > 0 ? <DashboardCharts charts={charts} rows={filteredRows} /> : null}
 
       <SettlementDetailsModal
         open={detailsOpen}

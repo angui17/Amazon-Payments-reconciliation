@@ -69,6 +69,7 @@ const Reports = () => {
     try {
       setLoading(true);
       setError("");
+      setSummary(null);
       setCharts(null);
 
       const res = await getReports(params);
@@ -146,7 +147,7 @@ const Reports = () => {
       {/* KPI cards */}
       {loading ? (
         <ReportsKpiCardsSkeleton count={5} />
-      ) : summary ? (
+      ) : totalItems > 0 && summary ? (
         <ReportsKpiCards summary={summary} />
       ) : null}
 
@@ -189,7 +190,10 @@ const Reports = () => {
       )}
 
       {/* charts */}
-      {monthlyRows.length > 0 ? <MonthlyReconciliationCharts charts={charts} loading={loading} /> : null}
+      {!loading && totalItems > 0 ? (
+        <MonthlyReconciliationCharts charts={charts} loading={loading} />
+      ) : null}
+
 
     </div>
   );
