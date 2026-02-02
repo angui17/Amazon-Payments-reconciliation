@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { getDashboard } from '../../api/dashboard'
 
 // exportacion a pdf
-// import { exportSettlementsToPdf } from "../../utils/exportTableToPdf";
 import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
 import { settlementsPdfColumns } from "../../utils/pdfExport/dashboardPDFColumns";
 
+import {
+  buildDashboardSummaryFromRows,
+  buildDashboardPdfKpiBlocks
+} from "../../utils/dashboardKpiSummary";
 
 // kpi cards
 import DashboardKPIs from "../dashboard/DashboardKPIs";
@@ -55,6 +58,9 @@ const Dashboard = () => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
+  // pdf 
+  const chartsRef = useRef(null);
+  
   const toApiFilters = (f) => ({
     ...f,
     fecha_desde: ymdToMdy(f.fecha_desde), //  MM-DD-YYYY
@@ -92,7 +98,6 @@ const Dashboard = () => {
     setPageSize(DEFAULT_PAGE_SIZE);
     fetchDashboard(DEFAULT_FILTERS);
   };
-
 
   useEffect(() => {
     fetchDashboard(filters);
@@ -167,14 +172,27 @@ const Dashboard = () => {
             setSelectedRow(row);
             setDetailsOpen(true);
           }}
-          onExportPdf={() =>
-            exportRowsToPdf({
-              rows: pagedRows,
-              columns: settlementsPdfColumns,
-              title: "Dashboard Settlements",
-              fileName: "settlements-page.pdf",
-            })
-          }
+          onExportPdf={async () => {
+  const pageSummary = buildDashboardSummaryFromRows(pagedRows);
+  const headerBlocks = buildDashboardPdfKpiBlocks(pageSummary);
+
+  // 👇 aseguramos que el chart ya esté renderizado
+  await new Promise((r) => requestAnimationFrame(r));
+
+  const chartImages = chartsRef.current?.getChartImages?.() || [];
+
+  console.log("chartImages:", chartImages.length); // 👈 debug rápido
+
+  exportRowsToPdf({
+    rows: pagedRows,
+    columns: settlementsPdfColumns,
+    title: "Dashboard Settlements",
+    fileName: "dashboard-page.pdf",
+    headerBlocks,
+    chartImages,
+  });
+}}
+
         />
       )}
 
@@ -195,7 +213,7 @@ const Dashboard = () => {
 
 
       {/* Charts */}
-      {pagedRows.length > 0 ? <DashboardCharts charts={charts} rows={pagedRows} /> : null}
+      {pagedRows.length > 0 ? <DashboardCharts  ref={chartsRef} charts={charts} rows={pagedRows} /> : null}
 
       <SettlementDetailsModal
         open={detailsOpen}

@@ -24,16 +24,16 @@ const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
                 <div className="table-meta">{rows.length} results</div>
 
                 {onExportPdf ? (
-            <button
-              className="btn btn-sm btn-outline"
-              onClick={() => onExportPdf?.()}
-              disabled={rows.length === 0}
-              type="button"
-              title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
-            >
-              Export PDF
-            </button>
-          ) : null}
+                    <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => onExportPdf?.()}
+                        disabled={rows.length === 0}
+                        type="button"
+                        title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
+                    >
+                        Export PDF
+                    </button>
+                ) : null}
             </div>
 
             <div className="table-container">
