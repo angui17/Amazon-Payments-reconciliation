@@ -33,23 +33,24 @@ const DashboardCharts = ({ charts }) => {
 
   return (
     <div className="charts-grid">
-      <ChartCard title="Deposits by Day (Amazon vs SAP vs Difference)">
-        <div className="chart-canvas">
-          <Line data={buildDepositsLine(deposits)} options={lineOptions} />
-        </div>
-      </ChartCard>
-
       <ChartCard title="Reconciled vs Not Reconciled (by Day)">
-        <div className="chart-canvas">
+        <div className="chart-canvas" style={{ height: "260px" }}>
           <Bar data={buildReconBar(deposits)} options={barOptions} />
         </div>
       </ChartCard>
 
       <ChartCard title="Status Breakdown">
-        <div className="chart-canvas">
+        <div className="chart-canvas" style={{ height: "260px" }}>
           <Doughnut data={buildStatusDonut(status)} options={donutOptions} />
         </div>
       </ChartCard>
+
+      <ChartCard title="Deposits by Day (Amazon vs SAP vs Difference)">
+        <div className="chart-canvas" style={{ height: "260px" }}>
+          <Line data={buildDepositsLine(deposits)} options={lineOptions} />
+        </div>
+      </ChartCard>
+
     </div>
   );
 };

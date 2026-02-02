@@ -132,7 +132,7 @@ const Dashboard = () => {
       </div>
 
       {/* KPI charts */}
-     {pagedRows.length > 0 ? <DashboardKPIs summary={summary} rows={pagedRows} /> : null}
+      {pagedRows.length > 0 ? <DashboardKPIs summary={summary} rows={pagedRows} /> : null}
 
       {/* Filters */}
       <DashboardFilters
@@ -181,7 +181,7 @@ const Dashboard = () => {
 
 
       {/* Charts */}
-     {pagedRows.length > 0 ? <DashboardCharts charts={charts} rows={pagedRows} /> : null}
+      {pagedRows.length > 0 ? <DashboardCharts charts={charts} rows={pagedRows} /> : null}
 
       <SettlementDetailsModal
         open={detailsOpen}

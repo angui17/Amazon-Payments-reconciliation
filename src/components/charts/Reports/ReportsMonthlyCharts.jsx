@@ -16,7 +16,6 @@ const groupSumByMonth = (rows = []) => {
     .map(([month, amazonTotal]) => ({
       month,
       amazonTotal,
-      // placeholders hasta que el backend mande sapTotal y differenceTotal reales
       sapTotal: 0,
       differenceTotal: amazonTotal - 0,
     }))

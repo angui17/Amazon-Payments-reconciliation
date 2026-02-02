@@ -61,12 +61,9 @@ const SettlementsTable = ({ rows = [], onDetails }) => {
 
                                 <td>{isReconciled(r.reconciled)}</td>
                                 <td className="th-center">{r.exceptionsCount ?? 0}</td>
-  <td><StatusPill status={r.status} /></td>
+                                <td><StatusPill status={r.status} /></td>
                                 <td className="th-center">
-                                    <button
-                                        className="btn btn-sm"
-                                        onClick={() => onDetails?.(r)}
-                                    >
+                                    <button className="btn btn-sm" onClick={() => onDetails?.(r)} >
                                         Details
                                     </button>
                                 </td>

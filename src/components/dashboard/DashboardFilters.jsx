@@ -88,12 +88,7 @@ const DashboardFilters = ({ value, onApply, onClear }) => {
                 </div>
 
                 <div className="filters-actions filters-actions--inline">
-                    <button
-                        className="btn btn-sm btn-primary"
-                        onClick={handleApply}
-                        disabled={!canApply}
-                        title={!canApply ? "Select From/To dates to apply" : "Apply filters"}
-                    >
+                    <button className="btn btn-sm btn-primary" onClick={handleApply} disabled={!canApply} title={!canApply ? "Select From/To dates to apply" : "Apply filters"} >
                         Apply
                     </button>
 
