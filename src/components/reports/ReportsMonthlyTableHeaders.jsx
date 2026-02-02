@@ -14,6 +14,7 @@ const ReportsMonthlyTableHeaders = () => {
         <th>Not Reconciled</th>
         <th>Pending</th>
         <th>% Recon</th>
+        <th>Details</th>
       </tr>
     </thead>
   );

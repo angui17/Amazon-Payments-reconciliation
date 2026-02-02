@@ -8,9 +8,20 @@ const STATUS_OPTIONS = [
   { value: "NOT_RECONCILED", label: "Not reconciled" },
 ];
 
-const ReportsFilters = ({ filters, onChange, onApply, onReset, loading }) => {
-  const set = (key) => (e) =>
-    onChange({ ...filters, [key]: e.target.value });
+const ReportsFilters = ({
+  filters,
+  onChange,
+  onApply,
+  onReset,
+  loading,
+  page = 1,
+  pageSize = 10,
+  totalItems = 0,
+}) => {
+  const set = (key) => (e) => onChange({ ...filters, [key]: e.target.value });
+
+  const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = totalItems === 0 ? 0 : Math.min(totalItems, page * pageSize);
 
   return (
     <div className="filters-card">
@@ -38,7 +49,7 @@ const ReportsFilters = ({ filters, onChange, onApply, onReset, loading }) => {
               disabled={loading}
             />
           </div>
-
+          {/* 
           <div className="filter-group">
             <label className="filter-label">Status</label>
             <select
@@ -66,24 +77,15 @@ const ReportsFilters = ({ filters, onChange, onApply, onReset, loading }) => {
               className="filter-input"
               disabled={loading}
             />
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">Top causes</label>
-            <input
-              type="number"
-              min="1"
-              max="50"
-              value={filters.top_causes_n}
-              onChange={set("top_causes_n")}
-              className="filter-input"
-              disabled={loading}
-            />
-          </div>
+          </div> */}
         </div>
 
         {/* RIGHT: actions */}
         <div className="filters-row filters-actions">
+          <div style={{ marginRight: 12, opacity: 0.8 }}>
+            {loading ? "Loading..." : totalItems ? `${from}-${to} of ${totalItems}` : "0 records"}
+          </div>
+
           <button
             className="btn btn-sm btn-primary"
             onClick={onApply}

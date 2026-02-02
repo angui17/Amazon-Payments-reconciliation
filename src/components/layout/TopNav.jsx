@@ -38,7 +38,7 @@ const TopNav = () => {
     { path: '/reports', label: 'Reports' },
     { path: '/accounting', label: 'Accounting' },
     // { path: '/monitoring', label: 'Monitoring' },
-    { path: '/admin', label: 'Admin' },
+    // { path: '/admin', label: 'Admin' },
   ]
 
   const userMenuItems = [

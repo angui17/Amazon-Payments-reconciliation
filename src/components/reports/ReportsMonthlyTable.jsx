@@ -40,6 +40,11 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails }) => {
                                         <td>{int(r.notReconciledCount)}</td>
                                         <td>{int(r.pendingCount)}</td>
                                         <td>{pct(r.reconciledPct)}</td>
+                                        <td className="th-center">
+                                            <button className="btn btn-sm" onClick={() => onDetails?.(r)}>
+                                                Details
+                                            </button>
+                                        </td>
                                     </tr>
                                 );
                             })

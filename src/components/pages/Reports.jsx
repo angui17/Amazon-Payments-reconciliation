@@ -15,21 +15,36 @@ import ReportsMonthlyTable from "../reports/ReportsMonthlyTable";
 // filters
 import ReportsFilters from "../reports/ReportsFilters";
 
+// pagination
+import SimplePagination from "../common/SimplePagination";
+import MonthlyReconciliationCharts from "../reports/MonthlyReconciliationCharts";
+
 const DEFAULT_FROM = "2024-01-01";
-const DEFAULT_TO = "2025-01-30";
+const DEFAULT_TO = "2026-01-31";
+const DEFAULT_PAGE_SIZE = 10;
 
 const DEFAULT_FILTERS = {
   fecha_desde: DEFAULT_FROM,
   fecha_hasta: DEFAULT_TO,
   status: "ALL",
   limit_months: 12,
-  top_causes_n: 10,
 };
 
 const Reports = () => {
   // data
   const [summary, setSummary] = useState(null);
+
+  // rows
+  const [allRows, setAllRows] = useState([]);
   const [monthlyRows, setMonthlyRows] = useState([]);
+
+  // charts
+  const [charts, setCharts] = useState(null);
+
+  // pagination
+  const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   // ui
   const [loading, setLoading] = useState(true);
@@ -39,15 +54,13 @@ const Reports = () => {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
 
-  // params that go to API 
+  // params that go to API (SIN paginación, porque la hacemos en frontend)
   const params = useMemo(
     () => ({
       fecha_desde: ymdToMdy(applied.fecha_desde),
       fecha_hasta: ymdToMdy(applied.fecha_hasta),
       status: applied.status,
       limit_months: Number(applied.limit_months),
-      top_causes_n: Number(applied.top_causes_n),
-      limit_records: 50,
     }),
     [applied]
   );
@@ -56,32 +69,69 @@ const Reports = () => {
     try {
       setLoading(true);
       setError("");
+      setCharts(null);
 
       const res = await getReports(params);
 
       setSummary(res?.summary ?? null);
-      setMonthlyRows(Array.isArray(res?.rows) ? res.rows : []);
+
+      const rows = Array.isArray(res?.rows) ? res.rows : [];
+      setAllRows(rows);
+      setTotalItems(rows.length);
+      setCharts(res?.charts ?? null);
 
       console.log("reports res:", res);
     } catch (e) {
       console.error(e);
       setError(e?.message || "Error fetching reports");
       setSummary(null);
+      setAllRows([]);
       setMonthlyRows([]);
+      setTotalItems(0);
+      setCharts(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // fetch cuando cambian filtros aplicados
   useEffect(() => {
     fetchReports();
   }, [params]);
 
-  const handleApply = () => setApplied(filters);
+  // slice client-side cuando cambian rows/page/pageSize
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+
+    // si page quedó "fuera de rango" (por ejemplo al achicar pageSize), lo corregimos
+    if (safePage !== page) {
+      setPage(safePage);
+      return;
+    }
+
+    const start = (safePage - 1) * pageSize;
+    const end = start + pageSize;
+    setMonthlyRows(allRows.slice(start, end));
+  }, [allRows, totalItems, page, pageSize]);
+
+  const handleApply = () => {
+    setApplied(filters);
+    setPage(1);
+  };
 
   const handleReset = () => {
     setFilters(DEFAULT_FILTERS);
     setApplied(DEFAULT_FILTERS);
+    setPage(1);
+    setPageSize(DEFAULT_PAGE_SIZE);
+  };
+
+  const handlePageChange = (nextPage) => setPage(nextPage);
+
+  const handlePageSizeChange = (nextSize) => {
+    setPageSize(nextSize);
+    setPage(1);
   };
 
   return (
@@ -91,16 +141,14 @@ const Reports = () => {
         <p>Generate and view reconciliation reports</p>
       </div>
 
+      {error ? <div className="orders-empty">{error}</div> : null}
+
       {/* KPI cards */}
       {loading ? (
         <ReportsKpiCardsSkeleton count={5} />
       ) : summary ? (
         <ReportsKpiCards summary={summary} />
-      ) : (
-        <div style={{ padding: 12 }}>
-          {error ? `⚠️ ${error}` : "No summary data"}
-        </div>
-      )}
+      ) : null}
 
       {/* Filters */}
       <ReportsFilters
@@ -109,17 +157,40 @@ const Reports = () => {
         onApply={handleApply}
         onReset={handleReset}
         loading={loading}
+        page={page}
+        pageSize={pageSize}
+        totalItems={totalItems}
       />
 
       {/* Table */}
       {loading ? (
         <ReportsMonthlyTableSkeleton rows={6} cols={10} />
+      ) : monthlyRows.length === 0 ? (
+        <div className="orders-empty">
+          No records found for the selected filters.
+        </div>
       ) : (
-        <ReportsMonthlyTable
-          rows={monthlyRows}
-          onViewDetails={(row) => console.log("DETAIL ROW:", row)}
-        />
+        <>
+          <ReportsMonthlyTable
+            rows={monthlyRows}
+            onViewDetails={(row) => console.log("DETAIL ROW:", row)}
+          />
+
+          {/* Pagination */}
+          <SimplePagination
+            page={page}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={[10, 25, 50]}
+          />
+        </>
       )}
+
+      {/* charts */}
+      {monthlyRows.length > 0 ? <MonthlyReconciliationCharts charts={charts} loading={loading} /> : null}
+
     </div>
   );
 };
