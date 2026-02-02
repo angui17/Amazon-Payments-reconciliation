@@ -11,12 +11,17 @@ import DashboardCharts from "../dashboard/DashboardCharts";
 import DashboardFilters from "../dashboard/DashboardFilters";
 import { ymdToMdy } from "../../utils/dateUtils";
 
+// paginacion
+import SimplePagination from "../common/SimplePagination";
+
 const DEFAULT_FILTERS = {
   fecha_desde: "2025-01-01",
   fecha_hasta: "2026-01-31",
   status: "ALL",
   limit_records: 50,
 };
+
+const DEFAULT_PAGE_SIZE = 10;
 
 // Table
 import SettlementsTable from "../dashboard/SettlementsTable";
@@ -26,12 +31,19 @@ import SettlementsTableSkeleton from "../dashboard/SettlementsTableSkeleton";
 import SettlementDetailsModal from "../dashboard/SettlementDetailsModal";
 
 const Dashboard = () => {
-  const [summary, setSummary] = useState(null);   // kpi cards
-  const [charts, setCharts] = useState(null);
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [rows, setRows] = useState(null); // table
+  // kpi cards
+  const [summary, setSummary] = useState(null);
+  // charts 
+  const [charts, setCharts] = useState(null);
+  //filters
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  // table
+  const [rows, setRows] = useState(null);
+  // pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   // details 
   const [selectedRow, setSelectedRow] = useState(null);
@@ -42,7 +54,6 @@ const Dashboard = () => {
     fecha_desde: ymdToMdy(f.fecha_desde), //  MM-DD-YYYY
     fecha_hasta: ymdToMdy(f.fecha_hasta), // MM-DD-YYYY
   });
-
 
   const fetchDashboard = async (f) => {
     setLoading(true);
@@ -65,13 +76,16 @@ const Dashboard = () => {
 
   const handleApply = (nextFilters) => {
     setFilters(nextFilters);
+    setPage(1);
     fetchDashboard(nextFilters);
   };
 
   const handleClear = () => {
-  setFilters(DEFAULT_FILTERS);
-  fetchDashboard(DEFAULT_FILTERS);
-};
+    setFilters(DEFAULT_FILTERS);
+    setPage(1);
+    setPageSize(DEFAULT_PAGE_SIZE);
+    fetchDashboard(DEFAULT_FILTERS);
+  };
 
 
   useEffect(() => {
@@ -95,6 +109,20 @@ const Dashboard = () => {
   const limitN = Math.max(1, Number(filters.limit_records) || 50);
   const filteredRows = statusFiltered.slice(0, limitN);
 
+  const totalItems = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+
+  const start = (safePage - 1) * pageSize;
+  const end = start + pageSize;
+
+  const pagedRows = filteredRows.slice(start, end);
+
+  // paginacion
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil((filteredRows?.length || 0) / pageSize));
+    if (page > totalPages) setPage(1);
+  }, [filteredRows.length, pageSize]);
 
   return (
     <>
@@ -104,14 +132,14 @@ const Dashboard = () => {
       </div>
 
       {/* KPI charts */}
-      {filteredRows.length > 0 ? <DashboardKPIs summary={summary} rows={filteredRows} /> : null}
+     {pagedRows.length > 0 ? <DashboardKPIs summary={summary} rows={pagedRows} /> : null}
 
       {/* Filters */}
       <DashboardFilters
-  value={filters}
-  onApply={handleApply}
-  onClear={handleClear}
-/>
+        value={filters}
+        onApply={handleApply}
+        onClear={handleClear}
+      />
 
       {error ? (
         <div className="card" style={{ padding: 16 }}>
@@ -128,7 +156,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <SettlementsTable
-          rows={filteredRows}
+          rows={pagedRows}
           onDetails={(row) => {
             setSelectedRow(row);
             setDetailsOpen(true);
@@ -136,9 +164,24 @@ const Dashboard = () => {
         />
       )}
 
+      {/* Pagination */}
+      {rows !== null && totalItems > 0 ? (
+        <SimplePagination
+          page={safePage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(n) => {
+            setPageSize(n);
+            setPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50]}
+        />
+      ) : null}
+
 
       {/* Charts */}
-      {filteredRows.length > 0 ? <DashboardCharts charts={charts} rows={filteredRows} /> : null}
+     {pagedRows.length > 0 ? <DashboardCharts charts={charts} rows={pagedRows} /> : null}
 
       <SettlementDetailsModal
         open={detailsOpen}
