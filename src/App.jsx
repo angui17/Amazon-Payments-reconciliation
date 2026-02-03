@@ -19,7 +19,7 @@ import AccountSettings from './components/pages/AccountSettings'
 import Security from './components/pages/Security'
 import Notifications from './components/pages/Notifications'
 import './styles/dashboard.css'
-import SettlementDetail from './components/accounting/SettlementDetail'
+import DashboardSettlementDetail from './components/dashboard/SettlementDetail'
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -52,6 +52,7 @@ function App() {
           }>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard/settlements/:settlementId" element={<DashboardSettlementDetail />} />
             <Route path="orders/:type" element={<Orders />} />
             <Route path="refunds/:type" element={<Refunds />} />  
             <Route path="payments" element={<Payments />} />
@@ -60,7 +61,6 @@ function App() {
             <Route path="errors" element={<Errors />} />
             <Route path="reports" element={<Reports />} />
             <Route path="accounting" element={<Accounting />} />
-            <Route path="settlements/:settlementId" element={<SettlementDetail />} />
             <Route path="monitoring" element={<Monitoring />} />
             <Route path="admin" element={<Admin />} />
             <Route path="user-profile" element={<UserProfile />} />

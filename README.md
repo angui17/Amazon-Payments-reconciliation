@@ -7,6 +7,7 @@ The solution is hosted on IDA Cloud and features a web portal for real-time moni
 ```bash
 npm install
 npm install react-chartjs-2 chart.js react-csv
+npm install jspdf jspdf-autotable
 npm run dev
 ```
 

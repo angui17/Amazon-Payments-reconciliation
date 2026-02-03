@@ -1,69 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import SettlementInfoCard from "./settlement/SettlementInfoCard";
-import { getAccountingSettlementDetails } from "../../api/accounting";
 
-import SettlementKPIs from "./settlement/SettlementKPIs";
-import SettlementExtras from "./settlement/SettlementExtras";
-
-import SettlementRowsTable from "./settlement/SettlementRowsTable";
-import SettlementRowsTableSkeleton from "./settlement/SettlementRowsTableSkeleton";
-
-import SimplePagination from "../common/SimplePagination";
-
-const SettlementDetail = () => {
-    const navigate = useNavigate();
-    const { settlementId } = useParams();
-    const { state } = useLocation();
-
-    const row = state?.row || null;
-
-    // ✅ details state 
-    const [details, setDetails] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    // ✅ paginación state
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-
-    const fetchDetails = async () => {
-        setLoading(true);
-        try {
-            const resp = await getAccountingSettlementDetails({ settlementId });
-            setDetails(resp);
-        } catch (err) {
-            console.error("WS 266 → error:", err);
-            setDetails(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (!settlementId) return;
-        fetchDetails();
-    }, [settlementId]);
-
-    // reset page when changing settlement
-    useEffect(() => {
-        setPage(1);
-    }, [settlementId]);
-
-    // derivados 
-    const summary = details?.summary || null;
-    const infoSource = summary || row;
-
-    const allRows = details?.rows || [];
-    const totalRows = allRows.length;
-
-    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-    const safePage = Math.min(page, totalPages);
-
-    const start = (safePage - 1) * pageSize;
-    const end = start + pageSize;
-    const pageRows = allRows.slice(start, end);
-
+const AccountingSettlementDetail = () => {
     return (
         <div className="main-content page active">
             <div
@@ -84,49 +22,8 @@ const SettlementDetail = () => {
                     ← Volver
                 </button>
             </div>
-
-            {/* Info */}
-            <SettlementInfoCard
-                row={infoSource}
-                allowKeys={[
-                    "settlementId",
-                    "depositDateDate",
-                    "status",
-                    "amazonTotalReported",
-                    "sapPaymentsTotal",
-                    "difference",
-                    "sapPaymentsCount",
-                    "amazonInternalDiff",
-                    "reconciled",
-                ]}
-            />
-
-            {/* KPIs */}
-            <SettlementKPIs summary={summary} loading={loading} />
-
-            {/* Table paginada */}
-            {loading ? (
-                <SettlementRowsTableSkeleton rows={pageSize} />
-            ) : (
-                <SettlementRowsTable rows={pageRows} />
-            )}
-
-            {/* Pagination */}
-            <SimplePagination
-                page={safePage}
-                totalItems={totalRows}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={(n) => {
-                    setPageSize(n);
-                    setPage(1);
-                }}
-            />
-
-            {/* Charts */}
-            <SettlementExtras details={details} summary={summary} loading={loading} />
         </div>
     );
 };
 
-export default SettlementDetail;
+export default AccountingSettlementDetail;
