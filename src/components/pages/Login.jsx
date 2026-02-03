@@ -10,7 +10,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -24,15 +24,15 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError('');        // ✅ limpia error antes de intentar
     setLoading(true);
 
     try {
-      setLoading(true);
       await login(credentials.username, credentials.password);
       navigate('/dashboard');
     } catch (err) {
-      setError('Invalid username or password. Try admin/admin');
+      // ✅ muestra el error real del Service Layer si viene
+      setError(err?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -46,14 +46,14 @@ const Login = () => {
           <h1 className="login-title">Sign In</h1>
           <p className="login-subtitle">Enter your credentials to access the dashboard</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="login-form">
           {error && (
             <div className="login-error">
               {error}
             </div>
           )}
-          
+
           <div className="form-group">
             <label htmlFor="username" className="form-label">
               Username
@@ -70,7 +70,7 @@ const Login = () => {
               disabled={loading}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password" className="form-label">
               Password
@@ -87,22 +87,17 @@ const Login = () => {
               disabled={loading}
             />
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="login-button"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
-          
-          <div className="login-demo">
-            <h3>Demo Credentials</h3>
-            <p><strong>Username:</strong> admin</p>
-            <p><strong>Password:</strong> admin</p>
-          </div>
+
         </form>
-        
+
         <div className="login-footer">
           <p>© 2025 AmazonPay Reconciliation. All rights reserved.</p>
         </div>

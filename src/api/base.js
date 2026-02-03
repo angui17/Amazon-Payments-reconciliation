@@ -61,3 +61,44 @@ export async function idaRequest({ id, type, types, params = {}, limit, raw = fa
 
   return limit ? normalized.slice(0, limit) : normalized;
 }
+
+// helper para Service Layer
+
+export async function slRequest(path, { method = 'GET', body } = {}) {
+  const res = await fetch(`/b1s/v1${path}`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    // Service Layer usa cookies (B1SESSION). En browser, same-origin proxy -> ok
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined
+  })
+
+  const text = await res.text()
+  let data = null
+  try { data = text ? JSON.parse(text) : null } catch { data = text || null }
+
+  if (!res.ok) {
+    const msg =
+      (data && data.error && data.error.message && data.error.message.value) ||
+      (data && data.Message) ||
+      (typeof data === 'string' ? data : null) ||
+      `HTTP ${res.status}`
+    throw new Error(msg)
+  }
+
+  return data
+}
+
+export async function slLogin({ UserName, Password, CompanyDB }) {
+  return slRequest('/Login', {
+    method: 'POST',
+    body: { UserName, Password, CompanyDB }
+  })
+}
+
+export async function slLogout() {
+  // Service Layer tiene /Logout
+  return slRequest('/Logout', { method: 'POST' })
+}
