@@ -6,10 +6,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/ida-proxy': {
-        target: 'https://cts.idadns.com:33190',
+        target: 'http://localhost:3010',
         changeOrigin: true,
         secure: false,
-        rewrite: path => path.replace(/^\/ida-proxy/, '')
+        rewrite: path => path.replace(/^\/ida-proxy\/API\/api/, '/api')
       },
 
       // ✅ SAP Service Layer

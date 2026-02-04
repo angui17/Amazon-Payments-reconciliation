@@ -1,4 +1,4 @@
-const PROXY_PATH = "/ida-proxy/API/api/Dynamic/process?company=ida";
+const PROXY_PATH = import.meta?.env?.VITE_API_URL || "http://localhost:3010/api/Dynamic/process";
 const FALLBACK_TOKEN = "Gv54n6Et644L4GZ9VLluKX4GTOLfNiWuIST";
 
 function normalizeItem(item) {
