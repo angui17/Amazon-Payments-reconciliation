@@ -1,38 +1,81 @@
 import React from "react";
+import { toNumber, formatMoney } from "../../utils/refundMath";
 
-const RefundsSalesRows = ({ refunds, onDetails }) => {
+const STATUS_LABEL = {
+  C: "Completed",
+  P: "Pending",
+};
+
+const statusClass = (status) =>
+  status === "C" ? "status-success" : "status-pending";
+
+const RefundsSalesRows = ({ refunds = [], onDetails }) => {
   return (
     <>
-      {refunds.map((r, idx) => (
-        <tr key={idx}>
-          <td>{r.DATE}</td>
-          <td>{r.SETTLEMENT_ID}</td>
-          <td>{r.order_id}</td>
-          <td>
-            <div>{r.SKU}</div>
-            <div className="sku-details">
-              <div className="sku-info">
-                <span className="sku-label">Product:</span>
-                <span className="sku-value">{r.DESCRIPTION?.toLowerCase()}</span>
-              </div>
-            </div>
-          </td>
-          <td className="text-center">{r.QUANTITY}</td>
-          <td className={r.PRODUCT_SALES < 0 ? "text-negative" : ""}>${r.PRODUCT_SALES}</td>
-          <td className={r.TOTAL < 0 ? "text-negative" : ""}>${r.TOTAL}</td>      
-          <td>
-            <span className={`status-badge ${r.STATUS === "C" ? "status-success" : "status-pending"}`}>
-              {r.STATUS === "C" ? "Completed" : r.STATUS}
-            </span>
-          </td>
+      {refunds.map((r, idx) => {
+        const productSales = toNumber(r.PRODUCT_SALES);
+        const total = toNumber(r.TOTAL);
 
-          <td className="action-buttons">
-            <button type="button" className="action-btn action-view" onClick={() => onDetails(r)}>
-              Details
-            </button>
-          </td>
-        </tr>
-      ))}
+        return (
+          <tr key={`${r.order_id || "row"}-${idx}`}>
+            {/* Date */}
+            <td>{r.DATE || "—"}</td>
+
+            {/* Settlement */}
+            <td>{r.SETTLEMENT_ID || "—"}</td>
+
+            {/* Order */}
+            <td>{r.order_id || "—"}</td>
+
+            {/* SKU + Product */}
+            <td>
+              <div>{r.SKU || "—"}</div>
+
+              {r.DESCRIPTION && (
+                <div className="sku-details">
+                  <div className="sku-info">
+                    <span className="sku-label">Product:</span>
+                    <span className="sku-value">
+                      {String(r.DESCRIPTION).toLowerCase()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </td>
+
+            {/* Quantity */}
+            <td className="text-center">{r.QUANTITY ?? "—"}</td>
+
+            {/* Product Sales */}
+            <td className={productSales < 0 ? "text-negative" : ""}>
+              {formatMoney(productSales)}
+            </td>
+
+            {/* Total */}
+            <td className={total < 0 ? "text-negative" : ""}>
+              {formatMoney(total)}
+            </td>
+
+            {/* Status */}
+            <td>
+              <span className={`status-badge ${statusClass(r.STATUS)}`}>
+                {STATUS_LABEL[r.STATUS] || r.STATUS || "—"}
+              </span>
+            </td>
+
+            {/* Actions */}
+            <td className="action-buttons">
+              <button
+                type="button"
+                className="action-btn action-view"
+                onClick={() => onDetails?.(r)}
+              >
+                Details
+              </button>
+            </td>
+          </tr>
+        );
+      })}
     </>
   );
 };

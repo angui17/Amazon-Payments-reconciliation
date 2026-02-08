@@ -60,7 +60,7 @@ const Dashboard = () => {
 
   // pdf 
   const chartsRef = useRef(null);
-  
+
   const toApiFilters = (f) => ({
     ...f,
     fecha_desde: ymdToMdy(f.fecha_desde), //  MM-DD-YYYY
@@ -173,25 +173,20 @@ const Dashboard = () => {
             setDetailsOpen(true);
           }}
           onExportPdf={async () => {
-  const pageSummary = buildDashboardSummaryFromRows(pagedRows);
-  const headerBlocks = buildDashboardPdfKpiBlocks(pageSummary);
+            const pageSummary = buildDashboardSummaryFromRows(pagedRows);
+            const headerBlocks = buildDashboardPdfKpiBlocks(pageSummary);
+            await new Promise((r) => requestAnimationFrame(r));
 
-  // 👇 aseguramos que el chart ya esté renderizado
-  await new Promise((r) => requestAnimationFrame(r));
-
-  const chartImages = chartsRef.current?.getChartImages?.() || [];
-
-  console.log("chartImages:", chartImages.length); // 👈 debug rápido
-
-  exportRowsToPdf({
-    rows: pagedRows,
-    columns: settlementsPdfColumns,
-    title: "Dashboard Settlements",
-    fileName: "dashboard-page.pdf",
-    headerBlocks,
-    chartImages,
-  });
-}}
+            const chartImages = chartsRef.current?.getChartImages?.() || [];
+            exportRowsToPdf({
+              rows: pagedRows,
+              columns: settlementsPdfColumns,
+              title: "Dashboard Settlements",
+              fileName: "dashboard-page.pdf",
+              headerBlocks,
+              chartImages,
+            });
+          }}
 
         />
       )}
@@ -213,7 +208,7 @@ const Dashboard = () => {
 
 
       {/* Charts */}
-      {pagedRows.length > 0 ? <DashboardCharts  ref={chartsRef} charts={charts} rows={pagedRows} /> : null}
+      {pagedRows.length > 0 ? <DashboardCharts ref={chartsRef} charts={charts} rows={pagedRows} /> : null}
 
       <SettlementDetailsModal
         open={detailsOpen}

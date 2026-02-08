@@ -19,11 +19,11 @@ const DashboardSettlementDetail = () => {
 
     const row = state?.row || null;
 
-    // ✅ details state 
+    // details state 
     const [details, setDetails] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // ✅ paginación state
+    // paginación state
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -45,12 +45,10 @@ const DashboardSettlementDetail = () => {
         fetchDetails();
     }, [settlementId]);
 
-    // reset page when changing settlement
     useEffect(() => {
         setPage(1);
     }, [settlementId]);
 
-    // derivados 
     const summary = details?.summary || null;
     const infoSource = summary || row;
 

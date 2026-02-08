@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+
 import Login from './components/pages/Login'
 import DashboardLayout from './components/layout/DashboardLayout'
 import Dashboard from './components/pages/Dashboard'
@@ -18,8 +19,11 @@ import UserProfile from './components/pages/UserProfile'
 import AccountSettings from './components/pages/AccountSettings'
 import Security from './components/pages/Security'
 import Notifications from './components/pages/Notifications'
-import './styles/dashboard.css'
 import DashboardSettlementDetail from './components/dashboard/SettlementDetail'
+import SettlementInfo from './components/errors/settlement/SettlementInfo'
+
+import './styles/dashboard.css'
+import AccountingSettlementDetail from './components/accounting/SettlementDetail'
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -59,8 +63,10 @@ function App() {
             <Route path="fees/:type" element={<Fees />} />
             <Route path="files" element={<Files />} />
             <Route path="errors" element={<Errors />} />
+            <Route path="errors/settlements/:settlementId" element={<SettlementInfo />} />
             <Route path="reports" element={<Reports />} />
             <Route path="accounting" element={<Accounting />} />
+            <Route path="accounting/settlements/:settlementId" element={<AccountingSettlementDetail />} />
             <Route path="monitoring" element={<Monitoring />} />
             <Route path="admin" element={<Admin />} />
             <Route path="user-profile" element={<UserProfile />} />

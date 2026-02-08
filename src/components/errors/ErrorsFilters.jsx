@@ -1,17 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../../styles/filters.css";
-import { ymdToMdy } from "../../utils/dateUtils";
 
-// UI labels (user friendly)
+// UI labels 
 const STATUS_UI_OPTIONS = [
   { label: "All", value: "ALL" },
   { label: "Pending", value: "P" },
   { label: "Completed", value: "C" },
 ];
 
-const ErrorsFilters = ({ value, onApply, loading }) => {
-  // value esperado en formato UI:
-  // { fecha_desde: "YYYY-MM-DD", fecha_hasta: "YYYY-MM-DD", status: "ALL|P|C", limit_records: number }
+const ErrorsFilters = ({ value, defaultValue, onApply, loading }) => {
   const [draft, setDraft] = useState(value);
 
   useEffect(() => {
@@ -33,25 +30,25 @@ const ErrorsFilters = ({ value, onApply, loading }) => {
   const handleApply = () => {
     if (!canApply) return;
 
-    // API quiere MM-DD-YYYY, nosotros guardamos UI en YYYY-MM-DD
-    const payload = {
+    onApply({
       ...draft,
       limit_records: draft.limit_records === "" ? 50 : Number(draft.limit_records || 50),
-      fecha_desde: ymdToMdy(draft.fecha_desde),
-      fecha_hasta: ymdToMdy(draft.fecha_hasta),
       status: draft.status || "ALL",
-    };
-
-    onApply(payload);
+      fecha_desde: draft.fecha_desde,
+      fecha_hasta: draft.fecha_hasta,
+    });
   };
 
   const handleReset = () => {
-    onApply({
-      fecha_desde: ymdToMdy(value.fecha_desde),
-      fecha_hasta: ymdToMdy(value.fecha_hasta),
-      status: value.status || "ALL",
-      limit_records: value.limit_records || 50,
-    });
+    const base = defaultValue || {
+      fecha_desde: "2024-01-01",
+      fecha_hasta: "2026-01-31",
+      status: "ALL",
+      limit_records: 50,
+    };
+
+    setDraft(base);
+    onApply(base);
   };
 
   return (

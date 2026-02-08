@@ -1,6 +1,7 @@
 import React from "react";
-import ErrorsTableHeaders from "./ErrorsTableHeaders";
+import { Link } from "react-router-dom";
 
+import ErrorsTableHeaders from "./ErrorsTableHeaders";
 import "../../styles/settlements-table.css"
 
 const money = (n) => {
@@ -19,12 +20,27 @@ const FlagBadge = ({ tone = "neutral", children }) => (
   <span className={`flag-badge flag-${tone}`}>{children}</span>
 );
 
-const ErrorsTable = ({ rows = [], onDetails }) => {
+const ErrorsTable = ({ rows = [], onDetails, onExportPdf }) => {
   return (
     <div className="card table-card">
       <div className="card-header table-header">
         <h3>Error Log</h3>
-        <div className="table-meta">{rows.length} results</div>
+        <div style={{ display: "flex" }}>
+          <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
+
+
+          {onExportPdf ? (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => onExportPdf?.()}
+              disabled={rows.length === 0}
+              type="button"
+              title={rows.length === 0 ? "No rows to export" : "Export current view to PDF"}
+            >
+              Export PDF
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="table-container">
@@ -43,10 +59,12 @@ const ErrorsTable = ({ rows = [], onDetails }) => {
 
               return (
                 <tr key={`${r.settlementId ?? "row"}-${idx}`}>
-                  <td className="mono">{r.settlementId ?? "-"}</td>
+                  <td className="mono">
+                    <Link to={`/errors/settlements/${r.settlementId}`} state={{ row: r }} className="link-settlement">
+                      {r.settlementId ?? "-"}
+                    </Link>
+                  </td>
                   <td>{r.depositDateDate ?? "-"}</td>
-
-
                   <td className={`th-center ${amazon < 0 ? "negative" : ""}`}>{money(amazon)}</td>
                   <td className={`th-center ${sap < 0 ? "negative" : ""}`}>{money(sap)}</td>
                   <td className={`th-center ${diff < 0 ? "negative" : ""}`}>{money(diff)}</td>

@@ -5,24 +5,48 @@ import KPICardSkeleton from "./KPICardSkeleton";
 
 const money = (n) => {
   const num = Number(n || 0);
-  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 };
 
-const normStatus = (r) => String(r?.status ?? r?.STATUS ?? r?.Status ?? "").toUpperCase();
+const normStatus = (r) =>
+  String(r?.status ?? r?.STATUS ?? r?.Status ?? "").trim().toUpperCase();
 
 const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 };
 
+const isTruthy = (v) => v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
+
+const getReconciledBool = (r) => {
+  const v = r?.reconciled ?? r?.RECONCILED ?? r?.isReconciled ?? r?.IS_RECONCILED;
+  return isTruthy(v);
+};
+
 const getAmazonAmount = (r) =>
-  num(r.amazonTotal ?? r.AMAZON_TOTAL ?? r.amazon_total ?? r.AMAZON ?? r.amountAmazon);
+  num(
+    r.amazonTotalReported ??
+    r.amazonTotal ??
+    r.AMAZON_TOTAL ??
+    r.amazon_total ??
+    r.AMAZON ??
+    r.amountAmazon
+  );
 
 const getSapAmount = (r) =>
-  num(r.sapTotal ?? r.SAP_TOTAL ?? r.sap_total ?? r.SAP ?? r.amountSap);
+  num(
+    r.sapPaymentsTotal ??
+    r.sapTotal ??
+    r.SAP_TOTAL ??
+    r.sap_total ??
+    r.SAP ??
+    r.amountSap
+  );
 
-const getAmazonInternalDiff = (r) =>
-  Boolean(r.amazonInternalDiff ?? r.AMAZON_INTERNAL_DIFF ?? r.internalDiffAmazon);
+const getAmazonInternalDiff = (r) => Number(r?.exceptionsCount || 0) > 0
 
 const hasMissingSettlementId = (r) =>
   !String(r.settlementId ?? r.SETTLEMENT_ID ?? r.settlement_id ?? "").trim();
@@ -42,11 +66,24 @@ const buildSummaryFromRows = (rows = []) => {
 
   for (const r of rows) {
     const s = normStatus(r);
-
     if (s === "PENDING" || s === "P") pendingCount++;
-    else if (s === "RECONCILED" || s === "C" || s === "COMPLETED") reconciledCount++;
-    else if (s === "NOT_RECONCILED" || s === "NR" || s === "NOT RECONCILED") notReconciledCount++;
 
+    const hasReconciledField =
+      r?.reconciled !== undefined ||
+      r?.RECONCILED !== undefined ||
+      r?.isReconciled !== undefined ||
+      r?.IS_RECONCILED !== undefined
+
+    if (hasReconciledField) {
+      const reconciled = getReconciledBool(r);
+      if (reconciled) reconciledCount++;
+      else notReconciledCount++;
+    } else {
+      if (s === "RECONCILED" || s === "C" || s === "COMPLETED") reconciledCount++;
+      else if (s === "NOT_RECONCILED" || s === "NR" || s === "NOT RECONCILED") notReconciledCount++;
+    }
+
+    // totals
     amazonTotal += getAmazonAmount(r);
     sapTotal += getSapAmount(r);
 

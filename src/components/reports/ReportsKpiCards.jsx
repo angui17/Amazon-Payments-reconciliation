@@ -3,15 +3,15 @@ import KPICard from "../common/KPICard";
 
 import { money, int, pct, trendByDiff } from "../../utils/kpicards";
 
-const ReportsKpiCards = ({ summary }) => {
+const ReportsKpiCards = ({ summary, totalSummary }) => {
   const cards = useMemo(() => {
     if (!summary) return [];
 
     return [
       {
         title: "Settlements",
-        value: int(summary.settlementsCount),
-        change: `${int(summary.reconciledCount)} reconciled · ${int(summary.notReconciledCount)} with differences`,
+        value: `${int(summary.settlementsCount)}`,
+        change: `${int(summary.reconciledCount)} reconciled · ${int(summary.notReconciledCount)} with differences · ${int(totalSummary?.settlementsCount ?? 0)} total`,
         trend: "neutral",
       },
       {

@@ -12,7 +12,7 @@ const TopNav = () => {
   const [salesPosition, setSalesPosition] = useState({ left: 0 })
   const [paymentsPosition, setPaymentsPosition] = useState({ left: 0 })
 
-  const { user, logout } = useAuth()
+  const { logout, getDisplayName, getAvatarText } = useAuth()
   const navigate = useNavigate()
 
   const navItems = [
@@ -159,8 +159,10 @@ const TopNav = () => {
         onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
         tabIndex={0}
       >
-        <div>{user?.name || 'User'}</div>
-        <div className="user-avatar">{user?.avatar || '👤'}</div>
+        {/* <div>{user?.name || 'User'}</div>
+        <div className="user-avatar">{user?.avatar || '👤'}</div> */}
+        <div>{getDisplayName()}</div>
+        <div className="user-avatar">{getAvatarText()}</div>
 
         <div className={`user-dropdown ${showUserDropdown ? 'active' : ''}`}>
           {userMenuItems.map((item) => (

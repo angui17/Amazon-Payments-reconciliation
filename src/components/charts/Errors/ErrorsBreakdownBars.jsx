@@ -1,8 +1,11 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { ORANGE, SLATE } from "../../../utils/feesCharts";
 
-const ErrorsBreakdownBars = ({ data = [] }) => {
+const ErrorsBreakdownBars = forwardRef(function ErrorsBreakdownBars(
+  { data = [] },
+  ref
+) {
   const chartData = useMemo(() => {
     const labels = (data || []).map((x) => x.date);
 
@@ -40,14 +43,22 @@ const ErrorsBreakdownBars = ({ data = [] }) => {
       maintainAspectRatio: false,
       plugins: { legend: { position: "bottom" } },
       scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { color: "#6b7280" } },
-        y: { stacked: true, beginAtZero: true, ticks: { color: "#6b7280" } },
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { color: "#6b7280" },
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: { color: "#6b7280" },
+        },
       },
     }),
     []
   );
 
-  return <Bar data={chartData} options={options} />;
-};
+  return <Bar ref={ref} data={chartData} options={options} />;
+});
 
 export default ErrorsBreakdownBars;

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, } from 'react';
+// Estilos
 import '../../styles/dashboard.css';
+// info
 import { getErrors, getErrorsSummary279 } from '../../api/error';
-
-import { isEmptySummary } from '../../utils/isEmptySummary';
 import { ymdToMdy } from "../../utils/dateUtils";
 
 // details 
@@ -10,7 +10,7 @@ import ErrorsDetailsModal from "../errors/ErrorsDetailsModal";
 
 const DEFAULT_FILTERS = {
   fecha_desde: "2024-01-01",
-  fecha_hasta: "2025-01-31",
+  fecha_hasta: "2026-01-31",
   status: "ALL",
   limit_records: 50,
 };
@@ -26,6 +26,11 @@ import ErrorsCharts from '../errors/ErrorsCharts';
 // filters
 import ErrorsFilters from "../errors/ErrorsFilters";
 
+// Export to pdf
+import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
+import { errorsPdfColumns } from "../../utils/pdfExport/errorsPdfColumns";
+import { buildErrorsHeaderBlocks } from "../../utils/errorsKpis";
+
 const Errors = () => {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -33,6 +38,7 @@ const Errors = () => {
   // kpi cards 
   const [summary267, setSummary267] = useState(null);
   const [summary279, setSummary279] = useState(null);
+
 
   // table
   const [rows, setRows] = useState(null);
@@ -43,6 +49,9 @@ const Errors = () => {
 
   // charts
   const [charts, setCharts] = useState(null);
+
+  // pdf
+  const chartsRef = useRef(null);
 
   // filters
   const toApiFilters = (ui) => ({
@@ -76,17 +85,15 @@ const Errors = () => {
     try {
       const apiFilters = toApiFilters(uiFilters);
 
-      const resp267 = await getErrors(apiFilters);
+      const [resp267, resp279] = await Promise.all([
+        getErrors(apiFilters),
+        getErrorsSummary279(apiFilters),
+      ]);
+
       setSummary267(resp267.summary);
       setRows(resp267.rows || []);
       setCharts(resp267.charts);
-
-      if (isEmptySummary(resp267?.summary)) {
-        const resp279 = await getErrorsSummary279(apiFilters);
-        setSummary279(resp279.summary);
-      } else {
-        setSummary279(null);
-      }
+      setSummary279(resp279.summary);
     } catch (e) {
       console.error("Error fetching errors:", e);
     } finally {
@@ -96,7 +103,48 @@ const Errors = () => {
 
   useEffect(() => {
     fetchErrors(filters);
-  }, []);
+  }, [])
+
+  const getRowStatus = (r) =>
+    String(r?.status ?? r?.STATUS ?? "").trim().toUpperCase();
+
+  // 1) status
+  const statusFiltered = (rows || []).filter((r) => {
+    const s = getRowStatus(r);
+    if (filters.status === "ALL") return true;
+    return s === String(filters.status).toUpperCase();
+  });
+
+  // 2) limit_records 
+  const limitN = Math.max(1, Number(filters.limit_records) || 50);
+  const filteredRows = statusFiltered.slice(0, limitN);
+
+  const handleExportPdf = async () => {
+    // 1) KPIs 
+    const headerBlocks = buildErrorsHeaderBlocks(filteredRows);
+
+    // 2) Charts images 
+    let chartImages = [];
+    try {
+      if (chartsRef.current?.getChartImages) {
+        chartImages = await chartsRef.current.getChartImages();
+      }
+    } catch (e) {
+      console.warn("Could not capture chart images:", e);
+    }
+
+    exportRowsToPdf({
+      rows: filteredRows,
+      columns: errorsPdfColumns,
+      title: `Error Management (${filters.fecha_desde} → ${filters.fecha_hasta})`,
+      fileName: `errors_${filters.fecha_desde}_${filters.fecha_hasta}.pdf`,
+      orientation: "l",
+      headerBlocks,
+      footerNote: `Status filter: ${filters.status} | Limit: ${filters.limit_records}`,
+      chartImages,
+    });
+  };
+
 
   return (
     <div className="main-content page active" id="errors-page">
@@ -106,19 +154,31 @@ const Errors = () => {
       </div>
 
       {/* KPi cards */}
-      <ErrorsKPIs summary267={summary267} summary279={summary279} loading={loading} />
+      {filteredRows.length > 0 ? <ErrorsKPIs rows={filteredRows} summary267={summary267} summary279={summary279} loading={loading} /> : null}
 
       {/*  filters */}
-      <ErrorsFilters value={filters} onApply={handleApplyFilters} loading={loading} />
+      <ErrorsFilters value={filters} defaultValue={DEFAULT_FILTERS} onApply={handleApplyFilters} loading={loading} />
 
       {/* table */}
       {loading || rows === null ? (
         <ErrorsTableSkeleton rows={6} />
       ) : (
-        <ErrorsTable rows={rows} onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }} />)}
+        filteredRows.length > 0 ? (
+          <ErrorsTable
+            rows={filteredRows}
+            onDetails={(row) => { setSelectedRow(row); setDetailsOpen(true) }}
+            onExportPdf={handleExportPdf}
+
+          />
+        ) : (
+          <div className="no-results text-center">No results for current filters</div>
+        )
+      )}
 
       {/* charts */}
-      <ErrorsCharts charts={charts} loading={loading} />
+      {filteredRows.length > 0
+        ? <ErrorsCharts rows={filteredRows} charts={charts} loading={loading} ref={chartsRef} />
+        : null}
 
       {/* Modal details */}
       <ErrorsDetailsModal open={detailsOpen} row={selectedRow} onClose={() => setDetailsOpen(false)} />

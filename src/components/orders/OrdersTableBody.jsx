@@ -1,70 +1,113 @@
-import React from 'react'
+import React from "react";
 import StatusBadge from "../ui/StatusBadge";
-import { formatDescription } from '../../utils/textUtils';
+import { formatDescription } from "../../utils/textUtils";
+import OrdersTableHeaders from "./OrdersTableHeaders";
+import OrdersTableSkeleton from "./OrdersTableSkeleton"; 
 
-
-const OrdersTableBody = ({ rows, onView }) => {
-
-  if (!rows || rows.length === 0) {
-    return (
-      <tr>
-        <td colSpan={12} style={{ textAlign: 'center', padding: 20 }}>
-          No orders found
-        </td>
-      </tr>
-    )
-  }
-
+const OrdersTableBody = ({
+  rows = [],
+  loading = false,
+  totalItems = 0,
+  pageSize = 10,
+  onView,
+  onExportPdf,
+  title = "Sales Orders",
+}) => {
   return (
-    <>
-      {rows.map((row, idx) => (
-        <tr key={`${row.ORDER_ID || row.order_id || idx}-${idx}`}>
-          <td>{row.ORDER_ID || row.order_id || '-'}</td>
+    <div className="card table-card">
 
-          <td>{row.SKU || row.sku || '-'}</td>
+      <div className="table-header" style={{ padding: 14 }}>
+        <h3>{title}</h3>
 
-          <td title={row.DESCRIPTION || row.description || ""}>
-            {formatDescription(row.DESCRIPTION || row.description)}
-          </td>
+        <div className="table-header-right">
+          <div className="table-meta">
+            {loading ? "Loading..." : `${totalItems} results • showing ${rows.length}`}
+          </div>
 
-          <td className='text-center'>{row.QUANTITY ?? row.quantity ?? '-'}</td>
+          {onExportPdf ? (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={onExportPdf}
+              disabled={loading || rows.length === 0}
+              type="button"
+              title={rows.length === 0 ? "No rows to export" : "Export current table view to PDF"}
+            >
+              Export PDF
+            </button>
+          ) : null}
+        </div>
+      </div>
 
-          <td>{row.MARKETPLACE || row.marketplace || '-'}</td>
+      {/* Table */}
+      <div className="table-container">
+        <table className="data-table">
+          <OrdersTableHeaders type="sales" />
 
-          <td>{row.FULFILLMENT || row.fulfillment || '-'}</td>
+          <tbody>
+            {/* Skeleton */}
+            <OrdersTableSkeleton
+              loading={loading}
+              dataLength={rows.length}
+              colSpan={12}
+              rows={pageSize}
+              emptyMessage="No sales orders found"
+            />
 
-          <td>
-            {`${row.ORDER_CITY || row.city || ''}${(row.ORDER_STATE || row.state) ? `, ${row.ORDER_STATE || row.state}` : ''}` || '-'}
-          </td>
+            {/* Rows */}
+            {!loading && rows.length > 0
+              ? rows.map((row, idx) => {
+                  const productSales = Number(row.PRODUCT_SALES);
+                  const total = Number(row.TOTAL);
 
-          <td>
-            {row.PRODUCT_SALES != null
-              ? `$${Number(row.PRODUCT_SALES).toLocaleString()}`
-              : '-'}
-          </td>
+                  return (
+                    <tr key={`${row.ORDER_ID || row.order_id || idx}-${idx}`}>
+                      <td className="">{row.ORDER_ID || row.order_id || "-"}</td>
+                      <td className="">{row.SKU || row.sku || "-"}</td>
 
-          <td>
-            {row.DATE_TIME
-              ? new Date(row.DATE_TIME).toLocaleDateString()
-              : '-'}
-          </td>
+                      <td className="th-right" title={row.DESCRIPTION || row.description || ""}>
+                        {formatDescription(row.DESCRIPTION || row.description)}
+                      </td>
 
-          <td>
-            {row.TOTAL != null
-              ? `$${Number(row.TOTAL).toLocaleString()}`
-              : '-'}
-          </td>
+                      <td className="th-center">{row.QUANTITY ?? row.quantity ?? "-"}</td>
+                      <td className="th-center">{row.MARKETPLACE || row.marketplace || "-"}</td>
+                      <td className="th-center">{row.FULFILLMENT || row.fulfillment || "-"}</td>
 
-          <td>
-            <StatusBadge status={row.STATUS || row.status} />
-          </td>
-          <td>
-            <button className="btn btn-sm" onClick={() => onView?.(row)}>Details</button>
-          </td>
-        </tr>
-      ))}
-    </>
-  )
-}
+                      <td className="muted">
+                        {`${row.ORDER_CITY || row.city || ""}${
+                          row.ORDER_STATE || row.state ? `, ${row.ORDER_STATE || row.state}` : ""
+                        }` || "-"}
+                      </td>
 
-export default OrdersTableBody
+                      <td className={`${productSales < 0 ? "negative " : ""}`}>
+                        {Number.isFinite(productSales) ? `$${productSales.toLocaleString()}` : "-"}
+                      </td>
+
+                      <td className="muted ">
+                        {row.DATE_TIME ? new Date(row.DATE_TIME).toLocaleDateString() : "-"}
+                      </td>
+
+                      <td className={`${total < 0 ? "negative " : ""}`}>
+                        {Number.isFinite(total) ? `$${total.toLocaleString()}` : "-"}
+                      </td>
+
+                      <td>
+                        <StatusBadge status={row.STATUS || row.status} />
+                      </td>
+
+                      <td className="th-center">
+                        <button className="btn btn-sm" onClick={() => onView?.(row)}>
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              : null}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default OrdersTableBody;

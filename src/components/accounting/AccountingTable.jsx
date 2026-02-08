@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
 import AccountingTableHeaders from "./AccountingTableHeaders";
 import "../../styles/settlementsTable.css";
 
@@ -17,7 +19,7 @@ const diffClass = (n) => {
     return v < 0 ? "diff-bad" : "diff-warn";
 };
 
-const AccountingTable = ({ rows = [], onDetails }) => {
+const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
     if (!rows.length) {
         return (
             <div className="card table-card" style={{ padding: 14 }}>
@@ -30,7 +32,21 @@ const AccountingTable = ({ rows = [], onDetails }) => {
         <div className="card table-card">
             <div className="table-header" style={{ padding: 14 }}>
                 <h3>Settlements</h3>
-                <div className="table-meta">{rows.length} rows</div>
+                <div style={{ display: "flex" }}>
+                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
+
+                    {onExportPdf ? (
+                        <button
+                            className="btn btn-sm btn-outline"
+                            onClick={() => onExportPdf?.()}
+                            disabled={rows.length === 0}
+                            type="button"
+                            title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
+                        >
+                            Export PDF
+                        </button>
+                    ) : null}
+                </div>
             </div>
 
             <div className="table-container">
@@ -38,7 +54,7 @@ const AccountingTable = ({ rows = [], onDetails }) => {
                     <AccountingTableHeaders />
 
                     <tbody>
-                        {rows.map((r) => {
+                        {rows.map((r, idx) => {
                             const diff = Number(r.diffPayments ?? 0);
 
                             const flags = [];
@@ -48,8 +64,12 @@ const AccountingTable = ({ rows = [], onDetails }) => {
                                 flags.push({ label: "Missing Payments", type: "flag-danger" });
 
                             return (
-                                <tr key={r.settlementId}>
-                                    <td className="mono">{r.settlementId}</td>
+                                <tr key={`${r.settlementId ?? "row"}-${idx}`}>
+                                    <td className="mono">
+                                        <Link to={`/accounting/settlements/${r.settlementId}`} state={{ row: r }} className="link-settlement">
+                                            {r.settlementId ?? "-"}
+                                        </Link>
+                                    </td>
                                     <td>{r.depositDateDate}</td>
 
                                     <td className={`th-center ${Number(r.amazonTotalReported) < 0 ? "negative" : ""}`}>

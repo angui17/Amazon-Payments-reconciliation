@@ -27,3 +27,17 @@ export const getErrorsSummary279 = ({ fecha_desde, fecha_hasta, limit_records = 
         raw: true,
     });
 };
+
+/* Settlement Exception Detail (WS 268) */
+export const getSettlementErrorsDetail = ({ settlementId, limit_rows = 300, txn_types_csv = "", amount_desc_like = "" }) => {
+    return idaRequest({
+        id: 268,
+        params: {
+            settlementId,
+            limit_rows,
+            txn_types_csv,
+            amount_desc_like,
+        },
+        raw: true,
+    });
+}

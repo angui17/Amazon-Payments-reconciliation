@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Line } from "react-chartjs-2";
-import { ORANGE, SLATE } from "../../../utils/feesCharts";
+import { ORANGE } from "../../../utils/feesCharts";
 
-const ErrorsByDayLine = ({ data = [] }) => {
+const ErrorsByDayLine = forwardRef(function ErrorsByDayLine({ data = [] }, ref) {
   const chartData = useMemo(() => {
     const labels = (data || []).map((x) => x.date);
     const values = (data || []).map((x) => Number(x.exceptions ?? 0));
@@ -27,16 +27,24 @@ const ErrorsByDayLine = ({ data = [] }) => {
     () => ({
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+      },
       scales: {
-        x: { grid: { display: false }, ticks: { color: "#6b7280" } },
-        y: { beginAtZero: true, ticks: { color: "#6b7280" } },
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280" },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#6b7280" },
+        },
       },
     }),
     []
   );
 
-  return <Line data={chartData} options={options} />;
-};
+  return <Line ref={ref} data={chartData} options={options} />;
+});
 
 export default ErrorsByDayLine;

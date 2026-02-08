@@ -43,11 +43,11 @@ const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
                             <th>Settlement ID</th>
                             <th>Deposit Date</th>
                             <th>Period</th>
-                            <th className="th-right">Amazon Total</th>
-                            <th className="th-right">SAP Total</th>
-                            <th className="th-right">Diff</th>
-                            <th>Reconciled</th>
-                            <th className="th-right">Exceptions</th>
+                            <th className="th-center">Amazon Total</th>
+                            <th className="th-center">SAP Total</th>
+                            <th className="th-center">Diff</th>
+                            <th className="th-center">Reconciled</th>
+                            <th className="th-center">Exceptions</th>
                             <th>Status</th>
                             <th className="th-center">Actions</th>
                         </tr>
@@ -65,13 +65,12 @@ const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
                                 <td className="muted">
                                     {formatPeriod(r.settlementStart, r.settlementEnd)}
                                 </td>
-                                <td className="th-right">{money(r.amazonTotalReported)}</td>
-                                <td className="th-right">{money(r.sapPaymentsTotal)}</td>
-                                <td className={`th-right ${diffClass(r.difference)} ${Number(r.difference) < 0 ? "negative" : ""}`}>
+                                <td className="th-center">{money(r.amazonTotalReported)}</td>
+                                <td className="th-center">{money(r.sapPaymentsTotal)}</td>
+                                <td className={`th-center ${diffClass(r.difference)} ${Number(r.difference) < 0 ? "negative" : ""}`} >
                                     {money(r.difference)}
                                 </td>
-
-                                <td>{isReconciled(r.reconciled)}</td>
+                                <td className="th-center">{isReconciled(r.reconciled)}</td>
                                 <td className="th-center">{r.exceptionsCount ?? 0}</td>
                                 <td><StatusPill status={r.status} /></td>
                                 <td className="th-center">

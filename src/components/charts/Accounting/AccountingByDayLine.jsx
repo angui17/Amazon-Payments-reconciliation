@@ -1,91 +1,73 @@
-import React, { useMemo } from "react";
+import React, { useMemo, forwardRef } from "react";
 import { Line } from "react-chartjs-2";
 import { ORANGE, SLATE } from "../../../utils/feesCharts";
 
-const safeNum = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+const toNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
 
-const AccountingByDayLine = ({ data }) => {
-  const sorted = useMemo(() => {
-    return [...(data || [])].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-  }, [data]);
+const AccountingByDayLine = forwardRef(({ data = [] }, ref) => {
+  const chartData = useMemo(() => {
+    const labels = (data || []).map((x) => x.date);
 
-  const labels = useMemo(() => sorted.map((d) => d.date), [sorted]);
-
-  const chartData = useMemo(
-    () => ({
+    return {
       labels,
       datasets: [
         {
-          label: "Amazon Total",
-          data: sorted.map((d) => safeNum(d.amazonTotal)),
+          label: "Amazon total",
+          data: (data || []).map((x) => toNum(x.amazonTotal)),
           borderColor: ORANGE.border,
           backgroundColor: ORANGE.lighter,
-          fill: true,
+          fill: false,
+          tension: 0.35,
+          pointRadius: 2,
         },
         {
-          label: "SAP Payments",
-          data: sorted.map((d) => safeNum(d.sapPaymentsTotal)),
+          label: "SAP payments",
+          data: (data || []).map((x) => toNum(x.sapPaymentsTotal)),
           borderColor: SLATE.border,
           backgroundColor: SLATE.soft,
-          fill: true,
+          fill: false,
+          tension: 0.35,
+          pointRadius: 2,
         },
         {
-          label: "SAP Journal Debit",
-          data: sorted.map((d) => safeNum(d.sapJournalDebit)),
-          borderColor: SLATE.solid,
-          backgroundColor: SLATE.soft,
+          label: "SAP journal debit",
+          data: (data || []).map((x) => toNum(x.sapJournalDebit)),
+          borderColor: "rgba(16, 185, 129, 1)",
+          backgroundColor: "rgba(16, 185, 129, 0.12)",
           fill: false,
-          borderDash: [6, 4],
+          tension: 0.35,
+          pointRadius: 2,
         },
         {
-          label: "Diff Payments",
-          data: sorted.map((d) => safeNum(d.diffPaymentsTotal)),
-          borderColor: ORANGE.solid,
-          backgroundColor: ORANGE.soft,
+          label: "Payments diff",
+          data: (data || []).map((x) => toNum(x.diffPaymentsTotal)),
+          borderColor: "rgba(185, 28, 28, 0.85)",
+          backgroundColor: "rgba(185, 28, 28, 0.10)",
           fill: false,
-          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 2,
         },
       ],
-    }),
-    [labels, sorted]
-  );
+    };
+  }, [data]);
 
   const options = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: { position: "top" },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${safeNum(ctx.parsed.y).toLocaleString()}`,
-          },
-        },
-      },
+      plugins: { legend: { position: "bottom" }, tooltip: { enabled: true } },
       scales: {
-        x: { ticks: { maxRotation: 0, autoSkip: true } },
-        y: {
-          ticks: {
-            callback: (v) => Number(v).toLocaleString(),
-          },
-        },
-      },
-      elements: {
-        line: { tension: 0.25, borderWidth: 2 },
-        point: { radius: 2, hoverRadius: 4 },
+        x: { grid: { display: false }, ticks: { color: "#6b7280", maxRotation: 0 } },
+        y: { ticks: { color: "#6b7280" }, grid: { color: "rgba(71,85,105,0.12)" } },
       },
     }),
     []
   );
 
-  if (!sorted.length) {
-    return <div className="chart-placeholder">No data</div>;
-  }
-
-  return <Line data={chartData} options={options} />;
-};
+  return <Line ref={ref} data={chartData} options={options} />;
+});
 
 export default AccountingByDayLine;

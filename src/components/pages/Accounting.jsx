@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 
 import { getAccounting } from "../../api/accounting";
 import { ymdToMdy } from "../../utils/dateUtils";
@@ -19,6 +19,12 @@ import AccountingCharts from "../accounting/AccountingCharts";
 // filters
 import AccountingFilters, { DEFAULT_ACCOUNTING_FILTERS } from "../accounting/AccountingFilters";
 
+// Export to pdf
+import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
+import { accountingPdfColumns } from "../../utils/pdfExport/accountingPdfColumns";
+import { computeAccountingKpis, accountingKpisToHeaderBlocks } from "../../utils/accountingKpis";
+
+
 const Accounting = () => {
 	// kpi cards 
 	const [loading, setLoading] = useState(false);
@@ -32,6 +38,8 @@ const Accounting = () => {
 	const [charts, setCharts] = useState(null);
 	// filters
 	const [filters, setFilters] = useState(DEFAULT_ACCOUNTING_FILTERS);
+	// pdf
+	const chartsRef = useRef(null);
 
 	const fetchAccounting = async (f) => {
 		setLoading(true);
@@ -47,7 +55,6 @@ const Accounting = () => {
 			};
 
 			const resp = await getAccounting(apiFilters);
-
 			setSummary(resp.summary);
 			setRows(resp.rows || []);
 			setCharts(resp.charts || null);
@@ -58,11 +65,9 @@ const Accounting = () => {
 		}
 	};
 
-
 	useEffect(() => {
 		fetchAccounting(filters);
 	}, []);
-
 
 	const handleApply = (nextFilters) => {
 		setFilters(nextFilters);
@@ -87,6 +92,32 @@ const Accounting = () => {
 
 	const filteredRows = statusFiltered.slice(0, limitN);
 
+	const handleExportPdf = async () => {
+		const kpis = computeAccountingKpis({ rows: filteredRows, summary });
+		const headerBlocks = accountingKpisToHeaderBlocks(kpis);
+
+		let chartImages = [];
+		try {
+			if (chartsRef.current?.getChartImages) {
+				chartImages = await chartsRef.current.getChartImages();
+			}
+		} catch (e) {
+			console.warn("Could not capture chart images:", e);
+		}
+
+		exportRowsToPdf({
+			rows: filteredRows,
+			columns: accountingPdfColumns,
+			title: `Accounting (${filters.fecha_desde} → ${filters.fecha_hasta})`,
+			fileName: `accounting_${filters.fecha_desde}_${filters.fecha_hasta}.pdf`,
+			orientation: "l",
+			headerBlocks,
+			footerNote: `Filters: status=${filters.status} | limit=${filters.limit_records}`,
+			chartImages,
+		});
+	};
+
+
 	return (
 		<div className="main-content page active">
 			<div className="content-header" style={{ marginBottom: "20px" }}>
@@ -101,18 +132,21 @@ const Accounting = () => {
 			<AccountingFilters value={filters} onApply={handleApply} />
 
 			{/* table */}
-			{loading || filteredRows === null ? (
-				<AccountingTableSkeleton rows={6} />
-			) : filteredRows.length === 0 ? (
-				<div className="orders-empty">
-					No records found for the selected filters.
-				</div>
-			) : (
-				<AccountingTable rows={filteredRows} onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }} />
-			)}
+			{loading || filteredRows === null
+				? (<AccountingTableSkeleton rows={6} />)
+				: filteredRows.length === 0
+					? (<div className="orders-empty"> No records found for the selected filters. </div>)
+					: (<AccountingTable
+						rows={filteredRows}
+						onDetails={(row) => { setSelectedRow(row), setDetailsOpen(true) }}
+						onExportPdf={handleExportPdf}
+					/>
+					)}
 
 			{/* charts */}
-			{filteredRows.length > 0 ? <AccountingCharts charts={charts} rows={filteredRows} loading={loading} /> : null}
+			{filteredRows.length > 0
+				? <AccountingCharts charts={charts} rows={filteredRows} loading={loading} ref={chartsRef} />
+				: null}
 
 			{/* details */}
 			<AccountingDetailsModal

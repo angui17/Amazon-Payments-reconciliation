@@ -6,7 +6,7 @@ const ReportsMonthlyTableHeaders = () => {
     <thead >
       <tr >
         <th>Month</th>
-        <th>Settlements</th>
+        <th className="th-center">Settlements</th>
         <th>Amazon Total</th>
         <th>SAP Total</th>
         <th>Difference</th>
@@ -14,7 +14,7 @@ const ReportsMonthlyTableHeaders = () => {
         <th>Not Reconciled</th>
         <th>Pending</th>
         <th>% Recon</th>
-        <th>Details</th>
+        {/* <th>Details</th> */}
       </tr>
     </thead>
   );

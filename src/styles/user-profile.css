@@ -1,0 +1,327 @@
+/* =========================
+   USER PROFILE (up-*)
+   - Matches UserProfile.jsx
+   - Uses tokens from dashboard.css / index.css (:root)
+========================= */
+
+.user-profile-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header (title + actions) */
+.up-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.up-title h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 6px 0;
+}
+
+.up-title p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-dark);
+}
+
+/* Actions */
+.up-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Buttons (compatible with dashboard look) */
+.up-btn {
+  border-radius: var(--radius-small);
+  border: 1px solid transparent;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.up-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.up-btn-primary {
+  background: var(--primary-orange);
+  color: var(--white);
+}
+
+.up-btn-primary:hover:not(:disabled) {
+  background: var(--orange-dark);
+}
+
+.up-btn-secondary {
+  background: var(--white);
+  color: var(--text-dark);
+  border-color: var(--border-light);
+}
+
+.up-btn-secondary:hover:not(:disabled) {
+  background: #f6f7f8;
+  border-color: #d6d6d6;
+}
+
+/* Banner messages */
+.up-banner {
+  border-radius: var(--radius-medium);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  box-shadow: var(--shadow-light);
+  border: 1px solid transparent;
+}
+
+.up-banner.ok {
+  background: #e7f7ed;
+  border-color: rgba(39, 174, 96, 0.25);
+  color: #0d6832;
+}
+
+.up-banner.error {
+  background: #fde8e8;
+  border-color: rgba(231, 76, 60, 0.25);
+  color: #a8261a;
+}
+
+/* Layout grid (left card / right card) */
+.up-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 18px;
+}
+
+/* Cards */
+.up-card {
+  background: var(--white);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-light);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+/* Left card header layout */
+.up-card-header {
+  padding: 18px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Force left card to be stacked (as per screenshot) */
+.up-grid > .up-card:first-child .up-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+/* Avatar row */
+.up-avatar-wrap {
+  width: 100%;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Avatar circle */
+.up-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: var(--primary-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-light);
+  border: 3px solid var(--white);
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.up-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.up-avatar span {
+  color: var(--white);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* Upload block */
+.up-avatar-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.up-hint {
+  font-size: 12px;
+  color: var(--gray-dark);
+}
+
+/* User meta under avatar */
+.up-user-meta {
+  width: 100%;
+  min-width: 0;
+}
+
+.up-name {
+  margin: 0 0 10px 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.up-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.up-pill {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.10);
+  color: #a44800;
+  border: 1px solid rgba(255, 107, 0, 0.18);
+}
+
+.up-note {
+  font-size: 12px;
+  color: var(--gray-dark);
+  line-height: 1.45;
+  max-width: 520px;
+}
+
+/* Right card title */
+.up-section-title {
+  padding: 18px 18px 0 18px;
+}
+
+.up-section-title h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary-orange);
+}
+
+.up-section-title p {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: var(--gray-dark);
+}
+
+/* Form area */
+.up-form {
+  padding: 12px 18px 18px 18px;
+}
+
+.up-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.up-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.up-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-light);
+  font-size: 14px;
+  background: var(--white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.up-field input:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
+}
+
+.up-field input:disabled {
+  background: #f5f5f5;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* SAP Login readonly look */
+.up-field-readonly input {
+  border-style: dashed;
+}
+
+/* Form buttons row */
+.up-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* ==============
+   Responsive
+============== */
+
+@media (max-width: 1024px) {
+  .up-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .up-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .up-row {
+    grid-template-columns: 1fr;
+  }
+
+  .up-form-actions {
+    justify-content: stretch;
+  }
+
+  .up-form-actions .up-btn {
+    width: 100%;
+  }
+
+  .up-avatar-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

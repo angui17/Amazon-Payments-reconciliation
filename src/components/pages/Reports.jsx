@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import "../../styles/dashboard.css";
 
 import { getReports } from "../../api/reports";
 import { ymdToMdy } from "../../utils/dateUtils";
+import { calculateSummary } from "../../utils/reportsSummary";
 
 // kpi cards
 import ReportsKpiCards from "../reports/ReportsKpiCards";
@@ -18,6 +19,13 @@ import ReportsFilters from "../reports/ReportsFilters";
 // pagination
 import SimplePagination from "../common/SimplePagination";
 import MonthlyReconciliationCharts from "../reports/MonthlyReconciliationCharts";
+import { paginate } from "../../utils/pagination";
+
+// export to pdf
+import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
+import { reportsMonthlyPdfColumns } from "../../utils/pdfExport/reportsPDFColumns";
+import { buildReportsPdfKpiBlocks } from "../../utils/reportsPdfKpis";
+
 
 const DEFAULT_FROM = "2024-01-01";
 const DEFAULT_TO = "2026-01-31";
@@ -33,28 +41,24 @@ const DEFAULT_FILTERS = {
 const Reports = () => {
   // data
   const [summary, setSummary] = useState(null);
-
   // rows
   const [allRows, setAllRows] = useState([]);
-  const [monthlyRows, setMonthlyRows] = useState([]);
-
   // charts
   const [charts, setCharts] = useState(null);
-
   // pagination
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-
   // ui
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // filters: editable vs applied
+  // filters
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
+  // pdf
+  const chartsRef = useRef(null);
 
-  // params that go to API (SIN paginación, porque la hacemos en frontend)
+  // params 
   const params = useMemo(
     () => ({
       fecha_desde: ymdToMdy(applied.fecha_desde),
@@ -80,14 +84,11 @@ const Reports = () => {
       setAllRows(rows);
       setTotalItems(rows.length);
       setCharts(res?.charts ?? null);
-
-      console.log("reports res:", res);
     } catch (e) {
       console.error(e);
       setError(e?.message || "Error fetching reports");
       setSummary(null);
       setAllRows([]);
-      setMonthlyRows([]);
       setTotalItems(0);
       setCharts(null);
     } finally {
@@ -100,21 +101,16 @@ const Reports = () => {
     fetchReports();
   }, [params]);
 
-  // slice client-side cuando cambian rows/page/pageSize
   useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const safePage = Math.min(Math.max(1, page), totalPages);
+    const { page: safePage } = paginate({
+      rows: allRows,
+      page,
+      pageSize,
+    });
 
-    // si page quedó "fuera de rango" (por ejemplo al achicar pageSize), lo corregimos
-    if (safePage !== page) {
-      setPage(safePage);
-      return;
-    }
+    if (safePage !== page) setPage(safePage);
+  }, [allRows, pageSize]);
 
-    const start = (safePage - 1) * pageSize;
-    const end = start + pageSize;
-    setMonthlyRows(allRows.slice(start, end));
-  }, [allRows, totalItems, page, pageSize]);
 
   const handleApply = () => {
     setApplied(filters);
@@ -135,6 +131,26 @@ const Reports = () => {
     setPage(1);
   };
 
+  const { visibleRows, totalPages } = useMemo(
+    () =>
+      paginate({
+        rows: allRows,
+        page,
+        pageSize,
+      }),
+    [allRows, page, pageSize]
+  );
+
+  const pageSummary = useMemo(
+    () => calculateSummary(visibleRows),
+    [visibleRows]
+  );
+
+  const totalSummary = useMemo(
+    () => calculateSummary(allRows),
+    [allRows]
+  );
+
   return (
     <div className="main-content page active" id="reports-page">
       <div className="content-header">
@@ -147,8 +163,8 @@ const Reports = () => {
       {/* KPI cards */}
       {loading ? (
         <ReportsKpiCardsSkeleton count={5} />
-      ) : totalItems > 0 && summary ? (
-        <ReportsKpiCards summary={summary} />
+      ) : pageSummary ? (
+        <ReportsKpiCards summary={pageSummary} totalSummary={totalSummary} />
       ) : null}
 
       {/* Filters */}
@@ -166,15 +182,32 @@ const Reports = () => {
       {/* Table */}
       {loading ? (
         <ReportsMonthlyTableSkeleton rows={6} cols={10} />
-      ) : monthlyRows.length === 0 ? (
+      ) : visibleRows.length === 0 ? (
         <div className="orders-empty">
           No records found for the selected filters.
         </div>
       ) : (
         <>
           <ReportsMonthlyTable
-            rows={monthlyRows}
+            rows={visibleRows}
             onViewDetails={(row) => console.log("DETAIL ROW:", row)}
+            onExportPdf={async () => {
+              const headerBlocks = buildReportsPdfKpiBlocks(pageSummary, totalSummary);
+              await new Promise((r) => requestAnimationFrame(r));
+
+              const chartImages = chartsRef.current?.getChartImages?.() || [];
+
+              exportRowsToPdf({
+                rows: visibleRows,
+                columns: reportsMonthlyPdfColumns,
+                title: "Reports (Monthly)",
+                fileName: "reports-monthly-page.pdf",
+                orientation: "l",
+                headerBlocks,
+                chartImages,
+                footerNote: `Filters — From: ${applied.fecha_desde} · To: ${applied.fecha_hasta} · Status: ${applied.status}`,
+              });
+            }}
           />
 
           {/* Pagination */}
@@ -190,11 +223,7 @@ const Reports = () => {
       )}
 
       {/* charts */}
-      {!loading && totalItems > 0 ? (
-        <MonthlyReconciliationCharts charts={charts} loading={loading} />
-      ) : null}
-
-
+      {!loading && totalItems > 0 ? (<MonthlyReconciliationCharts ref={chartsRef} charts={charts} loading={loading} />) : null}
     </div>
   );
 };

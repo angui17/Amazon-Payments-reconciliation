@@ -1,79 +1,16 @@
 import React, { useMemo } from "react";
 import KPICard from "../common/KPICard";
 import KPICardSkeleton from "../dashboard/KPICardSkeleton";
-import { safeNum, formatMoney } from "../../utils/numberUtils";
+import { computeAccountingKpis } from "../../utils/accountingKpis";
 
-const getStatus = (r) => String(r?.status ?? r?.STATUS ?? r?.Status ?? "").toUpperCase();
+const AccountingKPIs = ({ summary, rows = [], loading }) => {
+  const hasRows = Array.isArray(rows) && rows.length > 0;
 
-const toNum = (v) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
+  const kpi = useMemo(
+    () => computeAccountingKpis({ rows, summary }),
+    [rows, summary]
+  );
 
-const sumField = (arr, candidates) =>
-  arr.reduce((acc, r) => {
-    for (const k of candidates) {
-      const v = r?.[k];
-      if (v !== undefined && v !== null && v !== "") return acc + toNum(v);
-    }
-    return acc;
-  }, 0);
-
-const countTruthy = (arr, candidates) =>
-  arr.reduce((acc, r) => {
-    for (const k of candidates) {
-      const v = r?.[k];
-      if (v === true) return acc + 1;
-      if (typeof v === "string" && ["1", "true", "yes", "y"].includes(v.toLowerCase())) return acc + 1;
-      if (typeof v === "number" && v !== 0) return acc + 1;
-    }
-    return acc;
-  }, 0);
-
-const AccountingKPIs = ({ summary, rows, loading }) => {
-  const hasRows = Array.isArray(rows);
-
-  const kpi = useMemo(() => {
-    if (hasRows) {
-      // ⚠️ Estos keys son “best effort”.
-      // Si me pasás 1 row real del WS269, los afinamos a la perfección.
-      const settlements = rows.length;
-      const pending = rows.filter((r) => getStatus(r) === "P").length;
-
-      const amazonTotal = sumField(rows, ["amazonTotal", "amazon_total", "AMAZON_TOTAL"]);
-      const sapPaymentsTotal = sumField(rows, ["sapPaymentsTotal", "sap_payments_total", "SAP_PAYMENTS_TOTAL"]);
-      const diffPaymentsTotal = sumField(rows, ["diffPaymentsTotal", "diff_payments_total", "DIFF_PAYMENTS_TOTAL"]);
-
-      const missingJournal = countTruthy(rows, ["missingJournal", "missing_journal", "MISSING_JOURNAL"]);
-      const missingPayments = countTruthy(rows, ["missingPayments", "missing_payments", "MISSING_PAYMENTS"]);
-      const unbalancedJournals = countTruthy(rows, ["unbalancedJournal", "unbalanced_journal", "UNBALANCED_JOURNAL"]);
-
-      return {
-        settlements,
-        pending,
-        amazonTotal,
-        sapPaymentsTotal,
-        diffPaymentsTotal,
-        missingJournal,
-        missingPayments,
-        unbalancedJournals,
-      };
-    }
-
-    // fallback a summary del WS
-    return {
-      settlements: safeNum(summary?.settlementsCount),
-      pending: safeNum(summary?.pendingCount),
-      amazonTotal: safeNum(summary?.amazonTotal),
-      sapPaymentsTotal: safeNum(summary?.sapPaymentsTotal),
-      diffPaymentsTotal: safeNum(summary?.diffPaymentsTotal),
-      missingJournal: safeNum(summary?.missingJournalCount),
-      missingPayments: safeNum(summary?.missingPaymentsCount),
-      unbalancedJournals: safeNum(summary?.unbalancedJournalCount),
-    };
-  }, [hasRows, rows, summary]);
-
-  // Skeleton mientras carga o no hay data en ninguno de los dos
   if (loading || (!hasRows && !summary)) {
     return (
       <div className="kpi-cards">
@@ -87,12 +24,13 @@ const AccountingKPIs = ({ summary, rows, loading }) => {
   const {
     settlements,
     pending,
-    amazonTotal,
-    sapPaymentsTotal,
-    diffPaymentsTotal,
     missingJournal,
     missingPayments,
     unbalancedJournals,
+    formatted,
+    amazonTotal,
+    sapPaymentsTotal,
+    diffPaymentsTotal,
   } = kpi;
 
   return (
@@ -113,21 +51,21 @@ const AccountingKPIs = ({ summary, rows, loading }) => {
 
       <KPICard
         title="Amazon total"
-        value={formatMoney(amazonTotal)}
+        value={formatted.amazonTotal}
         change="Amazon total amount"
         trend={amazonTotal < 0 ? "danger" : "neutral"}
       />
 
       <KPICard
         title="SAP payments total"
-        value={formatMoney(sapPaymentsTotal)}
+        value={formatted.sapPaymentsTotal}
         change="Total paid in SAP"
         trend={sapPaymentsTotal < 0 ? "danger" : "neutral"}
       />
 
       <KPICard
         title="Payments diff total"
-        value={formatMoney(diffPaymentsTotal)}
+        value={formatted.diffPaymentsTotal}
         change="Amazon vs SAP payments net difference"
         trend={
           diffPaymentsTotal !== 0

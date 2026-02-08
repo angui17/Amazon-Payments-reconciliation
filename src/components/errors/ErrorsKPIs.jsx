@@ -1,20 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import KPICard from "../common/KPICard";
 import KPICardSkeleton from "../dashboard/KPICardSkeleton";
 
-const money = (n) => {
-  const num = Number(n ?? 0);
-  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+// utils
+import { computeErrorsKpis, money } from "../../utils/errorsKpis";
 
-const safeNum = (v) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
-
-const ErrorsKPIs = ({ summary267, summary279, loading }) => {
-  // Skeleton cuando está cargando o todavía no hay summary mínimo
-  if (loading || !summary267) {
+const ErrorsKPIs = ({ rows = [], loading }) => {
+  if (loading) {
     return (
       <div className="kpi-cards">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -24,67 +16,74 @@ const ErrorsKPIs = ({ summary267, summary279, loading }) => {
     );
   }
 
-  const exceptionsTotal = safeNum(summary267.exceptionsCount);
+  const hasRows = Array.isArray(rows) && rows.length > 0;
 
-  const has279 = Boolean(summary279);
-  const settlementsCount = has279 ? safeNum(summary279.settlementsCount) : null;
-  const diffCount = has279 ? safeNum(summary279.diffCount) : null;
-  const noSapCount = has279 ? safeNum(summary279.noSapCount) : null;
-  const amazonInternalCount = has279 ? safeNum(summary279.amazonInternalCount) : null;
-  const differenceTotal = has279 ? Number(summary279.differenceTotal ?? 0) : null;
+  // si no hay filas, cards en cero
+  if (!hasRows) {
+    return (
+      <div className="kpi-cards">
+        <KPICard title="Total Exceptions" value={0} change="No results for current filters" trend="up" />
+        <KPICard title="Settlements analyzed" value={0} change="No results for current filters" trend="neutral" />
+        <KPICard title="Amazon vs SAP mismatch (count)" value={0} change="No results for current filters" trend="up" />
+        <KPICard title="Missing SAP payment (count)" value={0} change="No results for current filters" trend="up" />
+        <KPICard title="Amazon internal mismatch (count)" value={0} change="No results for current filters" trend="up" />
+        <KPICard title="Difference total" value={money(0)} change="No results for current filters" trend="up" />
+      </div>
+    );
+  }
+
+  // KPIs reales
+  const {
+    exceptionsTotal,
+    settlementsCount,
+    diffCount,
+    noSapCount,
+    amazonInternalCount,
+    differenceTotal,
+  } = computeErrorsKpis(rows);
 
   return (
     <div className="kpi-cards">
       <KPICard
-        title="Exceptions (Total)"
+        title="Total Exceptions"
         value={exceptionsTotal}
-        change="Total exceptions detected in the selected range"
+        change="Based on current filtered results"
         trend={exceptionsTotal > 0 ? "warning" : "up"}
       />
 
       <KPICard
         title="Settlements analyzed"
-        value={has279 ? settlementsCount : "—"}
-        change={has279 ? "Count of settlements checked for exceptions" : "Summary from WS 279 not loaded"}
-        trend={has279 && settlementsCount > 0 ? "neutral" : "neutral"}
+        value={settlementsCount}
+        change="Based on current filtered results"
+        trend="neutral"
       />
 
       <KPICard
-        title="Diff Amazon vs SAP (count)"
-        value={has279 ? diffCount : "—"}
-        change={has279 ? "Settlements where Amazon total != SAP total" : "Summary from WS 279 not loaded"}
-        trend={has279 && diffCount > 0 ? "danger" : "up"}
+        title="Amazon vs SAP mismatch (count)"
+        value={diffCount}
+        change="Settlements with a mismatch between Amazon and SAP totals"
+        trend={diffCount > 0 ? "danger" : "up"}
       />
 
       <KPICard
-        title="No SAP Payment (count)"
-        value={has279 ? noSapCount : "—"}
-        change={has279 ? "SAP payments count = 0 while Amazon total != 0" : "Summary from WS 279 not loaded"}
-        trend={has279 && noSapCount > 0 ? "danger" : "up"}
+        title="Missing SAP payment (count)"
+        value={noSapCount}
+        change="Amazon shows sales, but no SAP payment was found"
+        trend={noSapCount > 0 ? "danger" : "up"}
       />
 
       <KPICard
         title="Amazon internal mismatch (count)"
-        value={has279 ? amazonInternalCount : "—"}
-        change={has279 ? "Amazon lines don't match reported total" : "Summary from WS 279 not loaded"}
-        trend={has279 && amazonInternalCount > 0 ? "danger" : "up"}
+        value={amazonInternalCount}
+        change="Amazon lines don't match reported total"
+        trend={amazonInternalCount > 0 ? "danger" : "up"}
       />
 
       <KPICard
-        title="Difference total $"
-        value={has279 ? money(differenceTotal) : "—"}
-        change={
-          has279
-            ? (Number(differenceTotal) === 0
-                ? "Total difference is 0 (nice)"
-                : "Net difference across flagged settlements")
-            : "Summary from WS 279 not loaded"
-        }
-        trend={
-          has279
-            ? (Number(differenceTotal) < 0 ? "danger" : Number(differenceTotal) > 0 ? "warning" : "up")
-            : "neutral"
-        }
+        title="Difference total"
+        value={money(differenceTotal)}
+        change={differenceTotal === 0 ? "Total difference is 0" : "Net difference across flagged settlements"}
+        trend={differenceTotal < 0 ? "danger" : differenceTotal > 0 ? "warning" : "up"}
       />
     </div>
   );

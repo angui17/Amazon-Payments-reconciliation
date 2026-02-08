@@ -4,7 +4,7 @@ const AccountingTableHeaders = () => {
   return (
     <thead>
       <tr>
-        <th className="mono">Settlement ID</th>
+        <th>Settlement ID</th>
         <th>Deposit Date</th>
 
         <th className="th-center">Amazon Total</th>

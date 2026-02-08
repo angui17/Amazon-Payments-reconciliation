@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import ChartCard from "../../common/ChartCard";
 import { ORANGE, SLATE } from "../../../utils/feesCharts";
@@ -8,9 +8,7 @@ const groupSumByMonth = (rows = []) => {
   for (const r of rows) {
     const month = r.month;
     const value = Number(r.amazonTotal ?? r.amountAbs ?? r.amount ?? 0);
-
-    if (!map.has(month)) map.set(month, 0);
-    map.set(month, map.get(month) + value);
+    map.set(month, (map.get(month) || 0) + value);
   }
   return Array.from(map.entries())
     .map(([month, amazonTotal]) => ({
@@ -22,13 +20,11 @@ const groupSumByMonth = (rows = []) => {
     .sort((a, b) => a.month.localeCompare(b.month));
 };
 
-const MonthlyEvolutionLine = ({ topCausesMonthly = [], loading }) => {
+const MonthlyEvolutionLine = forwardRef(({ topCausesMonthly = [], loading }, chartRef) => {
   const monthly = useMemo(() => groupSumByMonth(topCausesMonthly), [topCausesMonthly]);
 
-  const labels = monthly.map((m) => m.month);
-
   const data = {
-    labels,
+    labels: monthly.map((m) => m.month),
     datasets: [
       {
         label: "Amazon total",
@@ -64,25 +60,15 @@ const MonthlyEvolutionLine = ({ topCausesMonthly = [], loading }) => {
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
-    plugins: {
-      legend: { position: "bottom" },
-      tooltip: { mode: "index", intersect: false },
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true },
-    },
+    plugins: { legend: { position: "bottom" } },
+    scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
   };
 
   return (
-    <ChartCard
-      title="Monthly Evolution"
-      subtitle="Amazon vs SAP vs Difference"
-      loading={loading}
-    >
-      <Line data={data} options={options} />
+    <ChartCard title="Monthly Evolution" subtitle="Amazon vs SAP vs Difference" loading={loading}>
+      <Line ref={chartRef} data={data} options={options} />
     </ChartCard>
   );
-};
+});
 
 export default MonthlyEvolutionLine;

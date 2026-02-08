@@ -6,9 +6,9 @@ const ErrorsTableHeaders = () => {
       <tr>
         <th>Settlement ID</th>
         <th>Deposit Date</th>
-        <th className="th-right">Amazon Total</th>
-        <th className="th-right">SAP Total</th>
-        <th className="th-right">Diff</th>
+        <th className="th-center">Amazon Total</th>
+        <th className="th-center">SAP Total</th>
+        <th className="th-center">Diff</th>
         <th>Flags</th>
         <th>Status</th>
         <th className="th-center">Action</th>

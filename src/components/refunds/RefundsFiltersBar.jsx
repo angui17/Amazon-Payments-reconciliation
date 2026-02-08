@@ -1,7 +1,22 @@
 import React from "react";
 import "../../styles/filters.css";
 
-const RefundsFiltersBar = ({ from, to, onFromChange, onToChange, status, onStatusChange, sku, onSkuChange, orderId, onOrderIdChange, settlement, onSettlementChange, onClear }) => {
+const RefundsFiltersBar = ({
+  from,
+  to,
+  onFromChange,
+  onToChange,
+  status,
+  onStatusChange,
+  sku,
+  onSkuChange,
+  orderId,
+  onOrderIdChange,
+  settlement,
+  onSettlementChange,
+  onApply,
+  onClear,
+}) => {
   return (
     <div className="filters-card">
       <div className="filters-row">
@@ -73,26 +88,14 @@ const RefundsFiltersBar = ({ from, to, onFromChange, onToChange, status, onStatu
 
         {/* Right actions */}
         <div className="filters-actions">
-          <button className="btn btn-sm btn-outline" onClick={onClear}>
-            Clear
-          </button>
-
-          {/* Por ahora es estética: después lo conectamos a “apply server-side” si querés */}
-          <button className="btn btn-sm" type="button">
+          <button className="btn btn-sm btn-primary" type="button" onClick={() => onApply?.()}>
             Apply
           </button>
 
-          <div className="export-wrap">
-            <button className="btn btn-sm btn-primary export-btn" type="button">
-              Export <span className="export-caret">▾</span>
-            </button>
+          <button className="btn btn-sm" onClick={onClear}>
+            Clear
+          </button>
 
-            <div className="export-menu">
-              <button className="export-item" type="button">Raw</button>
-              <button className="export-item" type="button">Summary (by day)</button>
-              <button className="export-item" type="button">Summary (by SKU)</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

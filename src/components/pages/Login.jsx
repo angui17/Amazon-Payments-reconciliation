@@ -1,42 +1,145 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import '../../styles/login.css';
+// import React, { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../../context/AuthContext';
+// import '../../styles/login.css';
+
+// const Login = () => {
+//   const [credentials, setCredentials] = useState({
+//     username: '',
+//     password: ''
+//   });
+//   const [error, setError] = useState('');
+//   const [loading, setLoading] = useState(false);
+
+//   const { login } = useAuth();
+//   const navigate = useNavigate();
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setCredentials(prev => ({
+//       ...prev,
+//       [name]: value
+//     }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setError('');        // ✅ limpia error antes de intentar
+//     setLoading(true);
+
+//     try {
+//       await login(credentials.username, credentials.password);
+//       navigate('/dashboard');
+//     } catch (err) {
+//       // ✅ muestra el error real del Service Layer si viene
+//       setError(err?.message || 'Login failed');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="login-container">
+//       <div className="login-card">
+//         <div className="login-header">
+//           <div className="login-logo">AmazonPay Reconciliation</div>
+//           <h1 className="login-title">Sign In</h1>
+//           <p className="login-subtitle">Enter your credentials to access the dashboard</p>
+//         </div>
+
+//         <form onSubmit={handleSubmit} className="login-form">
+//           {error && (
+//             <div className="login-error">
+//               {error}
+//             </div>
+//           )}
+
+//           <div className="form-group">
+//             <label htmlFor="username" className="form-label">
+//               Username
+//             </label>
+//             <input
+//               type="text"
+//               id="username"
+//               name="username"
+//               value={credentials.username}
+//               onChange={handleChange}
+//               className="form-input"
+//               placeholder="Enter your username"
+//               required
+//               disabled={loading}
+//             />
+//           </div>
+
+//           <div className="form-group">
+//             <label htmlFor="password" className="form-label">
+//               Password
+//             </label>
+//             <input
+//               type="password"
+//               id="password"
+//               name="password"
+//               value={credentials.password}
+//               onChange={handleChange}
+//               className="form-input"
+//               placeholder="Enter your password"
+//               required
+//               disabled={loading}
+//             />
+//           </div>
+
+//           <button
+//             type="submit"
+//             className="login-button"
+//             disabled={loading}
+//           >
+//             {loading ? 'Signing in...' : 'Sign In'}
+//           </button>
+
+//         </form>
+
+//         <div className="login-footer">
+//           <p>© 2025 AmazonPay Reconciliation. All rights reserved.</p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import '../../styles/login.css'
 
 const Login = () => {
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [credentials, setCredentials] = useState({ username: '', password: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCredentials(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    const { name, value } = e.target
+    setCredentials((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');        // ✅ limpia error antes de intentar
-    setLoading(true);
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
     try {
-      await login(credentials.username, credentials.password);
-      navigate('/dashboard');
+      await login(credentials.username, credentials.password)
+      navigate('/dashboard')
     } catch (err) {
-      // ✅ muestra el error real del Service Layer si viene
-      setError(err?.message || 'Login failed');
+      setError(err?.message || 'Invalid username or password')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="login-container">
@@ -44,15 +147,13 @@ const Login = () => {
         <div className="login-header">
           <div className="login-logo">AmazonPay Reconciliation</div>
           <h1 className="login-title">Sign In</h1>
-          <p className="login-subtitle">Enter your credentials to access the dashboard</p>
+          <p className="login-subtitle">
+            Enter your credentials to access the dashboard
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="login-error">
-              {error}
-            </div>
-          )}
+          {error && <div className="login-error">{error}</div>}
 
           <div className="form-group">
             <label htmlFor="username" className="form-label">
@@ -88,14 +189,9 @@ const Login = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
-          >
+          <button type="submit" className="login-button" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
-
         </form>
 
         <div className="login-footer">
@@ -103,7 +199,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

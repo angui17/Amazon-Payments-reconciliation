@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { ORANGE } from "../../../utils/ordersCharts";
 
-const OrdersTopSkusBar = ({ labels = [], values = [] }) => {
+const OrdersTopSkusBar = React.forwardRef(({ labels = [], values = [] }, ref) => {
   const data = useMemo(
     () => ({
       labels,
@@ -43,7 +43,7 @@ const OrdersTopSkusBar = ({ labels = [], values = [] }) => {
     []
   );
 
-  return <Bar data={data} options={options} />;
-};
+  return <Bar ref={ref} data={data} options={options} />;
+});
 
 export default OrdersTopSkusBar;

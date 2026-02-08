@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-import { ORANGE, SLATE } from "../../../utils/feesCharts";
+import { ORANGE } from "../../../utils/feesCharts";
 import { ruleLabel } from "../../../utils/errorsCharts";
 
-const ErrorsByRuleBar = ({ data = [] }) => {
+const ErrorsByRuleBar = forwardRef(function ErrorsByRuleBar({ data = [] }, ref) {
   const chartData = useMemo(() => {
     const labels = (data || []).map((x) => ruleLabel(x.rule));
     const values = (data || []).map((x) => Number(x.count ?? 0));
@@ -45,7 +45,7 @@ const ErrorsByRuleBar = ({ data = [] }) => {
     []
   );
 
-  return <Bar data={chartData} options={options} />;
-};
+  return <Bar ref={ref} data={chartData} options={options} />;
+});
 
 export default ErrorsByRuleBar;

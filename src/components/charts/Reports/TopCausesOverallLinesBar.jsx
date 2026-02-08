@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, forwardRef } from "react";
 import { Bar } from "react-chartjs-2";
 import ChartCard from "../../common/ChartCard";
-import { ORANGE, SLATE } from "../../../utils/feesCharts";
+import { SLATE } from "../../../utils/feesCharts";
 
 const num = (v) => {
   const n = Number(v);
@@ -10,63 +10,72 @@ const num = (v) => {
 
 const label = (s) => String(s || "Other").trim() || "Other";
 
-const TopCausesOverallLinesBar = ({ topCausesOverall = [], loading }) => {
-  const rows = useMemo(() => {
-    const arr = Array.isArray(topCausesOverall) ? topCausesOverall : [];
-    return [...arr].sort((a, b) => num(b.lines) - num(a.lines));
-  }, [topCausesOverall]);
+const TopCausesOverallLinesBar = forwardRef(
+  ({ topCausesOverall = [], loading }, chartRef) => {
+    const rows = useMemo(() => {
+      const arr = Array.isArray(topCausesOverall) ? topCausesOverall : [];
+      return [...arr].sort((a, b) => num(b.lines) - num(a.lines));
+    }, [topCausesOverall]);
 
-  const labels = rows.map((r) => label(r.amountDescription));
-  const values = rows.map((r) => num(r.lines));
+    const labels = useMemo(() => rows.map((r) => label(r.amountDescription)), [rows]);
+    const values = useMemo(() => rows.map((r) => num(r.lines)), [rows]);
 
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Lines",
-        data: values,
-        backgroundColor: SLATE.soft,
-        borderColor: SLATE.border,
-        borderWidth: 1,
-        borderRadius: 8,
-        barThickness: 18,
-      },
-    ],
-  };
+    const data = useMemo(
+      () => ({
+        labels,
+        datasets: [
+          {
+            label: "Lines",
+            data: values,
+            backgroundColor: SLATE.soft,
+            borderColor: SLATE.border,
+            borderWidth: 1,
+            borderRadius: 8,
+            barThickness: 18,
+          },
+        ],
+      }),
+      [labels, values]
+    );
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    indexAxis: "y",
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => ` Lines: ${Number(ctx.raw ?? 0).toLocaleString()}`,
+    const options = useMemo(
+      () => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Lines: ${Number(ctx.raw ?? 0).toLocaleString()}`,
+            },
+          },
         },
-      },
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        grid: { color: "rgba(17,24,39,.06)" },
-      },
-      y: {
-        grid: { display: false },
-        ticks: { color: SLATE.border },
-      },
-    },
-  };
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: "rgba(17,24,39,.06)" },
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: SLATE.border },
+          },
+        },
+      }),
+      []
+    );
 
-  return (
-    <ChartCard
-      title="Top causes by volumen"
-      subtitle="Order by lines"
-      loading={loading}
-    >
-      <Bar data={data} options={options} />
-    </ChartCard>
-  );
-};
+    return (
+      <ChartCard
+        title="Top causes by volumen"
+        subtitle="Order by lines"
+        loading={loading}
+      >
+        {/* ✅ ref para export a PDF */}
+        <Bar ref={chartRef} data={data} options={options} />
+      </ChartCard>
+    );
+  }
+);
 
 export default TopCausesOverallLinesBar;

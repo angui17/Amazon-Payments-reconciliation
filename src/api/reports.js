@@ -13,3 +13,12 @@ export const getReports = ({ fecha_desde, fecha_hasta, limit_records = 50, statu
         raw: true
     });
 }
+
+// 272 -> Falta el settlementId
+// export const getReportsSettlement = ({  settlementId  }) => {
+//     return idaRequest({
+//         id: 272,
+//           params: { settlementId: String(settlementId) },
+//         raw: true
+//     });
+// }

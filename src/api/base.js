@@ -36,6 +36,16 @@ export async function idaRequest({ id, type, types, params = {}, limit, raw = fa
   if (limit) body.limit = limit;
   if (params.settlementId) body.settlementId = params.settlementId;
 
+  if (params.status) body.status = params.status;
+  if (params.limit_records) body.limit_records = params.limit_records;
+
+  if (params.only_exceptions !== undefined) body.only_exceptions = params.only_exceptions;
+  if (params.top_n !== undefined) body.top_n = params.top_n;
+
+  if (params.limit_rows !== undefined) body.limit_rows = params.limit_rows;
+  if (params.txn_types_csv !== undefined) body.txn_types_csv = params.txn_types_csv;
+  if (params.amount_desc_like !== undefined) body.amount_desc_like = params.amount_desc_like;
+
   const res = await fetch(PROXY_PATH, {
     method: "POST",
     headers: {

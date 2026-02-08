@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import { ORANGE } from "../../../utils/ordersCharts";
 
-const OrdersNetTotalLineChart = ({ labels = [], values = [] }) => {
+const OrdersNetTotalLineChart = React.forwardRef(({ labels = [], values = [] }, ref) => {
   const data = useMemo(
     () => ({
       labels,
@@ -37,7 +37,7 @@ const OrdersNetTotalLineChart = ({ labels = [], values = [] }) => {
     []
   );
 
-  return <Line data={data} options={options} height={260} />;
-};
+  return <Line ref={ref} data={data} options={options} height={260} />;
+});
 
 export default OrdersNetTotalLineChart;
