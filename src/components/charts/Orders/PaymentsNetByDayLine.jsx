@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import { formatMoney } from "../../../utils/refundMath";
 
-const PaymentsNetByDayLine = ({ rows = [] }) => {
+const PaymentsNetByDayLine = forwardRef(({ rows = [] }, ref) => {
   const data = useMemo(() => {
     return {
       labels: rows.map((r) => r.day),
@@ -43,7 +43,7 @@ const PaymentsNetByDayLine = ({ rows = [] }) => {
     };
   }, []);
 
-  return <Line data={data} options={options} />;
-};
+  return <Line ref={ref} data={data} options={options} />;
+});
 
 export default PaymentsNetByDayLine;

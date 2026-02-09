@@ -1,14 +1,13 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { formatMoney } from "../../../utils/refundMath";
 
-// color determinístico por índice (sin “carnaval”)
 const colorForIndex = (i, alpha = 0.65) => {
   const hue = (i * 47) % 360;
   return `hsla(${hue}, 70%, 55%, ${alpha})`;
 };
 
-const PaymentsAmountStackedByDay = ({ data = [], keys = [] }) => {
+const PaymentsAmountStackedByDay = forwardRef(({ data = [], keys = [] }, ref) => {
   const chartData = useMemo(() => {
     return {
       labels: data.map((r) => r.day),
@@ -31,7 +30,8 @@ const PaymentsAmountStackedByDay = ({ data = [], keys = [] }) => {
         legend: { position: "bottom" },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`,
+            label: (ctx) =>
+              `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`,
           },
         },
       },
@@ -45,7 +45,7 @@ const PaymentsAmountStackedByDay = ({ data = [], keys = [] }) => {
     };
   }, []);
 
-  return <Bar data={chartData} options={options} />;
-};
+  return <Bar ref={ref} data={chartData} options={options} />;
+});
 
 export default PaymentsAmountStackedByDay;

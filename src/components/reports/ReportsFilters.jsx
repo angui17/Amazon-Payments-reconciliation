@@ -1,11 +1,13 @@
 import React from "react";
 import "../../styles/filters.css";
 
-const STATUS_OPTIONS = [
-  { value: "ALL", label: "All statuses" },
-  { value: "RECONCILED", label: "Reconciled" },
-  { value: "PENDING", label: "Pending" },
-  { value: "NOT_RECONCILED", label: "Not reconciled" },
+const PENDING_OPTIONS = [
+  { value: "ALL", label: "All" },
+  { value: "1", label: "1" },
+  { value: "2", label: "2" },
+  { value: "3", label: "3" },
+  { value: "4", label: "4" },
+  { value: "5", label: "5" },
 ];
 
 const ReportsFilters = ({
@@ -26,7 +28,6 @@ const ReportsFilters = ({
   return (
     <div className="filters-card">
       <div className="filters-top">
-        {/* LEFT: filters */}
         <div className="filters-left">
           <div className="filter-group">
             <label className="filter-label">From date</label>
@@ -49,58 +50,35 @@ const ReportsFilters = ({
               disabled={loading}
             />
           </div>
-          {/* 
+
+          {/* ✅ Pending (1..5) */}
           <div className="filter-group">
-            <label className="filter-label">Status</label>
+            <label className="filter-label">Pending</label>
             <select
-              value={filters.status}
-              onChange={set("status")}
+              value={filters.pending}
+              onChange={set("pending")}
               className="filter-input"
               disabled={loading}
             >
-              {STATUS_OPTIONS.map((o) => (
+              {PENDING_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
               ))}
             </select>
           </div>
-
-          <div className="filter-group">
-            <label className="filter-label">Months to display</label>
-            <input
-              type="number"
-              min="1"
-              max="36"
-              value={filters.limit_months}
-              onChange={set("limit_months")}
-              className="filter-input"
-              disabled={loading}
-            />
-          </div> */}
         </div>
 
-        {/* RIGHT: actions */}
         <div className="filters-row filters-actions">
           <div style={{ marginRight: 12, opacity: 0.8 }}>
             {loading ? "Loading..." : totalItems ? `${from}-${to} of ${totalItems}` : "0 records"}
           </div>
 
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={onApply}
-            disabled={loading}
-            type="button"
-          >
+          <button className="btn btn-sm btn-primary" onClick={onApply} disabled={loading} type="button">
             Apply
           </button>
 
-          <button
-            className="btn btn-sm"
-            onClick={onReset}
-            disabled={loading}
-            type="button"
-          >
+          <button className="btn btn-sm" onClick={onReset} disabled={loading} type="button">
             Clear
           </button>
         </div>

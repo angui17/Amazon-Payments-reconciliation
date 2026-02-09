@@ -13,7 +13,11 @@ const TopNav = () => {
   const [paymentsPosition, setPaymentsPosition] = useState({ left: 0 })
 
   const { logout, getDisplayName, getAvatarText } = useAuth()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);  
   const navigate = useNavigate()
+
+  const userRef = useRef(null);  // ✅ Ref para calcular posición
+  const [userPosition, setUserPosition] = useState({ left: 0 });  // ✅ Estado para posición
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
@@ -42,19 +46,36 @@ const TopNav = () => {
   ]
 
   const userMenuItems = [
-    { path: '/user-profile', label: 'My Profile', icon: '👤' },
-    { path: '/account-settings', label: 'Account Settings', icon: '⚙️' },
-    { path: '/security', label: 'Security', icon: '🔒' },
-    { path: '/notifications', label: 'Notifications', icon: '🔔' },
+    { path: '/user-profile', label: 'My Profile'},
+    //{ path: '/account-settings', label: 'Account Settings', icon: '⚙️' },
+    //{ path: '/security', label: 'Security', icon: '🔒' },
+    //{ path: '/notifications', label: 'Notifications', icon: '🔔' },
   ]
 
+  // const handleLogout = () => {
+  //   if (window.confirm('Are you sure you want to logout?')) {
+  //     logout()
+  //     navigate('/login')
+  //   }
+  //   setShowUserDropdown(false)
+  // }
+
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      logout()
-      navigate('/login')
-    }
-    setShowUserDropdown(false)
+    setShowLogoutConfirm(true);  // ✅ Muestra el modal en lugar de window.confirm
+    setShowUserDropdown(false);  // Cierra el dropdown del usuario
   }
+
+  // Función para confirmar logout
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);  // Oculta el modal
+    await logout();  // Llama al logout real
+    navigate('/login');  // Navega a login
+  };
+
+  // Función para cancelar
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);  // Oculta el modal
+  };
 
   return (
     <div className="top-nav">
@@ -153,17 +174,21 @@ const TopNav = () => {
       </div>
 
       {/* USER MENU */}
+      <div onMouseLeave={() => setShowUserDropdown(false)}>
       <div
+        ref={userRef}
         className="user-menu"
         onClick={() => setShowUserDropdown(!showUserDropdown)}
+        onMouseEnter={() => {
+          const rect = userRef.current.getBoundingClientRect()
+          setUserPosition({ right: rect.right })
+          setShowUserDropdown(true)
+        }}
         onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
         tabIndex={0}
       >
-        {/* <div>{user?.name || 'User'}</div>
-        <div className="user-avatar">{user?.avatar || '👤'}</div> */}
-        <div>{getDisplayName()}</div>
-        <div className="user-avatar">{getAvatarText()}</div>
-
+        {getDisplayName()}
+      </div>
         <div className={`user-dropdown ${showUserDropdown ? 'active' : ''}`}>
           {userMenuItems.map((item) => (
             <NavLink
@@ -172,15 +197,91 @@ const TopNav = () => {
               className="user-dropdown-item"
               onClick={() => setShowUserDropdown(false)}
             >
-              <span>{item.icon}</span> {item.label}
+              {item.label}
             </NavLink>
           ))}
-
-          <div className="user-dropdown-item logout" onClick={handleLogout}>
-            <span>🚪</span> Logout
-          </div>
+        <div className="user-dropdown-item logout" onClick={handleLogout}>
+          Logout
         </div>
       </div>
+      </div>
+      
+      {/* Modal de confirmación para logout */}
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={cancelLogout}  // Cierra al hacer clic fuera
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              maxWidth: '400px',
+              width: '90%',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}  // Evita cerrar al hacer clic dentro
+          >
+            <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>Logout</h3>
+            <p style={{ margin: '0 0 20px 0', color: '#666' }}>
+              Are you sure you want to logout?
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center',
+              }}
+            >
+              <button
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: '#f0f0f0',
+                  color: '#333',
+                }}
+                onClick={cancelLogout}
+                onMouseOver={(e) => (e.target.style.opacity = '0.9')}
+                onMouseOut={(e) => (e.target.style.opacity = '1')}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: '#FF6B00',
+                  color: 'white',
+                }}
+                onClick={confirmLogout}
+                onMouseOver={(e) => (e.target.style.opacity = '0.9')}
+                onMouseOut={(e) => (e.target.style.opacity = '1')}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

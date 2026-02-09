@@ -70,3 +70,9 @@ export async function uploadMyAvatar(user, file) {
   })
 }
 
+export async function deleteMyAvatar(user) {
+  return backendRequest('/api/me/avatar', {
+    method: 'DELETE',
+    user,
+  });
+}

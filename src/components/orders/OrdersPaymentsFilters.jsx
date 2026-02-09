@@ -12,13 +12,13 @@ const OrdersPaymentsFilters = ({
   descOptions = [],
 }) => {
   const v = {
-    from: value.from || "",
-    to: value.to || "",
-    orderId: value.orderId || "",
-    sku: value.sku || "",
-    status: value.status || "",
-    descriptions: value.descriptions || [],
-  };
+  from: value.from || "",
+  to: value.to || "",
+  orderId: value.orderId || "",
+  sku: value.sku || "",
+  status: value.status || "",
+  amountDescription: value.amountDescription || "",
+};
 
   return (
     <div className="filters-card">
@@ -69,30 +69,28 @@ const OrdersPaymentsFilters = ({
             />
           </div>
 
-          {/* Amount Description */}
-          <div className="filter-group" style={{ gridColumn: "span 2" }}>
-            <div className="filter-label">Amount Description</div>
-            <select
-              multiple
-              className="filter-input"
-              value={v.descriptions}
-              onChange={(e) =>
-                onChange({
-                  ...v,
-                  descriptions: Array.from(
-                    e.target.selectedOptions
-                  ).map((o) => o.value),
-                })
-              }
-              style={{ height: 90, paddingTop: 8, paddingBottom: 8 }}
-            >
-              {descOptions.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
+         {/* Amount Description */}
+<div className="filter-group" style={{ gridColumn: "span 2" }}>
+  <div className="filter-label">Amount Description</div>
+  <select
+    className="filter-input"
+    value={v.amountDescription}
+    onChange={(e) =>
+      onChange({
+        ...v,
+        amountDescription: e.target.value,
+      })
+    }
+  >
+    <option value="">All</option>
+    {descOptions.map((d) => (
+      <option key={d} value={d}>
+        {d}
+      </option>
+    ))}
+  </select>
+</div>
+
         </div>
 
         {/* RIGHT */}

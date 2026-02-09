@@ -97,3 +97,117 @@ export const buildSalesOrdersKpis = (
     raw: { grossSales, unitsSold, netTotal, totalTaxes, totalFees },
   };
 };
+
+/**
+ * KPIs para Sales Fees
+ * rows = paginated (PAGE) o filtered (FILTERED)
+ */
+export const buildSalesFeesKpis = (
+  rows,
+  { currency = "USD", locale = "en-US" } = {}
+) => {
+  const totalAmount = sumBy(rows, (r) => r?.TOTAL ?? r?.total ?? r?.AMOUNT ?? r?.amount);
+
+  const reconciled = rows.filter(
+    (r) => String(r?.STATUS ?? r?.status).toUpperCase() === "RECONCILED"
+  ).length;
+
+  const pending = rows.filter(
+    (r) => String(r?.STATUS ?? r?.status).toUpperCase() === "PENDING"
+  ).length;
+
+  const notReconciled = rows.filter(
+    (r) => String(r?.STATUS ?? r?.status).toUpperCase() === "NOT_RECONCILED"
+  ).length;
+
+  return {
+    rows: int(rows.length, locale),
+    totalAmount: money(totalAmount, currency, locale),
+    reconciled: int(reconciled, locale),
+    pending: int(pending, locale),
+    notReconciled: int(notReconciled, locale),
+
+    raw: {
+      totalAmount,
+      reconciled,
+      pending,
+      notReconciled,
+    },
+  };
+};
+
+
+// --- Orders Payments KPIs ---
+// Reusa la lógica existente en paymentsMath pero lo devuelve ya listo para UI/PDF
+import {
+  netPaidForOrders,
+  uniqueOrdersCount,
+  principalTotal,
+  amazonCommissionTotal,
+  fbaFulfillmentFeesTotal,
+} from "./paymentsMath";
+
+export const buildOrdersPaymentsKpis = (
+  rows,
+  { locale = "en-US" } = {}
+) => {
+  const safe = Array.isArray(rows) ? rows : [];
+
+  // Estas funciones ya devuelven strings formateados 
+  const netPaid = netPaidForOrders(safe);
+  const principal = principalTotal(safe);
+  const amazonCommission = amazonCommissionTotal(safe);
+  const fbaFees = fbaFulfillmentFeesTotal(safe);
+
+  const uniqueOrders = uniqueOrdersCount(safe).toLocaleString(locale);
+
+  return {
+    netPaid,
+    uniqueOrders,
+    principal,
+    amazonCommission,
+    fbaFees,
+  };
+};
+
+
+// --- Refunds Payments KPIs ---
+export const buildRefundsPaymentsKpis = (
+  rows,
+  { currency = "USD", locale = "en-US" } = {}
+) => {
+  const safe = Array.isArray(rows) ? rows : [];
+
+  const netRefundImpactRaw = sumBy(safe, (r) => r?.amount ?? r?.AMOUNT ?? 0);
+
+  const principalRefundedRaw = sumBy(
+    safe.filter((r) => String(r?.AMOUNT_DESCRIPTION ?? "").trim() === "Principal"),
+    (r) => r?.amount ?? r?.AMOUNT ?? 0
+  );
+
+  const refundCommissionRaw = sumBy(
+    safe.filter((r) => {
+      const d = String(r?.AMOUNT_DESCRIPTION ?? "").trim();
+      return d === "Commission" || d === "RefundCommission";
+    }),
+    (r) => r?.amount ?? r?.AMOUNT ?? 0
+  );
+
+  const taxRefundedRaw = sumBy(
+    safe.filter((r) => String(r?.AMOUNT_DESCRIPTION ?? "").trim() === "Tax"),
+    (r) => r?.amount ?? r?.AMOUNT ?? 0
+  );
+
+  return {
+    netRefundImpact: money(netRefundImpactRaw, currency, locale),
+    principalRefunded: money(principalRefundedRaw, currency, locale),
+    refundCommission: money(refundCommissionRaw, currency, locale),
+    taxRefunded: money(taxRefundedRaw, currency, locale),
+    raw: {
+      netRefundImpactRaw,
+      principalRefundedRaw,
+      refundCommissionRaw,
+      taxRefundedRaw,
+    },
+  };
+};

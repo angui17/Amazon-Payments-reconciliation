@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { formatMoney } from "../../../utils/refundMath";
 
-const PaymentsParetoByDesc = ({ rows = [] }) => {
+const PaymentsParetoByDesc = forwardRef(({ rows = [] }, ref) => {
   const data = useMemo(() => {
     const labels = rows.map((r) => r.desc);
     return {
@@ -64,7 +64,7 @@ const PaymentsParetoByDesc = ({ rows = [] }) => {
     };
   }, []);
 
-  return <Bar data={data} options={options} />;
-};
+  return <Bar ref={ref} data={data} options={options} />;
+});
 
 export default PaymentsParetoByDesc;

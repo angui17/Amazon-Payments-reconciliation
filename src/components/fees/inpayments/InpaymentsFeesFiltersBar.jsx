@@ -62,7 +62,7 @@ const InpaymentsFeesFiltersBar = ({
                 </div>
 
                 {/* Settlement */}
-                <div className="filter-group filters-inline__settlement">
+                <div className="filter-group">
                     <div className="filter-label">Settlement</div>
                     <input
                         className="filter-input"

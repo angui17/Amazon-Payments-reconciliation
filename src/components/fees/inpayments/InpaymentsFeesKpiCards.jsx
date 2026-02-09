@@ -19,7 +19,7 @@ const InpaymentsFeesKpiCards = ({ loading = true, fees = [] }) => {
       <KPICard
         title="Total Fees Net"
         value={loading ? "—" : totalNet}
-change="Net impact of all fee movements"
+        change="Net impact of all fee movements"
       />
 
       <KPICard
@@ -31,13 +31,13 @@ change="Net impact of all fee movements"
       <KPICard
         title="Top Fee Concept"
         value={loading ? "—" : topConcept}
-      change="Largest impact on total fees"
+        change="Largest impact on total fees"
       />
 
       <KPICard
         title="Reserve Movement"
         value={loading ? "—" : reserveMove}
-       change="Net change in Amazon reserves"
+        change="Net change in Amazon reserves"
       />
     </div>
   );

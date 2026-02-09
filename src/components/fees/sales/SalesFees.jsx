@@ -1,30 +1,31 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { getFeesSales } from "../../../api/fees";
-
+// Estilos
 import "../../../styles/dashboard.css";
-
 // Table
-import SalesFeesTableHeaders from "./SalesFeesTableHeaders";
-import SalesFeesTableSkeleton from "./SalesFeesTableSkeleton";
 import SalesFeesTable from "./SalesFeesTable";
-
 // Details
 import SalesFeeDetailsModal from "./SalesFeeDetailsModal";
-
 // KPI
 import SalesFeesKpiCards from "./SalesFeesKpiCards";
-
 // Charts
 import SalesFeesCharts from "../../charts/Fees/SalesFeesCharts";
-
 // Filters
 import SalesFeesFilters from "./SalesFeesFilters";
 import { filterFees } from "../../../utils/feesFilters";
 import { getUniqueValues } from "../../../utils/feesOptions";
 import { ymdToMdy } from "../../../utils/dateUtils";
+// pagination 
+import SimplePagination from "../../common/SimplePagination";
+import { paginate } from "../../../utils/pagination";
+// export to pdf 
+import { exportRowsToPdf } from "../../../utils/pdfExport/exportTableToPdf";
+import { salesFeesPdfColumns } from "../../../utils/pdfExport/salesFeesPdfColumns";
+import { totalFeesNet, feeTransactionsCount, topFeeTypeByImpact, avgFeePerSettlement } from "../../../utils/feesMath";
 
-const DEFAULT_FROM = "2024-10-01";
-const DEFAULT_TO = "2024-10-31";
+// fechas por defecto
+const DEFAULT_FROM = "2025-04-01";
+const DEFAULT_TO = "2025-04-30";
 
 const SalesFees = () => {
   const [feesAll, setFeesAll] = useState([]);
@@ -38,7 +39,7 @@ const SalesFees = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // ✅ filtros
+  // filtros
   const [draftFilters, setDraftFilters] = useState({
     from: DEFAULT_FROM,
     to: DEFAULT_TO,
@@ -58,10 +59,7 @@ const SalesFees = () => {
   });
 
   // options
-  const typeOptions = useMemo(
-    () => getUniqueValues(feesAll, (f) => f.TYPE ?? f.type),
-    [feesAll]
-  );
+  const typeOptions = useMemo(() => getUniqueValues(feesAll, (f) => f.TYPE ?? f.type), [feesAll]);
 
   // filtered
   const filteredFees = useMemo(() => {
@@ -73,25 +71,26 @@ const SalesFees = () => {
       from: appliedFilters.from,
       to: appliedFilters.to,
     });
-  }, [
-    feesAll,
-    appliedFilters.settlement,
-    appliedFilters.status,
-    appliedFilters.type,
-    appliedFilters.description,
-    appliedFilters.from,
-    appliedFilters.to,
-  ]);
+  }, [feesAll, appliedFilters]);
+
 
   // pagination
-  const pageCount = useMemo(() => {
-    return Math.max(1, Math.ceil((filteredFees?.length || 0) / pageSize));
-  }, [filteredFees, pageSize]);
+  const pagination = useMemo(
+    () =>
+      paginate({
+        rows: filteredFees,
+        page,
+        pageSize,
+      }),
+    [filteredFees, page, pageSize]
+  );
 
-  const paginated = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return (filteredFees || []).slice(start, start + pageSize);
-  }, [filteredFees, page, pageSize]);
+  const { page: safePage, totalItems, totalPages, visibleRows: paginated } = pagination;
+
+  // keep page in sync if paginate clamps it
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
 
   // fetch
   const fetchFees = async ({ from, to } = {}) => {
@@ -107,7 +106,7 @@ const SalesFees = () => {
       if (fh) params.fecha_hasta = fh;
 
       const data = await getFeesSales(params);
-    //   console.log(data)
+      //   console.log(data)
       setFeesAll(data || []);
       setPage(1);
     } catch (err) {
@@ -122,9 +121,37 @@ const SalesFees = () => {
     fetchFees({ from: DEFAULT_FROM, to: DEFAULT_TO });
   }, []);
 
-  useEffect(() => {
-    if (page > pageCount) setPage(pageCount);
-  }, [page, pageCount]);
+  // export to pdf
+  const chartsRef = useRef(null); // charts
+  const handleExportPdf = async () => {
+    const feesForKpis = paginated;
+
+    const kpi1 = totalFeesNet(feesForKpis);
+    const kpi2 = feeTransactionsCount(feesForKpis);
+    const kpi3 = topFeeTypeByImpact(feesForKpis);
+    const kpi4 = avgFeePerSettlement(feesForKpis);
+
+    await new Promise((r) => requestAnimationFrame(r));
+    const chartImages = chartsRef.current?.getChartImages?.() || [];
+
+    const headerBlocks = [
+      { label: "Total Fees (net)", value: String(kpi1 ?? "—") },
+      { label: "Fee transactions", value: String(kpi2 ?? "—") },
+      { label: "Top fee type", value: String(kpi3 ?? "—") },
+      { label: "Avg per settlement", value: String(kpi4 ?? "—") },
+    ];
+
+    exportRowsToPdf({
+      rows: paginated,
+      columns: salesFeesPdfColumns,
+      title: `Sales Fees (${appliedFilters.from || "-"} → ${appliedFilters.to || "-"})`,
+      fileName: `sales_fees_${appliedFilters.from || "from"}_${appliedFilters.to || "to"}_page_${safePage}.pdf`,
+      orientation: "l",
+      headerBlocks,
+      chartImages,
+      footerNote: `page=${safePage}/${totalPages} | pageSize=${pageSize} | total=${totalItems}`,
+    });
+  };
 
   return (
     <div className="page">
@@ -136,10 +163,10 @@ const SalesFees = () => {
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
       {/* KPI */}
-      <SalesFeesKpiCards loading={loading} fees={filteredFees} />
+      {filteredFees.length > 0 ? <SalesFeesKpiCards loading={loading} fees={paginated} /> : null}
 
       {/* Filters */}
-      {/* <SalesFeesFilters
+      <SalesFeesFilters
         value={draftFilters}
         typeOptions={typeOptions}
         onChange={(v) => {
@@ -152,93 +179,58 @@ const SalesFees = () => {
           fetchFees({ from: draftFilters.from, to: draftFilters.to });
         }}
         onClear={() => {
-          const empty = {
-            from: "",
-            to: "",
+          const reset = {
+            from: DEFAULT_FROM,
+            to: DEFAULT_TO,
             settlement: "",
             status: "",
             type: "",
             description: "",
           };
 
-          setDraftFilters(empty);
-          setAppliedFilters(empty);
+          setDraftFilters(reset);
+          setAppliedFilters(reset);
           setPage(1);
-          fetchFees();
+
+          fetchFees({ from: DEFAULT_FROM, to: DEFAULT_TO });
         }}
-      /> */}
+
+      />
 
       {/* Table */}
-      <div className="data-table">
-        <div className="table-header">
-          <h3>Sales Fees</h3>
+      {filteredFees.length > 0 ?
+        <SalesFeesTable
+          title="Sales Fees"
+          loading={loading}
+          rows={paginated}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onView={setSelectedFee}
+          onExportPdf={handleExportPdf}
+        />
+        : <div style={{ margin: "40px 0", textAlign: "center", color: "gray" }}>
+          {loading ? "Loading fees..." : "No fees found for the selected filters."}
         </div>
-
-        <div className="table-container">
-          <table className="table">
-            <SalesFeesTableHeaders />
-            <tbody>
-              <SalesFeesTableSkeleton
-                loading={loading}
-                dataLength={filteredFees.length}
-                colSpan={11}
-                rows={pageSize}
-                emptyMessage="No fees found"
-              />
-
-              {!loading && filteredFees.length > 0 && (
-                <SalesFeesTable
-                  rows={paginated}
-                  onView={setSelectedFee}
-                />
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      }
 
       {/* Pagination */}
-      <div className="simple-pagination">
-        <div className="simple-pagination-left">
-          <button
-            className="simple-pagination-btn"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
+      {filteredFees.length > 0 ? (
+        <SimplePagination
+          page={safePage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={(p) => setPage(p)}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+          pageSizeOptions={[5, 10, 25]}
+        />
+      ) : null}
 
-          <button
-            className="simple-pagination-btn"
-            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-            disabled={page === pageCount}
-          >
-            Next
-          </button>
-        </div>
-
-        <div className="simple-pagination-info">
-          <span>
-            Page <strong>{page}</strong> of {pageCount} •
-          </span>
-
-          <select
-            className="simple-pagination-select"
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-          >
-            <option value={5}>5 per page</option>
-            <option value={10}>10 per page</option>
-            <option value={25}>25 per page</option>
-          </select>
-        </div>
-      </div>
 
       {/* Charts */}
-      <SalesFeesCharts loading={loading} fees={filteredFees} />
+      {filteredFees.length > 0 ? <SalesFeesCharts ref={chartsRef} loading={loading} fees={paginated} /> : null}
 
       {/* Details */}
       {selectedFee && (

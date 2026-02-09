@@ -1,30 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { getFeesPayments } from "../../../api/fees";
 
 import "../../../styles/dashboard.css";
-
 // table
-import InpaymentsFeesTableHeaders from "./InpaymentsFeesTableHeaders";
-import InpaymentsFeesTable from "./InpaymentsFeesTable";
-import InpaymentsFeesTableSkeleton from "./InpaymentsFeesTableSkeleton";
-
+import InpaymentsFeesTableCard from "./InpaymentsFeesTableCard";
 // pagination
 import SimplePagination from "./SimplePagination"
-
 // kpi cards
 import InpaymentsFeesKpiCards from "./InpaymentsFeesKpiCards";
-
 // details
 import InpaymentsFeeDetailsModal from "./InpaymentsFeeDetailsModal";
-
 // charts
 import InpaymentsFeesCharts from "../../charts/Fees/InpaymentsFeesCharts";
-
 // filters
 import InpaymentsFeesFiltersBar from "./InpaymentsFeesFiltersBar";
 import { filterFees } from "../../../utils/feesFilters";
 import { getUniqueValues } from "../../../utils/feesOptions";
 import { ymdToMdy } from "../../../utils/dateUtils"
+// export to pdf
+import { exportRowsToPdf } from "../../../utils/pdfExport/exportTableToPdf";
+import { inpaymentsFeesPdfColumns } from "../../../utils/pdfExport/inpaymentsFeesPdfColumns";
+import {
+  totalInpaymentsNet,
+  inpaymentsRowsCount,
+  topFeeConceptByAbs,
+  reserveMovementNet,
+} from "../../../utils/inpaymentsMath";
+
 
 const InpaymentsFees = () => {
   const [fees, setFees] = useState([]);
@@ -34,7 +36,7 @@ const InpaymentsFees = () => {
   // details
   const [selectedFee, setSelectedFee] = useState(null);
 
-  // ✅ paginación
+  // paginación
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -89,7 +91,6 @@ const InpaymentsFees = () => {
     appliedFilters.to,
   ]);
 
-
   // Paginacion
   const pageCount = useMemo(() => {
     return Math.max(1, Math.ceil((filteredFees?.length || 0) / pageSize));
@@ -123,15 +124,48 @@ const InpaymentsFees = () => {
     }
   };
 
-
   useEffect(() => {
     fetchFees({ from: DEFAULT_FROM, to: DEFAULT_TO });
   }, []);
 
-  // ✅ si estás en una page que ya no existe 
+  // si estás en una page que ya no existe 
   useEffect(() => {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount]);
+
+  // export to pdf
+  const chartsRef = useRef(null);
+
+  const handleExportPdf = async () => {
+    const feesForKpis = filteredFees;
+
+    const kpi1 = totalInpaymentsNet(feesForKpis);
+    const kpi2 = inpaymentsRowsCount(feesForKpis);
+    const kpi3 = topFeeConceptByAbs(feesForKpis);
+    const kpi4 = reserveMovementNet(feesForKpis);
+
+    const headerBlocks = [
+      { label: "Total Fees Net", value: String(kpi1 ?? "—") },
+      { label: "Fee Rows", value: String(kpi2 ?? "—") },
+      { label: "Top Fee Concept", value: String(kpi3 ?? "—") },
+      { label: "Reserve Movement", value: String(kpi4 ?? "—") },
+    ];
+
+    await new Promise((r) => setTimeout(r, 50));
+    const chartImages = chartsRef.current?.getChartImages?.() || [];
+
+    exportRowsToPdf({
+      rows: filteredFees,
+      columns: inpaymentsFeesPdfColumns,
+      title: `Inpayments Fees (${appliedFilters.from || "-"} → ${appliedFilters.to || "-"})`,
+      fileName: `inpayments_fees_${appliedFilters.from || "from"}_${appliedFilters.to || "to"}_page_${page}.pdf`,
+      orientation: "l",
+      headerBlocks,
+      chartImages,
+      footerNote: `page=${page}/${pageCount} | pageSize=${pageSize} | total=${filteredFees.length}`,
+    });
+  };
+
 
   return (
     <div className="page">
@@ -143,7 +177,9 @@ const InpaymentsFees = () => {
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
       {/* kpi cards */}
-      <InpaymentsFeesKpiCards loading={loading} fees={filteredFees} />
+      {filteredFees.length > 0 ?
+        <InpaymentsFeesKpiCards loading={loading} fees={filteredFees} />
+        : null}
 
       {/* Filters */}
       <InpaymentsFeesFiltersBar
@@ -151,11 +187,11 @@ const InpaymentsFees = () => {
         amountDescOptions={amountDescOptions}
         typeOptions={typeOptions}
         onChange={(v) => {
-          setDraftFilters(v); 
+          setDraftFilters(v);
           setPage(1);
         }}
         onApply={() => {
-          setAppliedFilters(draftFilters); 
+          setAppliedFilters(draftFilters);
           setPage(1);
           fetchFees({ from: draftFilters.from, to: draftFilters.to });
         }}
@@ -173,50 +209,42 @@ const InpaymentsFees = () => {
           setAppliedFilters(empty);
           setPage(1);
 
-          fetchFees(); 
+          fetchFees();
         }}
       />
-
 
       {/* Table */}
-      <div className="data-table">
-        <div className="table-header">
-          <h3>Inpayments Fees</h3>
-        </div>
+      {filteredFees.length > 0 ?
+        <InpaymentsFeesTableCard
+          title="Inpayments Fees"
+          loading={loading}
+          rows={paginated}
+          totalItems={filteredFees.length}
+          pageSize={pageSize}
+          onView={setSelectedFee}
+          onExportPdf={handleExportPdf}
+        />
+        : <p className="text-center">No fees found for the selected filters.</p>}
 
-        <div className="table-container">
-          <table className="table">
-            <InpaymentsFeesTableHeaders />
-            <tbody>
-              <InpaymentsFeesTableSkeleton
-                loading={loading}
-                dataLength={filteredFees.length}
-                colSpan={11}
-                rows={10}
-                emptyMessage="No fees found"
-              />
-
-              {!loading && filteredFees.length > 0 && <InpaymentsFeesTable rows={paginated} onView={setSelectedFee} />}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ✅ Pagination */}
-      <SimplePagination
-        page={page}
-        pageCount={pageCount}
-        pageSize={pageSize}
-        pageSizeOptions={[5, 10, 25]}
-        onPageChange={(nextPage) => setPage(nextPage)}
-        onPageSizeChange={(nextSize) => {
-          setPageSize(nextSize);
-          setPage(1);
-        }}
-      />
+      {/* Pagination */}
+      {filteredFees.length > 0 ?
+        <SimplePagination
+          page={page}
+          pageCount={pageCount}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 25]}
+          onPageChange={(nextPage) => setPage(nextPage)}
+          onPageSizeChange={(nextSize) => {
+            setPageSize(nextSize);
+            setPage(1);
+          }}
+        />
+        : null}
 
       {/* charts */}
-      <InpaymentsFeesCharts loading={loading} fees={filteredFees} />
+      {filteredFees.length > 0 ?
+        <InpaymentsFeesCharts loading={loading} fees={filteredFees} ref={chartsRef} />
+        : null}
 
       {/* details */}
       {selectedFee && (<InpaymentsFeeDetailsModal fee={selectedFee} onClose={() => setSelectedFee(null)} />)}

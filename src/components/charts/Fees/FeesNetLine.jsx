@@ -1,15 +1,29 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { ORANGE, SLATE } from "../../../utils/feesCharts";
 
-const FeesNetLine = ({ labels = [], values = [] }) => {
+const FeesNetLine = forwardRef(({ labels = [], values = [] }, ref) => {
+  const chartRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    toBase64Image: () => {
+      const cur = chartRef.current;
+      if (!cur) return null;
+
+      if (typeof cur.toBase64Image === "function") return cur.toBase64Image();
+      if (cur.chart && typeof cur.chart.toBase64Image === "function")
+        return cur.chart.toBase64Image();
+      return null;
+    },
+  }));
+
   const borderColors = useMemo(
-    () => values.map(v => (v >= 0 ? ORANGE.border : SLATE.border)),
+    () => values.map((v) => (v >= 0 ? ORANGE.border : SLATE.border)),
     [values]
   );
 
   const bgColors = useMemo(
-    () => values.map(v => (v >= 0 ? ORANGE.lighter : SLATE.soft)),
+    () => values.map((v) => (v >= 0 ? ORANGE.lighter : SLATE.soft)),
     [values]
   );
 
@@ -24,7 +38,10 @@ const FeesNetLine = ({ labels = [], values = [] }) => {
           // Línea
           borderColor: borderColors,
           borderWidth: 2,
-          segment: { borderColor: ctx => ctx.p0.parsed.y >= 0 ? ORANGE.border : SLATE.border },
+          segment: {
+            borderColor: (ctx) =>
+              ctx.p0.parsed.y >= 0 ? ORANGE.border : SLATE.border,
+          },
 
           // Área
           fill: true,
@@ -50,7 +67,8 @@ const FeesNetLine = ({ labels = [], values = [] }) => {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => `$${Number(ctx.parsed.y || 0).toLocaleString()}`,
+            label: (ctx) =>
+              `$${Number(ctx.parsed.y || 0).toLocaleString()}`,
           },
         },
       },
@@ -58,11 +76,13 @@ const FeesNetLine = ({ labels = [], values = [] }) => {
         x: { grid: { display: false } },
         y: { beginAtZero: false },
       },
+      devicePixelRatio: 2,
     }),
     []
   );
 
-  return <Line data={data} options={options} />;
-};
+  return <Line ref={chartRef} data={data} options={options} />;
+});
 
+FeesNetLine.displayName = "FeesNetLine";
 export default FeesNetLine;

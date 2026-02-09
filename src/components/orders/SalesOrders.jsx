@@ -5,7 +5,6 @@ import { getOrdersSales } from "../../api/orders";
 
 // Estilos
 import "../../styles/dashboard.css";
-import "../../styles/pagination.css";
 import "../../styles/settlements-table.css";
 
 // Table 
@@ -26,6 +25,7 @@ import OrdersFiltersBar from "../orders/OrdersFiltersBar";
 import { filterSalesOrders } from "../../utils/salesOrdersFilters";
 
 // Pagination
+import SimplePagination from "../common/SimplePagination";
 import { paginate } from "../../utils/pagination";
 
 // Export PDF
@@ -104,7 +104,7 @@ const SalesOrders = () => {
         if (page !== safePage) setPage(safePage);
     }, [page, safePage]);
 
-    // 3) KPI rows (PAGE == what you see)
+    // 3) KPI rows 
     const KPI_MODE = "PAGE";
     const kpiRows = useMemo(
         () => pickKpiRows({ mode: KPI_MODE, paginated, filtered }),
@@ -240,47 +240,25 @@ const SalesOrders = () => {
                     onView={setSelectedOrder}
                     onExportPdf={handleExportPdf}
                 />
-                : null}
+                : <div className="no-data text-center">
+                    {loading ? "Loading sales orders..." : "No sales orders found for the selected filters."}
+                </div>
+            }
 
             {/* Pagination */}
-            {paginated.length > 0 ?
-                <div className="simple-pagination">
-                    <div className="simple-pagination-left">
-                        <button
-                            className="simple-pagination-btn"
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            disabled={safePage === 1}
-                        >
-                            Previous
-                        </button>
-                        <button
-                            className="simple-pagination-btn"
-                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={safePage === totalPages}
-                        >
-                            Next
-                        </button>
-                    </div>
-
-                    <div className="simple-pagination-info">
-                        <span>
-                            Page <strong>{safePage}</strong> of {totalPages} •
-                        </span>
-                        <select
-                            className="simple-pagination-select"
-                            value={pageSize}
-                            onChange={(e) => {
-                                setPageSize(Number(e.target.value));
-                                setPage(1);
-                            }}
-                        >
-                            <option value={5}>5 per page</option>
-                            <option value={10}>10 per page</option>
-                            <option value={25}>25 per page</option>
-                        </select>
-                    </div>
-                </div>
-                : null}
+            {paginated.length > 0 ? (
+                <SimplePagination
+                    page={safePage}
+                    totalItems={totalItems}
+                    pageSize={pageSize}
+                    onPageChange={(p) => setPage(p)}
+                    onPageSizeChange={(size) => {
+                        setPageSize(size);
+                        setPage(1);
+                    }}
+                    pageSizeOptions={[5, 10, 25]}
+                />
+            ) : null}
 
             {/* Charts  */}
             {paginated.length > 0 ? <OrdersSalesCharts ref={chartsRef} loading={loading} orders={paginated} /> : null}

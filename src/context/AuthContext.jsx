@@ -151,6 +151,7 @@ export const AuthProvider = ({ children }) => {
       setProfileLoading(true)
       try {
         const data = await getMyProfile(u)
+        console.log('Data from getMyProfile on hydrate:', data)
         console.log('Data from getMyProfile:', data)
         setProfile(data)
         console.log('Profile set to:', data)
@@ -238,8 +239,10 @@ export const AuthProvider = ({ children }) => {
 
   // Opcional: cuando ya estoy autenticado y el profile no existe, intento hidratarlo
   useEffect(() => {
+    console.log('Auto-hydrate triggered, isAuthenticated:', isAuthenticated, 'user:', user, 'profile:', profile)
     if (!isAuthenticated || !user?.name || !user?.companyDb) return
     if (profile) return
+    hydrateProfile().catch((e) => console.error('Auto-hydrate error:', e))
     hydrateProfile().catch(() => {})
   }, [isAuthenticated, user?.name, user?.companyDb, profile, hydrateProfile])
 

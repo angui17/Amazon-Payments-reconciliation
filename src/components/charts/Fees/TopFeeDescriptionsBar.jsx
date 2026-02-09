@@ -1,8 +1,21 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { Bar } from "react-chartjs-2";
-import { ORANGE, SLATE } from "../../../utils/feesCharts";
+import { ORANGE } from "../../../utils/feesCharts";
 
-const TopFeeDescriptionsBar = ({ labels = [], values = [] }) => {
+const TopFeeDescriptionsBar = forwardRef(({ labels = [], values = [] }, ref) => {
+  const chartRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    toBase64Image: () => {
+      const cur = chartRef.current;
+      if (!cur) return null;
+
+      if (typeof cur.toBase64Image === "function") return cur.toBase64Image();
+      if (cur.chart && typeof cur.chart.toBase64Image === "function") return cur.chart.toBase64Image();
+      return null;
+    },
+  }));
+
   const data = useMemo(
     () => ({
       labels,
@@ -35,8 +48,7 @@ const TopFeeDescriptionsBar = ({ labels = [], values = [] }) => {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) =>
-              `$${Number(ctx.parsed.x || 0).toLocaleString()}`,
+            label: (ctx) => `$${Number(ctx.parsed.x || 0).toLocaleString()}`,
           },
         },
       },
@@ -50,17 +62,16 @@ const TopFeeDescriptionsBar = ({ labels = [], values = [] }) => {
         },
         y: {
           grid: { display: false },
-          ticks: {
-            autoSkip: false,
-          },
+          ticks: { autoSkip: false },
         },
       },
+      devicePixelRatio: 2,
     }),
     []
   );
 
-  return <Bar data={data} options={options} />;
-};
+  return <Bar ref={chartRef} data={data} options={options} />;
+});
 
-
+TopFeeDescriptionsBar.displayName = "TopFeeDescriptionsBar";
 export default TopFeeDescriptionsBar;

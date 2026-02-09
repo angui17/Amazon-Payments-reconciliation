@@ -9,10 +9,6 @@ export const settlementsPdfColumns = [
     header: "Deposit Date",
     accessor: (r) => r.depositDateDate ?? onlyYMD(r.depositDate),
   },
-  // {
-  //   header: "Period",
-  //   accessor: (r) => formatPeriod(r.settlementStart, r.settlementEnd),
-  // },
   {
     header: "Amazon Total",
     accessor: (r) => r.amazonTotalReported,

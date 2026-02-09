@@ -2,40 +2,37 @@ import React from "react";
 import "../../styles/filters.css";
 
 const RefundsPaymentsFiltersBar = ({
-  from,
-  to,
-  onFromChange,
-  onToChange,
+  value = {},
 
-  settlement,
-  onSettlementChange,
-
-  orderId,
-  onOrderIdChange,
-
-  sku,
-  onSkuChange,
-
-  status,
-  onStatusChange,
-
-  reasons,
-  reasonOptions = [],
-  onReasonsChange,
-
+  onChange,
+  onApply,
   onClear,
+
+  statusOptions = [],
+  reasonOptions = [],
 }) => {
+  const v = {
+    from: value.from || "",
+    to: value.to || "",
+    settlement: value.settlement || "",
+    orderId: value.orderId || "",
+    sku: value.sku || "",
+    status: value.status || "",
+    reason: value.reason || "",
+  };
+
   return (
     <div className="filters-card">
       <div className="filters-row">
+        {/* LEFT */}
         <div className="filters-left">
           <div className="filter-group">
             <label className="filter-label">From</label>
             <input
               type="date"
               className="filter-input"
-              value={from || ""}
-              onChange={(e) => onFromChange?.(e.target.value)}
+              value={v.from}
+              onChange={(e) => onChange({ ...v, from: e.target.value })}
             />
           </div>
 
@@ -44,8 +41,8 @@ const RefundsPaymentsFiltersBar = ({
             <input
               type="date"
               className="filter-input"
-              value={to || ""}
-              onChange={(e) => onToChange?.(e.target.value)}
+              value={v.to}
+              onChange={(e) => onChange({ ...v, to: e.target.value })}
             />
           </div>
 
@@ -54,8 +51,10 @@ const RefundsPaymentsFiltersBar = ({
             <input
               className="filter-input"
               placeholder="e.g. 123-456"
-              value={settlement || ""}
-              onChange={(e) => onSettlementChange?.(e.target.value)}
+              value={v.settlement}
+              onChange={(e) =>
+                onChange({ ...v, settlement: e.target.value })
+              }
             />
           </div>
 
@@ -64,8 +63,10 @@ const RefundsPaymentsFiltersBar = ({
             <input
               className="filter-input"
               placeholder="e.g. 112-123..."
-              value={orderId || ""}
-              onChange={(e) => onOrderIdChange?.(e.target.value)}
+              value={v.orderId}
+              onChange={(e) =>
+                onChange({ ...v, orderId: e.target.value })
+              }
             />
           </div>
 
@@ -74,8 +75,8 @@ const RefundsPaymentsFiltersBar = ({
             <input
               className="filter-input"
               placeholder="e.g. ABC-001"
-              value={sku || ""}
-              onChange={(e) => onSkuChange?.(e.target.value)}
+              value={v.sku}
+              onChange={(e) => onChange({ ...v, sku: e.target.value })}
             />
           </div>
 
@@ -83,43 +84,48 @@ const RefundsPaymentsFiltersBar = ({
             <label className="filter-label">Status</label>
             <select
               className="filter-input"
-              value={status || ""}
-              onChange={(e) => onStatusChange?.(e.target.value)}
+              value={v.status}
+              onChange={(e) => onChange({ ...v, status: e.target.value })}
             >
               <option value="">All</option>
-              <option value="C">Completed</option>
               <option value="P">Pending</option>
+              <option value="C">Completed</option>
             </select>
           </div>
         </div>
 
+        {/* RIGHT */}
         <div className="filter-group">
           <label className="filter-label">Reason</label>
           <select
             className="filter-input"
-            multiple
-            value={reasons || []}
-            onChange={(e) => {
-              const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-              onReasonsChange?.(selected);
-            }}
-            style={{ minHeight: 90 }} // multi-select usable
+            value={v.reason}
+            onChange={(e) => onChange({ ...v, reason: e.target.value })}
           >
-            {reasonOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
+            <option value="">All</option>
+            {reasonOptions.map((r) => (
+              <option key={r} value={r}>
+                {r}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="filters-actions">
-          <button className="btn btn-sm btn-outline" onClick={onClear} type="button">
-            Clear
-          </button>
-
-          <button className="btn btn-sm" type="button">
+        {/* ACTIONS */}
+        <div className="filters-actions" style={{ marginTop: "15px" }}>
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={onApply}
+            type="button"
+          >
             Apply
+          </button>
+          <button
+            className="btn btn-sm"
+            onClick={onClear}
+            type="button"
+          >
+            Clear
           </button>
         </div>
       </div>

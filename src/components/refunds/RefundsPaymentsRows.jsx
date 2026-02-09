@@ -1,5 +1,6 @@
 import React from "react";
 import { onlyDate } from "../../utils/dateUtils";
+import "../../styles/settlements-table.css";
 
 const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
   return (
@@ -40,7 +41,7 @@ const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
             <td>{reason}</td>
 
             {/* Amount */}
-            <td className={amount !== null && amount < 0 ? "text-negative" : ""}>
+            <td className={amount !== null && amount < 0 ? "negative" : ""}>
               {amount === null ? "-" : `$${amount.toFixed(2)}`}
             </td>
 
@@ -54,7 +55,7 @@ const RefundsPaymentsRows = ({ payments = [], onDetails }) => {
             {/* Actions */}
             <td className="action-buttons">
               <button
-                className="action-btn action-view"
+                className="btn btn-sm"
                 onClick={() => onDetails?.(p)}
                 type="button"
               >

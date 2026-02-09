@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 
 import ChartCard from "./ChartCard";
 
@@ -7,17 +7,45 @@ import PaymentsNetByDayLine from "./PaymentsNetByDayLine";
 import PaymentsAmountStackedByDay from "./PaymentsAmountStackedByDay";
 import PaymentsParetoByDesc from "./PaymentsParetoByDesc";
 
-// utils 
+// utils
 import {
   buildNetByDay,
   buildStackedByDay,
   buildParetoByDesc,
-} from "../../../utils/paymentsCharts"; 
+} from "../../../utils/paymentsCharts";
 
-const OrdersPaymentsCharts = ({ loading = true, payments = [] }) => {
+const OrdersPaymentsCharts = forwardRef(({ loading = true, payments = [] }, ref) => {
   const netRows = useMemo(() => buildNetByDay(payments), [payments]);
   const stacked = useMemo(() => buildStackedByDay(payments, 8), [payments]);
   const pareto = useMemo(() => buildParetoByDesc(payments, 10), [payments]);
+
+  const netRef = useRef(null);
+  const stackedRef = useRef(null);
+  const paretoRef = useRef(null);
+
+  const grab = (r) => {
+    const cur = r?.current;
+    if (!cur) return null;
+
+    if (typeof cur.toBase64Image === "function") return cur.toBase64Image();
+    if (cur.chart && typeof cur.chart.toBase64Image === "function")
+      return cur.chart.toBase64Image();
+
+    return null;
+  };
+
+  useImperativeHandle(ref, () => ({
+    getChartImages: () => {
+      const images = [];
+
+      [netRef, stackedRef, paretoRef].forEach((r) => {
+        const img = grab(r);
+        if (img) images.push(img);
+      });
+
+      return images;
+    },
+  }));
 
   return (
     <div
@@ -36,7 +64,7 @@ const OrdersPaymentsCharts = ({ loading = true, payments = [] }) => {
         span={6}
         height={280}
       >
-        <PaymentsNetByDayLine rows={netRows} />
+        <PaymentsNetByDayLine ref={netRef} rows={netRows} />
       </ChartCard>
 
       <ChartCard
@@ -46,7 +74,8 @@ const OrdersPaymentsCharts = ({ loading = true, payments = [] }) => {
         span={6}
         height={320}
       >
-        <PaymentsAmountStackedByDay data={stacked.data} keys={stacked.keys} />
+
+        <PaymentsAmountStackedByDay ref={stackedRef} data={stacked.data} keys={stacked.keys} />
       </ChartCard>
 
       <ChartCard
@@ -56,10 +85,11 @@ const OrdersPaymentsCharts = ({ loading = true, payments = [] }) => {
         span={12}
         height={320}
       >
-        <PaymentsParetoByDesc rows={pareto} />
+
+        <PaymentsParetoByDesc ref={paretoRef} rows={pareto} />
       </ChartCard>
     </div>
   );
-};
+});
 
 export default OrdersPaymentsCharts;

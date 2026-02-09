@@ -18,6 +18,12 @@ export default defineConfig({
         secure: false
       },
 
+      '/uploads': {
+        target: 'http://localhost:3010',
+        changeOrigin: true,
+        secure: false
+      },
+
       // ✅ SAP Service Layer
       '/b1s': {
         target: 'https://HDB01:50000',

@@ -279,12 +279,15 @@
 
 // export default UserProfile
 
+
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import '../../styles/user-profile.css'
+import { deleteMyAvatar } from '../../api/userProfile'
 
 const MAX_AVATAR_MB = 3
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
 
 function getInitials(name) {
   if (!name) return '👤'
@@ -364,16 +367,26 @@ export default function UserProfile() {
 
     if (!profile || !profile.profile) return  // Verifica que profile y profile.profile existan
       setForm({
-        fullName: profile.profile.fullName || '',  // ✅ Usa profile.profile.fullName
-        email: profile.profile.email || '',
-        phone: profile.profile.phone || '',
-        department: profile.profile.department || '',
-        jobTitle: profile.profile.jobTitle || '',
+        fullName: profile.profile?.fullName || profile.sap?.fullName || '',  // ✅ Usa profile.profile.fullName
+        email: profile.profile?.email || profile.sap?.email || '',
+        phone: profile.profile?.phone || profile.sap?.phone || '',
+        department: profile.profile?.department || profile.sap?.department || '',
+        jobTitle: profile.profile?.jobTitle || profile.sap?.jobTitle || '',
       })
       setDirty(false)
     }, [profile])
 
-  const currentAvatar = avatarPreview || profile?.avatarUrl || null
+  // Temporizador para limpiar saveMsg después de 3 segundos
+  useEffect(() => {
+    if (saveMsg) {
+      const timer = setTimeout(() => setSaveMsg(''), 3000); // 3 segundos
+      return () => clearTimeout(timer); // Limpia el timer si saveMsg cambia antes
+    }
+  }, [saveMsg]);  
+
+  //const currentAvatar = avatarPreview || profile?.avatarUrl || null
+  //const currentAvatar = avatarPreview || profile?.profile?.avatarUrl || null  
+  const currentAvatar = avatarPreview || profile?.profile?.avatarUrl || null
   const initials = getInitials(displayName)
 
   function onChangeField(e) {
@@ -411,12 +424,19 @@ export default function UserProfile() {
   }
 
   function onPickAvatar() {
-    setErrorMsg('')
-    setSaveMsg('')
-    fileInputRef.current?.click()
+    console.log('onPickAvatar called, currentAvatar:', currentAvatar);
+    console.log('fileInputRef.current:', fileInputRef.current);  // ✅ Agrega esto
+    setErrorMsg('');
+    setSaveMsg('');
+    if (fileInputRef.current) {
+      fileInputRef.current.click();  // ✅ Asegura que exista antes de click
+    } else {
+      console.error('fileInputRef is null');  // ✅ Log si el ref falla
+    }
   }
 
   async function onAvatarSelected(e) {
+    console.log('onAvatarSelected called, file:', e.target.files?.[0]);
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -478,6 +498,7 @@ export default function UserProfile() {
       if (data?.avatarUrl) {
         // persistir en profile sin tocar SAP
         await updateProfile({ avatarUrl: data.avatarUrl })
+        await hydrateProfile()
         setSaveMsg('Avatar updated ✅')
       } else {
         // si todavía no devuelves avatarUrl, al menos no rompe.
@@ -490,6 +511,50 @@ export default function UserProfile() {
       // reset input so same file can be selected again
       e.target.value = ''
     }
+  }
+
+  // async function onRemoveAvatar() {
+  //   if (!confirm('Remove avatar?')) return; // ✅ Agrega confirmación
+  //   setErrorMsg('');
+  //   setSaveMsg('');
+  //   try {
+  //     await deleteMyAvatar({ name: sapUser, companyDb });
+  //     await updateProfile({ avatarUrl: null });  // Actualiza el estado local
+  //     setAvatarPreview(null);  // ✅ Resetea cualquier preview local
+  //     await hydrateProfile();  // Recarga el perfil
+  //     setSaveMsg('Avatar removed ✅');
+  //     fileInputRef.current.value = '';  // ✅ Resetea el input de archivo
+  //   } catch (err) {
+  //     setErrorMsg(err?.message || 'Error removing avatar');
+  //   }
+  // }
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);  // ✅ Estado para mostrar el modal
+
+  async function onRemoveAvatar() {
+    setShowDeleteConfirm(true);  // ✅ Muestra el modal en lugar de confirm
+  }
+
+  // Nueva función para confirmar el borrado
+  async function confirmDeleteAvatar() {
+    setShowDeleteConfirm(false);  // Oculta el modal
+    setErrorMsg('');
+    setSaveMsg('');
+    try {
+      await deleteMyAvatar({ name: sapUser, companyDb });
+      await updateProfile({ avatarUrl: null });
+      setAvatarPreview(null);
+      await hydrateProfile();
+      setSaveMsg('Avatar removed ✅');
+      fileInputRef.current.value = '';
+    } catch (err) {
+      setErrorMsg(err?.message || 'Error removing avatar');
+    }
+  }
+
+  // Nueva función para cancelar
+  function cancelDeleteAvatar() {
+    setShowDeleteConfirm(false);  // Oculta el modal
   }
 
   const disabled = profileLoading || avatarUploading
@@ -511,7 +576,7 @@ export default function UserProfile() {
           <button
             className="up-btn up-btn-secondary"
             type="button"
-            onClick={() => hydrateProfile()}
+            onClick={() => {hydrateProfile(); setSaveMsg('Profile reloaded ✅'); setErrorMsg('')}}
             disabled={disabled}
             title="Reload profile"
           >
@@ -549,7 +614,7 @@ export default function UserProfile() {
                 )}
               </div>
 
-              <div className="up-avatar-actions">
+              {/* <div className="up-avatar-actions">
                 <button
                   className="up-btn up-btn-secondary"
                   type="button"
@@ -567,6 +632,38 @@ export default function UserProfile() {
                   style={{ display: 'none' }}
                 />
 
+                <div className="up-hint">
+                  JPG/PNG/WEBP • Max {MAX_AVATAR_MB}MB
+                </div>
+              </div> */}
+              <div className="" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                <div className="up-avatar-actions" style={{ display: 'flex', flexDirection: 'row', gap: '8px', marginTop: '12px' }}>  
+                  <button
+                    className="up-btn up-btn-secondary"
+                    type="button"
+                    onClick={onPickAvatar}
+                    disabled={disabled}
+                  >
+                    {avatarUploading ? 'Uploading...' : 'Upload photo'}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={onAvatarSelected}
+                    style={{ display: 'none' }}
+                  />
+                  {currentAvatar && (
+                    <button
+                      className="up-btn up-btn-danger"
+                      type="button"
+                      onClick={onRemoveAvatar}
+                      disabled={disabled}
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
                 <div className="up-hint">
                   JPG/PNG/WEBP • Max {MAX_AVATAR_MB}MB
                 </div>
@@ -696,6 +793,26 @@ export default function UserProfile() {
           </form>
         </div>
       </div>
+      {/* Modal de confirmación personalizado */}
+      {showDeleteConfirm && (
+        <div className="up-modal-overlay" onClick={cancelDeleteAvatar}>  {/* Overlay para cerrar al hacer clic fuera */}
+          <div className="up-modal" onClick={(e) => e.stopPropagation()}>  {/* Evita cerrar al hacer clic dentro */}
+            <h3>Remove Avatar</h3>
+            <p>Are you sure you want to remove your avatar? This action cannot be undone.</p>
+            <div className="up-modal-actions">
+              <button className="up-btn up-btn-secondary" onClick={cancelDeleteAvatar}>
+                Cancel
+              </button>
+              <button className="up-btn up-btn-danger" style={{
+                  background: '#FF6B00',
+                  color: 'white',
+                }} onClick={confirmDeleteAvatar}>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

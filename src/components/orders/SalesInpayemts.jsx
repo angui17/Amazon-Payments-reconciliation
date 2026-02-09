@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { getOrdersPayments } from "../../api/orders";
 
 // estilos
@@ -6,29 +6,36 @@ import "../../styles/dashboard.css";
 import "../../styles/pagination.css";
 
 // utils
-import { formatMoney, toNumber } from "../../utils/refundMath";
-import { netPaidForOrders, uniqueOrdersCount, principalTotal, amazonCommissionTotal, fbaFulfillmentFeesTotal, inDateRange } from "../../utils/paymentsMath";
-
+import { formatMoney, toNumber } from "../../utils/refundMath"
+import {
+    filterOrdersPayments,
+    getOrdersPaymentsOptions,
+} from "../../utils/ordersPaymentsFilters";
 
 // tabla
-import OrdersTableHeaders from "../orders/OrdersTableHeaders";
-import OrdersTableSkeleton from "../orders/OrdersTableSkeleton";
-import OrdersTableBodyPayments from "../orders/OrdersTableBodyPayments";
-
-// kpi cards 
-import KPICard from "../common/KPICard";
+import OrdersPaymentsTable from "./inpayments/OrdersPaymentsTable";
+// kpi cards
+import OrdersPaymentsKpiCards from "./inpayments/OrdersPaymentsKpiCards";
+//details
 import PaymentsDetailsModal from "./PaymentsDetailsModal";
 
-// charts 
+// charts
 import OrdersPaymentsCharts from "../charts/Orders/OrdersPaymentsCharts";
 
 // filters
 import OrdersPaymentsFilters from "./OrdersPaymentsFilters";
+// Pagination
+import SimplePagination from "../common/SimplePagination";
+import { paginate } from "../../utils/pagination";
+//export to pdf
+import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
+import { ordersPaymentsPdfColumns } from "../../utils/pdfExport/ordersPaymentsPdfColumns";
+import { buildOrdersPaymentsKpis } from "../../utils/kpicards";
 
 const DEFAULT_FROM = "2024-10-01";
 const DEFAULT_TO = "2024-10-31";
 
-// helper: YYYY-MM-DD -> MM-DD-YYYY 
+// helper: YYYY-MM-DD -> MM-DD-YYYY
 function formatToMMDDYYYY(value) {
     if (!value) return "";
     const parts = value.split("-");
@@ -36,23 +43,24 @@ function formatToMMDDYYYY(value) {
     return `${parts[1]}-${parts[2]}-${parts[0]}`;
 }
 
+const DEFAULT_FILTERS = {
+    from: DEFAULT_FROM,
+    to: DEFAULT_TO,
+    settlementId: "",
+    orderId: "",
+    sku: "",
+    statuses: [],
+    amountDescription: "",
+    search: "",
+};
+
 const SalesInpayemts = () => {
     const [paymentsAll, setPaymentsAll] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // filtros 
-    const [dateRange, setDateRange] = useState({ start: DEFAULT_FROM, end: DEFAULT_TO });
-    const [search, setSearch] = useState("");
-    const [filters, setFilters] = useState({
-        start: DEFAULT_FROM,
-        end: DEFAULT_TO,
-        settlementId: "",
-        orderId: "",
-        sku: "",
-        statuses: [],
-        descriptions: [],
-    });
+    // draft vs applied 
+    const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+    const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
 
     // paginación
     const [page, setPage] = useState(1);
@@ -60,129 +68,10 @@ const SalesInpayemts = () => {
 
     // details
     const [selectedPayment, setSelectedPayment] = useState(null);
+    // export charts to pdf
+    const chartsRef = useRef(null);
 
-
-    // filtro 
-    const filtered = useMemo(() => {
-        const q = (search || "").trim().toLowerCase();
-
-        const start = filters.start || "";
-        const end = filters.end || "";
-
-        const settlementQ = (filters.settlementId || "").trim().toLowerCase();
-        const orderQ = (filters.orderId || "").trim().toLowerCase();
-        const skuQ = (filters.sku || "").trim().toLowerCase();
-
-        const descSet = new Set(filters.descriptions || []);
-        const statusSet = new Set(filters.statuses || []);
-
-        return (paymentsAll || []).filter((p) => {
-            const orderId = String(p.ORDER_ID || p.order_id || "");
-            const sku = String(p.SKU || p.sku || "");
-            const desc = String(p.AMOUNT_DESCRIPTION || p.description || "Unknown");
-            const status = String(p.STATUS || p.status || "");
-            const settlementId = String(p.SETTLEMENT_ID || p.settlement_id || "");
-
-            // posted day (YYYY-MM-DD)
-            const day =
-                String(
-                    p.POSTED_DATE_DATE ??
-                    p.POSTED_DATE ??
-                    p["POSTED_DATE_DATE"] ??
-                    p["POSTED_DATE"] ??
-                    ""
-                ).slice(0, 10);
-
-            // 1) rango fechas
-            if (!inDateRange(day, start, end)) return false;
-
-            // 2) settlement id
-            if (settlementQ && !settlementId.toLowerCase().includes(settlementQ))
-                return false;
-
-            // 3) order id
-            if (orderQ && !orderId.toLowerCase().includes(orderQ)) return false;
-
-            // 4) sku
-            if (skuQ && !sku.toLowerCase().includes(skuQ)) return false;
-
-            // 5) AMOUNT_DESCRIPTION multi
-            if (descSet.size > 0 && !descSet.has(desc)) return false;
-
-            // 6) status (multi o single)
-            if (statusSet.size > 0 && !statusSet.has(status)) return false;
-
-            return (
-                orderId.toLowerCase().includes(q) ||
-                sku.toLowerCase().includes(q) ||
-                desc.toLowerCase().includes(q) ||
-                status.toLowerCase().includes(q) ||
-                settlementId.toLowerCase().includes(q)
-            );
-        });
-    }, [paymentsAll, search, filters]);
-
-
-    const statusOptions = useMemo(() => {
-        const set = new Set((paymentsAll || []).map((p) => String(p.STATUS || p.status || "").trim()).filter(Boolean));
-        return Array.from(set).sort();
-    }, [paymentsAll]);
-
-    const descOptions = useMemo(() => {
-        const set = new Set((paymentsAll || []).map((p) => String(p.AMOUNT_DESCRIPTION || p.description || "Unknown").trim()).filter(Boolean));
-        return Array.from(set).sort();
-    }, [paymentsAll]);
-
-
-    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-    const paginated = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return filtered.slice(start, start + pageSize);
-    }, [filtered, page, pageSize]);
-
-    // total
-    const totalAmountFormatted = useMemo(() => {
-        const total = (filtered || []).reduce((acc, p) => {
-            const v =
-                p.AMOUNT ??
-                p["AMOUNT"] ??
-                p["amount"] ??
-                p.amount ??
-                0;
-
-            return acc + toNumber(v);
-        }, 0);
-
-        return formatMoney(total);
-    }, [filtered]);
-
-    // kpi cards
-    const netPaidFormatted = useMemo(
-        () => netPaidForOrders(filtered),
-        [filtered]
-    );
-
-    const uniqueOrdersFormatted = useMemo(
-        () => uniqueOrdersCount(filtered).toLocaleString(),
-        [filtered]
-    );
-
-    const principalFormatted = useMemo(
-        () => principalTotal(filtered),
-        [filtered]
-    );
-
-    const amazonCommissionFormatted = useMemo(
-        () => amazonCommissionTotal(filtered),
-        [filtered]
-    );
-
-    const fbaFeesFormatted = useMemo(
-        () => fbaFulfillmentFeesTotal(filtered),
-        [filtered]
-    );
-
+    // fetch (solo depende de applied from/to)
     useEffect(() => {
         const fetchPayments = async () => {
             try {
@@ -190,12 +79,15 @@ const SalesInpayemts = () => {
                 setError(null);
 
                 const params = {
-                    fecha_desde: dateRange.start ? formatToMMDDYYYY(dateRange.start) : undefined,
-                    fecha_hasta: dateRange.end ? formatToMMDDYYYY(dateRange.end) : undefined,
+                    fecha_desde: appliedFilters.from
+                        ? formatToMMDDYYYY(appliedFilters.from)
+                        : undefined,
+                    fecha_hasta: appliedFilters.to
+                        ? formatToMMDDYYYY(appliedFilters.to)
+                        : undefined,
                 };
 
                 const all = await getOrdersPayments(params);
-                console.log(all)
                 setPaymentsAll(all || []);
                 setPage(1);
             } catch (err) {
@@ -207,7 +99,72 @@ const SalesInpayemts = () => {
         };
 
         fetchPayments();
-    }, [dateRange.start, dateRange.end]);
+    }, [appliedFilters.from, appliedFilters.to]);
+
+    // options (status/desc)
+    const { statuses: statusOptions, descriptions: descOptions } = useMemo(
+        () => getOrdersPaymentsOptions(paymentsAll),
+        [paymentsAll]
+    );
+
+    // filtered (limpio, testeable)
+    const filtered = useMemo(() => {
+        return filterOrdersPayments(paymentsAll, appliedFilters);
+    }, [paymentsAll, appliedFilters]);
+
+    // pagination
+    const pagination = useMemo(
+        () =>
+            paginate({
+                rows: filtered,
+                page,
+                pageSize,
+            }),
+        [filtered, page, pageSize]
+    );
+
+    const { page: safePage, totalItems, totalPages, visibleRows: paginated } = pagination;
+
+    useEffect(() => {
+        if (page !== safePage) setPage(safePage);
+    }, [page, safePage]);
+
+
+    // total
+    const totalAmountFormatted = useMemo(() => {
+        const total = (filtered || []).reduce((acc, p) => {
+            const v = p?.AMOUNT ?? p?.["AMOUNT"] ?? p?.amount ?? 0;
+            return acc + toNumber(v);
+        }, 0);
+
+        return formatMoney(total);
+    }, [filtered]);
+
+    const handleExportPdf = async () => {
+        const kpis = buildOrdersPaymentsKpis(paginated);
+
+        const headerBlocks = [
+            { label: "Net Paid", value: String(kpis.netPaid) },
+            { label: "Orders (unique)", value: String(kpis.uniqueOrders) },
+            { label: "Principal", value: String(kpis.principal) },
+            { label: "Amazon Commission", value: String(kpis.amazonCommission) },
+            { label: "FBA Fees", value: String(kpis.fbaFees) }
+        ];
+
+        await new Promise((r) => requestAnimationFrame(r));
+        const chartImages = chartsRef.current?.getChartImages?.() || [];
+
+        exportRowsToPdf({
+            rows: paginated,
+            columns: ordersPaymentsPdfColumns,
+            title: `Inpayments Orders (${appliedFilters.from || "-"} → ${appliedFilters.to || "-"})`,
+            fileName: `orders_inpayments_${appliedFilters.from || "from"}_${appliedFilters.to || "to"}_page_${safePage}.pdf`,
+            orientation: "l",
+            headerBlocks,
+            chartImages,
+            footerNote: `page=${safePage}/${totalPages} | pageSize=${pageSize} | total=${totalItems}`,
+        });
+    };
 
     return (
         <div className="page">
@@ -216,121 +173,68 @@ const SalesInpayemts = () => {
                 <p>Process and monitor Amazon payments transactions</p>
             </div>
 
-            {/*  kpi cards */}
-            <div className="kpi-cards">
-                <KPICard title="Net Paid for Orders" value={loading ? "—" : netPaidFormatted} change="Total amount paid by Amazon" />
-                <KPICard title="Orders (unique)" value={loading ? "—" : uniqueOrdersFormatted} change="Number of distinct orders" />
-                <KPICard title="Principal" value={loading ? "—" : principalFormatted} change="Product sales amount" />
-                <KPICard title="Amazon Commission" value={loading ? "—" : amazonCommissionFormatted} change="Amazon selling commissions" />
-                <KPICard title="FBA Fulfillment Fees" value={loading ? "—" : fbaFeesFormatted} change="Fulfillment by Amazon fees" />
-            </div>
+            {/* KPI */}
+            <OrdersPaymentsKpiCards loading={loading} payments={paginated} />
 
-            {/*  filters */}
+            {/* Filters */}
             <OrdersPaymentsFilters
                 value={{
-                    from: filters.start,
-                    to: filters.end,
-                    orderId: filters.orderId,
-                    sku: filters.sku,
-                    status: filters.statuses,
-                    descriptions: filters.descriptions,
+                    from: draftFilters.from,
+                    to: draftFilters.to,
+                    settlementId: draftFilters.settlementId,
+                    orderId: draftFilters.orderId,
+                    sku: draftFilters.sku,
+                    statuses: draftFilters.statuses,
+                    amountDescription: draftFilters.amountDescription,
+                    search: draftFilters.search,
                 }}
                 onChange={(v) => {
-                    setFilters((f) => ({
+                    setDraftFilters((f) => ({
                         ...f,
-                        start: v.from,
-                        end: v.to,
-                        orderId: v.orderId,
-                        sku: v.sku,
-                        status: v.status,
-                        descriptions: v.descriptions,
+                        ...v,
                     }));
                     setPage(1);
                 }}
+                onApply={() => {
+                    setAppliedFilters(draftFilters);
+                    setPage(1);
+                }}
                 onReset={() => {
-                    setFilters({
-                        start: DEFAULT_FROM,
-                        end: DEFAULT_TO,
-                        settlementId: "",
-                        orderId: "",
-                        sku: "",
-                        statuses: [],
-                        descriptions: [],
-                    });
+                    setDraftFilters(DEFAULT_FILTERS);
+                    setAppliedFilters(DEFAULT_FILTERS);
                     setPage(1);
                 }}
                 statusOptions={statusOptions}
                 descOptions={descOptions}
             />
 
-            {/* tabla */}
-            <div className="data-table">
-                <div className="table-header">
-                    <h3>Inpayments</h3>
-                    <div style={{ fontSize: 12, color: "#666", display: "flex", gap: 10 }}>
-                        <span>{loading ? "Loading..." : `${filtered.length} results`}</span>
-                        {!loading && <span>• Total: {totalAmountFormatted}</span>}
-                    </div>
-                </div>
+            {/* Table */}
+            <OrdersPaymentsTable
+                title="Inpayments"
+                loading={loading}
+                rows={paginated}
+                totalItems={totalItems}
+                totalAmount={totalAmountFormatted}
+                pageSize={pageSize}
+                onView={setSelectedPayment}
+                onExportPdf={handleExportPdf}
+            />
 
-                <div className="table-container">
-                    <table className="table">
-                        <OrdersTableHeaders type="payments" />
-                        <tbody>
-                            <OrdersTableSkeleton
-                                loading={loading}
-                                dataLength={paginated.length}
-                                colSpan={7}
-                                rows={pageSize}
-                                emptyMessage="No payments found"
-                            />
+            {/* Pagination */}
+            <SimplePagination
+                page={safePage}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(n) => {
+                    setPageSize(n);
+                    setPage(1);
+                }}
+                pageSizeOptions={[5, 10, 25]}
+            />
 
-                            {!loading && paginated.length > 0 && <OrdersTableBodyPayments rows={paginated} onView={setSelectedPayment} />}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* paginación  */}
-            <div className="simple-pagination">
-                <div className="simple-pagination-left">
-                    <button
-                        className="simple-pagination-btn"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                    >
-                        Previous
-                    </button>
-                    <button
-                        className="simple-pagination-btn"
-                        onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-                        disabled={page === pageCount}
-                    >
-                        Next
-                    </button>
-                </div>
-
-                <div className="simple-pagination-info">
-                    <span>
-                        Page <strong>{page}</strong> of {pageCount} •
-                    </span>
-                    <select
-                        className="simple-pagination-select"
-                        value={pageSize}
-                        onChange={(e) => {
-                            setPageSize(Number(e.target.value));
-                            setPage(1);
-                        }}
-                    >
-                        <option value={5}>5 per page</option>
-                        <option value={10}>10 per page</option>
-                        <option value={25}>25 per page</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* charts */}
-            <OrdersPaymentsCharts loading={loading} payments={filtered} />
+            {/* Charts */}
+            <OrdersPaymentsCharts loading={loading} payments={paginated} ref={chartsRef} />
 
             {error && (
                 <div style={{ marginTop: 12, color: "crimson", fontSize: 12 }}>
@@ -338,8 +242,12 @@ const SalesInpayemts = () => {
                 </div>
             )}
 
-            {selectedPayment && (<PaymentsDetailsModal payment={selectedPayment} onClose={() => setSelectedPayment(null)} />)}
-
+            {selectedPayment && (
+                <PaymentsDetailsModal
+                    payment={selectedPayment}
+                    onClose={() => setSelectedPayment(null)}
+                />
+            )}
         </div>
     );
 };

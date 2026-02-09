@@ -44,7 +44,7 @@ const OrdersFiltersBar = ({
                         />
                     </div>
 
-                    <div className="filter-group">
+                    {/* <div className="filter-group">
                         <div className="filter-label">Quick</div>
                         <select
                             className="filter-input"
@@ -58,7 +58,7 @@ const OrdersFiltersBar = ({
                         </select>
                     </div>
 
-                    {/* <div className="filter-group">
+                    <div className="filter-group">
                         <div className="filter-label">Settlement ID</div>
                         <input
                             className="filter-input"

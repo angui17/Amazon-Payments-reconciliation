@@ -26,7 +26,6 @@ import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
 import { reportsMonthlyPdfColumns } from "../../utils/pdfExport/reportsPDFColumns";
 import { buildReportsPdfKpiBlocks } from "../../utils/reportsPdfKpis";
 
-
 const DEFAULT_FROM = "2024-01-01";
 const DEFAULT_TO = "2026-01-31";
 const DEFAULT_PAGE_SIZE = 10;
@@ -34,39 +33,34 @@ const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_FILTERS = {
   fecha_desde: DEFAULT_FROM,
   fecha_hasta: DEFAULT_TO,
-  status: "ALL",
+  pending: "ALL", // ✅ nuevo
   limit_months: 12,
 };
 
 const Reports = () => {
-  // data
   const [summary, setSummary] = useState(null);
-  // rows
   const [allRows, setAllRows] = useState([]);
-  // charts
   const [charts, setCharts] = useState(null);
-  // pagination
-  const [totalItems, setTotalItems] = useState(0);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  // ui
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // filters
+
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
-  // pdf
+
   const chartsRef = useRef(null);
 
-  // params 
+  // ✅ params: NO mandamos pending al backend (solo fechas/limit)
   const params = useMemo(
     () => ({
       fecha_desde: ymdToMdy(applied.fecha_desde),
       fecha_hasta: ymdToMdy(applied.fecha_hasta),
-      status: applied.status,
       limit_months: Number(applied.limit_months),
     }),
-    [applied]
+    [applied.fecha_desde, applied.fecha_hasta, applied.limit_months]
   );
 
   const fetchReports = async () => {
@@ -82,35 +76,53 @@ const Reports = () => {
 
       const rows = Array.isArray(res?.rows) ? res.rows : [];
       setAllRows(rows);
-      setTotalItems(rows.length);
       setCharts(res?.charts ?? null);
     } catch (e) {
       console.error(e);
       setError(e?.message || "Error fetching reports");
       setSummary(null);
       setAllRows([]);
-      setTotalItems(0);
       setCharts(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // fetch cuando cambian filtros aplicados
   useEffect(() => {
     fetchReports();
   }, [params]);
 
-  useEffect(() => {
-    const { page: safePage } = paginate({
-      rows: allRows,
-      page,
-      pageSize,
+  // ✅ FE filter: pending = 1..5 (o ALL)
+const filteredRows = useMemo(() => {
+  const rows = Array.isArray(allRows) ? allRows : [];
+
+  if (applied.pending && applied.pending !== "ALL") {
+    const target = Number(applied.pending);
+
+    return rows.filter((r) => {
+      const n = Number(r?.pendingCount);
+      return Number.isFinite(n) && n === target;
     });
+  }
 
+  return rows;
+}, [allRows, applied.pending]);
+
+  const totalItems = filteredRows.length;
+
+  const { visibleRows, page: safePage } = useMemo(
+    () =>
+      paginate({
+        rows: filteredRows,
+        page,
+        pageSize,
+      }),
+    [filteredRows, page, pageSize]
+  );
+
+  useEffect(() => {
     if (safePage !== page) setPage(safePage);
-  }, [allRows, pageSize]);
-
+  }, [safePage, page]);
 
   const handleApply = () => {
     setApplied(filters);
@@ -131,25 +143,10 @@ const Reports = () => {
     setPage(1);
   };
 
-  const { visibleRows, totalPages } = useMemo(
-    () =>
-      paginate({
-        rows: allRows,
-        page,
-        pageSize,
-      }),
-    [allRows, page, pageSize]
-  );
+  const pageSummary = useMemo(() => calculateSummary(visibleRows), [visibleRows]);
+  const totalSummary = useMemo(() => calculateSummary(filteredRows), [filteredRows]);
 
-  const pageSummary = useMemo(
-    () => calculateSummary(visibleRows),
-    [visibleRows]
-  );
-
-  const totalSummary = useMemo(
-    () => calculateSummary(allRows),
-    [allRows]
-  );
+  const pendingLabel = applied.pending === "ALL" ? "All" : applied.pending;
 
   return (
     <div className="main-content page active" id="reports-page">
@@ -183,9 +180,7 @@ const Reports = () => {
       {loading ? (
         <ReportsMonthlyTableSkeleton rows={6} cols={10} />
       ) : visibleRows.length === 0 ? (
-        <div className="orders-empty">
-          No records found for the selected filters.
-        </div>
+        <div className="orders-empty">No records found for the selected filters.</div>
       ) : (
         <>
           <ReportsMonthlyTable
@@ -205,12 +200,11 @@ const Reports = () => {
                 orientation: "l",
                 headerBlocks,
                 chartImages,
-                footerNote: `Filters — From: ${applied.fecha_desde} · To: ${applied.fecha_hasta} · Status: ${applied.status}`,
+                footerNote: `Filters — From: ${applied.fecha_desde} · To: ${applied.fecha_hasta} · Pending: ${pendingLabel}`,
               });
             }}
           />
 
-          {/* Pagination */}
           <SimplePagination
             page={page}
             totalItems={totalItems}
@@ -223,7 +217,9 @@ const Reports = () => {
       )}
 
       {/* charts */}
-      {!loading && totalItems > 0 ? (<MonthlyReconciliationCharts ref={chartsRef} charts={charts} loading={loading} />) : null}
+      {!loading && totalItems > 0 ? (
+        <MonthlyReconciliationCharts ref={chartsRef} charts={charts} loading={loading} />
+      ) : null}
     </div>
   );
 };
