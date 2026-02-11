@@ -1,99 +1,138 @@
-import React, { useState, useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const TopNav = () => {
-  const [showUserDropdown, setShowUserDropdown] = useState(false)
-  const [showSalesDropdown, setShowSalesDropdown] = useState(false)
-  const [showPaymentsDropdown, setShowPaymentsDropdown] = useState(false)
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showSalesDropdown, setShowSalesDropdown] = useState(false);
+  const [showPaymentsDropdown, setShowPaymentsDropdown] = useState(false);
 
-  const salesRef = useRef(null)
-  const paymentsRef = useRef(null)
-  const [salesPosition, setSalesPosition] = useState({ left: 0 })
-  const [paymentsPosition, setPaymentsPosition] = useState({ left: 0 })
+  // ✅ Mobile
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSalesOpen, setMobileSalesOpen] = useState(false);
+  const [mobilePaymentsOpen, setMobilePaymentsOpen] = useState(false);
 
-  const { logout, getDisplayName, getAvatarText } = useAuth()
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);  
-  const navigate = useNavigate()
+  const { logout, getDisplayName } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const navigate = useNavigate();
 
-  const userRef = useRef(null);  // ✅ Ref para calcular posición
-  const [userPosition, setUserPosition] = useState({ left: 0 });  // ✅ Estado para posición
+  const navRef = useRef(null);
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard' },
+    { path: "/dashboard", label: "Dashboard" },
     {
-      label: 'Sales',
+      label: "Sales",
       children: [
-        { path: '/orders/sales', label: 'Orders' },
-        { path: '/refunds/sales', label: 'Refunds' },
-        { path: '/fees/sales', label: 'Fees' },
+        { path: "/orders/sales", label: "Orders" },
+        { path: "/refunds/sales", label: "Refunds" },
+        { path: "/fees/sales", label: "Fees" },
       ],
     },
     {
-      label: 'Payments',
+      label: "Payments",
       children: [
-        { path: '/orders/payments', label: 'Orders' },
-        { path: '/refunds/payments', label: 'Refunds' },
-        { path: '/fees/payments', label: 'Fees' },
+        { path: "/orders/payments", label: "Orders" },
+        { path: "/refunds/payments", label: "Refunds" },
+        { path: "/fees/payments", label: "Fees" },
       ],
     },
-    // { path: '/files', label: 'Files' },
-    { path: '/errors', label: 'Errors' },
-    { path: '/reports', label: 'Reports' },
-    { path: '/accounting', label: 'Accounting' },
-    // { path: '/monitoring', label: 'Monitoring' },
-    // { path: '/admin', label: 'Admin' },
-  ]
+    { path: "/errors", label: "Errors" },
+    { path: "/reports", label: "Reports" },
+    { path: "/accounting", label: "Accounting" },
+  ];
 
-  const userMenuItems = [
-    { path: '/user-profile', label: 'My Profile'},
-    //{ path: '/account-settings', label: 'Account Settings', icon: '⚙️' },
-    //{ path: '/security', label: 'Security', icon: '🔒' },
-    //{ path: '/notifications', label: 'Notifications', icon: '🔔' },
-  ]
-
-  // const handleLogout = () => {
-  //   if (window.confirm('Are you sure you want to logout?')) {
-  //     logout()
-  //     navigate('/login')
-  //   }
-  //   setShowUserDropdown(false)
-  // }
+  const userMenuItems = [{ path: "/user-profile", label: "My Profile" }];
 
   const handleLogout = () => {
-    setShowLogoutConfirm(true);  // ✅ Muestra el modal en lugar de window.confirm
-    setShowUserDropdown(false);  // Cierra el dropdown del usuario
-  }
+    setShowLogoutConfirm(true);
+    setShowUserDropdown(false);
+    setMobileOpen(false);
+  };
 
-  // Función para confirmar logout
   const confirmLogout = async () => {
-    setShowLogoutConfirm(false);  // Oculta el modal
-    await logout();  // Llama al logout real
-    navigate('/login');  // Navega a login
+    setShowLogoutConfirm(false);
+    await logout();
+    navigate("/login");
   };
 
-  // Función para cancelar
-  const cancelLogout = () => {
-    setShowLogoutConfirm(false);  // Oculta el modal
+  const cancelLogout = () => setShowLogoutConfirm(false);
+
+  // ✅ Cerrar menús al click afuera / ESC
+  useEffect(() => {
+    const onDown = (e) => {
+      if (!navRef.current) return;
+      if (!navRef.current.contains(e.target)) {
+        setShowUserDropdown(false);
+        setShowSalesDropdown(false);
+        setShowPaymentsDropdown(false);
+        setMobileOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setShowUserDropdown(false);
+        setShowSalesDropdown(false);
+        setShowPaymentsDropdown(false);
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const closeAll = () => {
+    setShowUserDropdown(false);
+    setShowSalesDropdown(false);
+    setShowPaymentsDropdown(false);
+    setMobileOpen(false);
   };
+
+  // arriba en el componente:
+  const salesRef = useRef(null);
+  const paymentsRef = useRef(null);
+  const [salesPos, setSalesPos] = useState({ left: 0, top: 64 });
+  const [paymentsPos, setPaymentsPos] = useState({ left: 0, top: 64 });
+
+  const placeMenu = (ref, setPos) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setPos({
+      left: Math.max(8, Math.min(r.left, window.innerWidth - 220)),
+      top: r.bottom,
+    });
+  };
+
 
   return (
-    <div className="top-nav">
+    <div className="top-nav" ref={navRef}>
       <div className="logo">AmazonPay Reconciliation</div>
 
+      {/* ✅ Hamburger (solo mobile) */}
+      <button
+        className="nav-burger"
+        aria-label="Open menu"
+        onClick={() => setMobileOpen((v) => !v)}
+      >
+        ☰
+      </button>
+
+      {/* ✅ Tabs desktop */}
       <div className="nav-tabs">
         {navItems.map((item) => {
-          // 🔽 SALES DROPDOWN
-          if (item.label === 'Sales') {
+          if (item.label === "Sales") {
             return (
               <div
-                key={item.label}
+                key="Sales"
                 ref={salesRef}
                 className="nav-tab sales-dropdown"
                 onMouseEnter={() => {
-                  const rect = salesRef.current.getBoundingClientRect()
-                  setSalesPosition({ left: rect.left })
-                  setShowSalesDropdown(true)
+                  placeMenu(salesRef, setSalesPos);
+                  setShowSalesDropdown(true);
                 }}
                 onMouseLeave={() => setShowSalesDropdown(false)}
               >
@@ -101,14 +140,16 @@ const TopNav = () => {
 
                 {showSalesDropdown && (
                   <div
-                    className="sales-dropdown-menu"
-                    style={{ left: `${salesPosition.left}px` }}
+                    className="dropdown-menu-fixed"
+                    style={{ left: salesPos.left, top: salesPos.top }}
+                    onMouseEnter={() => setShowSalesDropdown(true)}
+                    onMouseLeave={() => setShowSalesDropdown(false)}
                   >
-                    {item.children.map((child) => (
+                    {navItems.find(n => n.label === "Sales").children.map((child) => (
                       <NavLink
                         key={child.path}
                         to={child.path}
-                        className="sales-dropdown-item"
+                        className="dropdown-item"
                         onClick={() => setShowSalesDropdown(false)}
                       >
                         {child.label}
@@ -117,20 +158,18 @@ const TopNav = () => {
                   </div>
                 )}
               </div>
-            )
+            );
           }
 
-          // 🔽 PAYMENTS DROPDOWN
-          if (item.label === 'Payments') {
+          if (item.label === "Payments") {
             return (
               <div
-                key={item.label}
+                key="Payments"
                 ref={paymentsRef}
                 className="nav-tab payments-dropdown"
                 onMouseEnter={() => {
-                  const rect = paymentsRef.current.getBoundingClientRect()
-                  setPaymentsPosition({ left: rect.left })
-                  setShowPaymentsDropdown(true)
+                  placeMenu(paymentsRef, setPaymentsPos);
+                  setShowPaymentsDropdown(true);
                 }}
                 onMouseLeave={() => setShowPaymentsDropdown(false)}
               >
@@ -138,14 +177,16 @@ const TopNav = () => {
 
                 {showPaymentsDropdown && (
                   <div
-                    className="payments-dropdown-menu"
-                    style={{ left: `${paymentsPosition.left}px` }}
+                    className="dropdown-menu-fixed"
+                    style={{ left: paymentsPos.left, top: paymentsPos.top }}
+                    onMouseEnter={() => setShowPaymentsDropdown(true)}
+                    onMouseLeave={() => setShowPaymentsDropdown(false)}
                   >
-                    {item.children.map((child) => (
+                    {navItems.find(n => n.label === "Payments").children.map((child) => (
                       <NavLink
                         key={child.path}
                         to={child.path}
-                        className="payments-dropdown-item"
+                        className="dropdown-item"
                         onClick={() => setShowPaymentsDropdown(false)}
                       >
                         {child.label}
@@ -154,127 +195,129 @@ const TopNav = () => {
                   </div>
                 )}
               </div>
-            )
+            );
           }
 
-          // 🔹 ITEM NORMAL
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
-                `nav-tab ${isActive ? 'active' : ''}`
-              }
-              onClick={() => setShowUserDropdown(false)}
+              className={({ isActive }) => `nav-tab ${isActive ? "active" : ""}`}
+              onClick={closeAll}
             >
               {item.label}
             </NavLink>
-          )
+          );
         })}
       </div>
 
-      {/* USER MENU */}
-      <div onMouseLeave={() => setShowUserDropdown(false)}>
-      <div
-        ref={userRef}
-        className="user-menu"
-        onClick={() => setShowUserDropdown(!showUserDropdown)}
-        onMouseEnter={() => {
-          const rect = userRef.current.getBoundingClientRect()
-          setUserPosition({ right: rect.right })
-          setShowUserDropdown(true)
-        }}
-        onBlur={() => setTimeout(() => setShowUserDropdown(false), 200)}
-        tabIndex={0}
-      >
-        {getDisplayName()}
-      </div>
-        <div className={`user-dropdown ${showUserDropdown ? 'active' : ''}`}>
+      {/* USER MENU (desktop) */}
+      <div className="user-wrap">
+        <div
+          className="user-menu"
+          onClick={() => setShowUserDropdown((v) => !v)}
+        >
+          {getDisplayName()}
+        </div>
+
+        <div className={`user-dropdown ${showUserDropdown ? "active" : ""}`}>
           {userMenuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className="user-dropdown-item"
-              onClick={() => setShowUserDropdown(false)}
+              onClick={closeAll}
             >
               {item.label}
             </NavLink>
           ))}
-        <div className="user-dropdown-item logout" onClick={handleLogout}>
-          Logout
+          <div className="user-dropdown-item logout" onClick={handleLogout}>
+            Logout
+          </div>
         </div>
       </div>
-      </div>
-      
-      {/* Modal de confirmación para logout */}
+
+      {/* ✅ Drawer mobile */}
+      <div className={`mobile-overlay ${mobileOpen ? "active" : ""}`} onClick={() => setMobileOpen(false)} />
+
+      <aside className={`mobile-drawer ${mobileOpen ? "active" : ""}`}>
+        <div className="mobile-drawer-header">
+          <div className="mobile-user">{getDisplayName()}</div>
+          <button className="mobile-close" onClick={() => setMobileOpen(false)}>
+            ✕
+          </button>
+        </div>
+
+        <NavLink to="/dashboard" className="mobile-link" onClick={closeAll}>
+          Dashboard
+        </NavLink>
+
+        <button className="mobile-accordion" onClick={() => setMobileSalesOpen((v) => !v)}>
+          Sales <span>{mobileSalesOpen ? "▴" : "▾"}</span>
+        </button>
+        {mobileSalesOpen && (
+          <div className="mobile-sub">
+            <NavLink to="/orders/sales" className="mobile-sublink" onClick={closeAll}>Orders</NavLink>
+            <NavLink to="/refunds/sales" className="mobile-sublink" onClick={closeAll}>Refunds</NavLink>
+            <NavLink to="/fees/sales" className="mobile-sublink" onClick={closeAll}>Fees</NavLink>
+          </div>
+        )}
+
+        <button className="mobile-accordion" onClick={() => setMobilePaymentsOpen((v) => !v)}>
+          Payments <span>{mobilePaymentsOpen ? "▴" : "▾"}</span>
+        </button>
+        {mobilePaymentsOpen && (
+          <div className="mobile-sub">
+            <NavLink to="/orders/payments" className="mobile-sublink" onClick={closeAll}>Orders</NavLink>
+            <NavLink to="/refunds/payments" className="mobile-sublink" onClick={closeAll}>Refunds</NavLink>
+            <NavLink to="/fees/payments" className="mobile-sublink" onClick={closeAll}>Fees</NavLink>
+          </div>
+        )}
+
+        <NavLink to="/errors" className="mobile-link" onClick={closeAll}>Errors</NavLink>
+        <NavLink to="/reports" className="mobile-link" onClick={closeAll}>Reports</NavLink>
+        <NavLink to="/accounting" className="mobile-link" onClick={closeAll}>Accounting</NavLink>
+
+        <div className="mobile-divider" />
+
+        <NavLink to="/user-profile" className="mobile-link" onClick={closeAll}>
+          My Profile
+        </NavLink>
+        <button className="mobile-logout" onClick={handleLogout}>Logout</button>
+      </aside>
+
+      {/* Modal logout (igual que tenías) */}
       {showLogoutConfirm && (
         <div
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
+            position: "fixed",
+            top: 0, left: 0, width: "100%", height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex", justifyContent: "center", alignItems: "center",
+            zIndex: 3000,
           }}
-          onClick={cancelLogout}  // Cierra al hacer clic fuera
+          onClick={cancelLogout}
         >
           <div
             style={{
-              background: 'white',
-              padding: '20px',
-              borderRadius: '8px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-              maxWidth: '400px',
-              width: '90%',
-              textAlign: 'center',
+              background: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%",
+              textAlign: "center",
             }}
-            onClick={(e) => e.stopPropagation()}  // Evita cerrar al hacer clic dentro
+            onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>Logout</h3>
-            <p style={{ margin: '0 0 20px 0', color: '#666' }}>
-              Are you sure you want to logout?
-            </p>
-            <div
-              style={{
-                display: 'flex',
-                gap: '10px',
-                justifyContent: 'center',
-              }}
-            >
-              <button
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  background: '#f0f0f0',
-                  color: '#333',
-                }}
-                onClick={cancelLogout}
-                onMouseOver={(e) => (e.target.style.opacity = '0.9')}
-                onMouseOut={(e) => (e.target.style.opacity = '1')}
-              >
+            <h3 style={{ margin: "0 0 10px 0" }}>Logout</h3>
+            <p style={{ margin: "0 0 20px 0" }}>Are you sure you want to logout?</p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={{ flex: 1, padding: "10px" }} onClick={cancelLogout}>
                 Cancel
               </button>
               <button
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  background: '#FF6B00',
-                  color: 'white',
-                }}
+                style={{ flex: 1, padding: "10px", background: "#FF6B00", color: "white", border: "none" }}
                 onClick={confirmLogout}
-                onMouseOver={(e) => (e.target.style.opacity = '0.9')}
-                onMouseOut={(e) => (e.target.style.opacity = '1')}
               >
                 Logout
               </button>
@@ -283,7 +326,7 @@ const TopNav = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default TopNav
+export default TopNav;

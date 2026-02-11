@@ -1,57 +1,57 @@
-import { Bar } from "react-chartjs-2";
+import React, { useMemo } from "react";
+import { Line } from "react-chartjs-2";
+import { ORANGE } from "../../utils/feesCharts";
 
-const RefundBreakdownBar = ({ breakdown }) => {
-  const { principal = 0, tax = 0, fees = 0 } = breakdown || {};
+const RefundsTimeline = React.forwardRef(function RefundsTimeline({ data = [] }, ref) {
+  // data: [{ date: "10/31/2024", count: 3 }, ...]
+  const { labels, values } = useMemo(() => {
+    const arr = Array.isArray(data) ? data : [];
+    return {
+      labels: arr.map((d) => d.date),
+      values: arr.map((d) => Number(d.count || 0)),
+    };
+  }, [data]);
 
-  const data = {
-    labels: ["Refund Breakdown"],
-    datasets: [
-      {
-        label: "Principal",
-        data: [principal],
-        backgroundColor: "rgba(255,107,0,0.70)",
-        borderRadius: 8,
-        barThickness: 40,
-      },
-      {
-        label: "Tax",
-        data: [tax],
-        backgroundColor: "rgba(255,107,0,0.35)",
-        borderRadius: 8,
-        barThickness: 40,
-      },
-      {
-        label: "Fees",
-        data: [fees],
-        backgroundColor: "rgba(255,107,0,0.20)",
-        borderRadius: 8,
-        barThickness: 40,
-      },
-    ],
-  };
+  const chartData = useMemo(
+    () => ({
+      labels,
+      datasets:  [
+        {
+          label: "Refunds",
+          data: values,
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "bottom" },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => `$${ctx.raw.toLocaleString()}`,
+          // 🎨 PALETA
+          borderColor: ORANGE.border,
+          backgroundColor: ORANGE.soft,
+          pointBackgroundColor: ORANGE.solid,
+          pointBorderColor: "#fff",
+
+          // ✨ estilo
+          tension: 0.35,
+          fill: true,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          borderWidth: 2,
         },
-      },
-    },
-    scales: {
-      x: { stacked: true, grid: { display: false } },
-      y: {
-        stacked: true,
-        grid: { drawBorder: false },
-        ticks: { callback: (v) => `$${v / 1000}k` },
-      },
-    },
-  };
+      ],
+    }),
+    [labels, values]
+  );
 
-  return <Bar data={data} options={options} />;
-};
+  const options = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true },
+      },
+    }),
+    []
+  );
 
-export default RefundBreakdownBar;
+  return <Line ref={ref} data={chartData} options={options} />;
+});
+
+export default RefundsTimeline;

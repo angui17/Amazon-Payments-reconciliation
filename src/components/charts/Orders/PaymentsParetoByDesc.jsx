@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { formatMoney } from "../../../utils/refundMath";
+import { ORANGE, SLATE } from "../../../utils/feesCharts";
 
 const PaymentsParetoByDesc = forwardRef(({ rows = [] }, ref) => {
   const data = useMemo(() => {
@@ -12,6 +13,9 @@ const PaymentsParetoByDesc = forwardRef(({ rows = [] }, ref) => {
           type: "bar",
           label: "Abs total",
           data: rows.map((r) => r.absTotal),
+
+          backgroundColor: SLATE.solid,
+          borderColor: SLATE.border,
           borderWidth: 1,
           borderRadius: 6,
         },
@@ -20,8 +24,13 @@ const PaymentsParetoByDesc = forwardRef(({ rows = [] }, ref) => {
           label: "Cumulative %",
           data: rows.map((r) => r.cumPct),
           yAxisID: "y1",
+          borderColor: ORANGE.border,
+          backgroundColor: ORANGE.soft,
+          pointBackgroundColor: ORANGE.solid,
+          pointBorderColor: ORANGE.border,
           tension: 0.3,
-          pointRadius: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
         },
       ],
     };

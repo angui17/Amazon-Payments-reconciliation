@@ -22,17 +22,63 @@ export const groupRefundsByReason = (refunds = []) =>
     }, {})
   );
 
-export const groupRefundsByDate = (refunds = []) =>
-  Object.values(
-    refunds.reduce((acc, r) => {
-      const date = r.DATE;
-      if (!date) return acc;
+// "10-31-2024" -> "2024-10-31"
+const mmddyyyyToIso = (mmddyyyy) => {
+  const [mm, dd, yyyy] = String(mmddyyyy || "").split("-");
+  if (!mm || !dd || !yyyy) return null;
+  return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+};
 
-      acc[date] = acc[date] || { date, count: 0 };
-      acc[date].count += 1;
-      return acc;
-    }, {})
-  ).sort((a, b) => new Date(a.date) - new Date(b.date));
+// "2024-10-31" -> "10/31/2024"
+const isoToMMDDYYYY = (iso) => {
+  const [y, m, d] = String(iso || "").split("-");
+  if (!y || !m || !d) return iso;
+  return `${m}/${d}/${y}`;
+};
+
+// devuelve "YYYY-MM-DD" o null
+const toIsoDay = (r) => {
+  const raw = r?.DATE || r?.date || "";
+  const s = String(raw).trim();
+
+  // ISO: 2024-10-31 o 2024-10-31T...
+  const isoMatch = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) return isoMatch[1];
+
+  // MM-DD-YYYY o MM/DD/YYYY
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) {
+    const mm = String(m[1]).padStart(2, "0");
+    const dd = String(m[2]).padStart(2, "0");
+    const yyyy = m[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // fallback: DATE_TIME
+  const dtRaw = r?.DATE_TIME || r?.date_time;
+  if (dtRaw) {
+    const dt = new Date(dtRaw);
+    if (!Number.isNaN(dt.getTime())) return dt.toISOString().slice(0, 10);
+  }
+
+  return null;
+};
+
+export const groupRefundsByDate = (refunds = []) => {
+  const map = new Map(); // iso -> count
+
+  for (const r of refunds || []) {
+    const iso = toIsoDay(r);
+    if (!iso) continue;
+    map.set(iso, (map.get(iso) || 0) + 1);
+  }
+
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([iso, count]) => ({ date: iso, count }));
+};
+
+
 
 export const formatMoney = (value, symbol = "$") => {
   const n = Number(value);

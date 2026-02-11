@@ -8,6 +8,11 @@ import SalesFeesTableSkeleton from "./SalesFeesTableSkeleton";
 import "../../../styles/settlements-table.css";
 
 const cell = (v) => (v === null || v === undefined || v === "" ? "—" : String(v));
+const capitalize = (v) => {
+    if (!v) return v;
+    const s = String(v).toLowerCase();
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
 
 const SalesFeesTable = ({
     title = "Sales Fees",
@@ -79,22 +84,10 @@ const SalesFeesTable = ({
                                         <td>{cell(sku)}</td>
                                         <td>{cell(orderId)}</td>
                                         <td>{cell(settlementId)}</td>
-                                        <td>{cell(type)}</td>
-
-                                        <td
-                                            title={desc || ""}
-                                            style={{
-                                                maxWidth: 260,
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                whiteSpace: "nowrap",
-                                            }}
-                                        >
-                                            {cell(desc)}
-                                        </td>
-
-                                        <td>{cell(account)}</td>
-                                        <td>{cell(marketplace)}</td>
+                                        <td className="th-right">{cell(capitalize(type))}</td>
+                                        <td>{cell(capitalize(desc))}</td>
+                                        <td>{cell(capitalize(account))}</td>
+                                        <td>{cell(capitalize(marketplace))}</td>
 
                                         <td
                                             className={total < 0 ? "negative th-right" : "th-right"}

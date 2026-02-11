@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useMemo, useRef, forwardRef, useImperativeHandle, useEffect } from "react";
 import ChartsGrid from "./ChartsGrid";
 import ChartCard from "./ChartCard";
 
@@ -12,6 +12,7 @@ import {
   topFeeDescriptionsAbs,
   feesNetByDay,
   feesBySettlementNet,
+  feesBySettlementAbs,
 } from "../../../utils/feesCharts";
 
 const InpaymentsFeesCharts = forwardRef(({ loading = true, fees = [] }, ref) => {
@@ -44,7 +45,7 @@ const InpaymentsFeesCharts = forwardRef(({ loading = true, fees = [] }, ref) => 
   const byType = useMemo(() => feesByTypeAbs(fees), [fees]);
   const topDesc = useMemo(() => topFeeDescriptionsAbs(fees, 10), [fees]);
   const netDay = useMemo(() => feesNetByDay(fees), [fees]);
-  const bySettlement = useMemo(() => feesBySettlementNet(fees, 12), [fees]);
+  const bySettlement = useMemo(() => feesBySettlementAbs(fees, 12), [fees]);
 
   return (
     <ChartsGrid>

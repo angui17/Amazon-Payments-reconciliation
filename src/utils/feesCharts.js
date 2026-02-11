@@ -21,7 +21,7 @@ const netTotal = (f) => toNumber(f.TOTAL ?? f.total ?? 0);
 export const feesByTypeDoughnut = (fees = []) => {
   const map = fees.reduce((acc, f) => {
     const type = f.TYPE || "Unknown";
-    acc[type] = (acc[type] || 0) + absTotal(f);
+   acc[type] = (acc[type] || 0) + Math.abs(getFeeAmount(f));
     return acc;
   }, {});
 
@@ -96,17 +96,32 @@ export const feesBySettlementBar = (fees = [], limit = 12) => {
   };
 };
 
+export const getFeeAmount = (r) => {
+  const raw =
+    r?.amount ??
+    r?.AMOUNT ??
+    r?.["total-amount"] ??
+    r?.TOTAL ??
+    r?.total ??
+    0;
 
-export const getFeeAmount = (r) =>
-  toNumber(r.AMOUNT ?? r.amount ?? r.TOTAL ?? r.total ?? 0);
+  const n = Number(String(raw).replace(/,/g, "").trim());
+  return Number.isFinite(n) ? n : 0;
+};
+
 
 export const getFeeType = (r) => String(r.TYPE ?? "Unknown").trim() || "Unknown";
 
 export const getFeeDesc = (r) =>
   String(r.AMOUNT_DESCRIPTION ?? r.DESCRIPTION ?? "Unknown").trim() || "Unknown";
 
-export const getFeeSettlement = (r) =>
-  String(r.SETTLEMENT_ID ?? r.settlement_id ?? "Unknown").trim() || "Unknown";
+export const getFeeSettlement = (r) => {
+  const sid = r?.id ?? r?.SETTLEMENT_ID ?? r?.settlementId ?? r?.settlement_id ?? "";
+  const s = String(sid).trim();
+  return s || "Unknown";
+};
+
+
 
 // Normaliza día a string comparable (YYYY-MM-DD si viene así, o MM-DD-YYYY si viene así)
 export const getFeeDay = (r) => {
@@ -183,15 +198,44 @@ export const feesNetByDay = (rows = []) => {
 // 4) Barras: fees por settlement (Σ amount por SETTLEMENT_ID)
 export const feesBySettlementNet = (rows = [], topN = 12) => {
   const map = new Map();
-  for (const r of rows) {
-    const key = getFeeSettlement(r);
-    const v = getFeeAmount(r);
-    map.set(key, (map.get(key) ?? 0) + v);
+
+  for (const r of Array.isArray(rows) ? rows : []) {
+    // settlement viene en `id`
+    const sid = String(r?.id ?? "").trim();
+    if (!sid) continue;
+
+    // monto viene en `amount`
+    const n = Number(String(r?.amount ?? 0).replace(/,/g, "").trim());
+    const amt = Number.isFinite(n) ? n : 0;
+
+    map.set(sid, (map.get(sid) ?? 0) + amt);
   }
 
-  // para no hacer un infierno visual: topN por abs(net)
   const sorted = Array.from(map.entries())
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, topN);
+
+  return {
+    labels: sorted.map(([k]) => k),
+    values: sorted.map(([, v]) => v),
+  };
+};
+
+export const feesBySettlementAbs = (rows = [], topN = 12) => {
+  const map = new Map();
+
+  for (const r of Array.isArray(rows) ? rows : []) {
+    const sid = String(r?.id ?? "").trim();
+    if (!sid) continue;
+
+    const amt = Number(r?.amount ?? 0);
+    const v = Number.isFinite(amt) ? Math.abs(amt) : 0;
+
+    map.set(sid, (map.get(sid) ?? 0) + v);
+  }
+
+  const sorted = Array.from(map.entries())
+    .sort((a, b) => b[1] - a[1])
     .slice(0, topN);
 
   return {

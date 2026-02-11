@@ -20,7 +20,7 @@ const OrdersFiltersBar = ({
     };
 
     return (
-        <div className="filters-card">
+        <div className="filters-card filters-card--orders">
             <div className="filters-top">
                 {/* LEFT GRID */}
                 <div className="filters-left">
@@ -89,22 +89,20 @@ const OrdersFiltersBar = ({
                     </div>
 
                     {/* RIGHT */}
-                    <div className="filters-right">
-                        <div className="filter-group">
-                            <div className="filter-label">Status</div>
-                            <select
-                                className="filter-input"
-                                value={v.status}
-                                onChange={(e) => onChange({ ...v, status: e.target.value })}
-                            >
-                                <option value="">All</option>
-                                <option value="C">Completed</option>
-                                <option value="P">Pending</option>
-                            </select>
-                        </div>
+                    <div className="filter-group">
+                        <div className="filter-label">Status</div>
+                        <select
+                            className="filter-input"
+                            value={v.status}
+                            onChange={(e) => onChange({ ...v, status: e.target.value })}
+                        >
+                            <option value="">All</option>
+                            <option value="C">Completed</option>
+                            <option value="P">Pending</option>
+                        </select>
                     </div>
 
-                    <div className="filters-actions" style={{ paddingTop: "10px" }}>
+                    <div className="filters-actions filters-actions--orders">
                         <button className="btn btn-sm btn-primary" onClick={onApply}>
                             Apply
                         </button>

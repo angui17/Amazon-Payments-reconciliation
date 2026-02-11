@@ -166,7 +166,7 @@ const InpaymentsFees = () => {
     });
   };
 
-
+console.log(filteredFees)
   return (
     <div className="page">
       <div className="content-header">

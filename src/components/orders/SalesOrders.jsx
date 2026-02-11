@@ -86,15 +86,25 @@ const SalesOrders = () => {
         dateRange.end,
     ]);
 
+    const sorted = useMemo(() => {
+        const toTime = (r) => {
+            const v = r?.DATE_TIME;
+            const t = v ? new Date(v).getTime() : NaN;
+            return Number.isFinite(t) ? t : -Infinity; // sin fecha al final
+        };
+
+        return [...filtered].sort((a, b) => toTime(b) - toTime(a));
+    }, [filtered]);
+
     // 2) PAGINATE
     const pagination = useMemo(
         () =>
             paginate({
-                rows: filtered,
+                rows: sorted,
                 page,
                 pageSize,
             }),
-        [filtered, page, pageSize]
+        [sorted, page, pageSize]
     );
 
     const { page: safePage, totalItems, totalPages, visibleRows: paginated } = pagination;

@@ -3,15 +3,15 @@ import "../../../styles/filters.css";
 
 const SalesFeesFilters = ({
   value = {},
-  onChange = () => {},
-  onApply = () => {},
-  onClear = () => {},
+  onChange = () => { },
+  onApply = () => { },
+  onClear = () => { },
   typeOptions = [],
 }) => {
   const v = {
     from: value.from || "",
     to: value.to || "",
-    settlement: value.settlement || "",   
+    settlement: value.settlement || "",
     status: value.status || "",
     type: value.type || "",
     description: value.description || "",
@@ -25,7 +25,7 @@ const SalesFeesFilters = ({
     { value: "", label: "All" },
     { value: "P", label: "Pending" },
     { value: "C", label: "Completed" },
-    { value: "F", label: "Failed" },
+    { value: "Unknown", label: "Unknown" },
   ];
 
   return (
@@ -59,8 +59,8 @@ const SalesFeesFilters = ({
           <input
             className="filter-input"
             placeholder="e.g. 23405515541"
-            value={v.settlement} 
-            onChange={(e) => onChange({ ...v, settlement: e.target.value })} 
+            value={v.settlement}
+            onChange={(e) => onChange({ ...v, settlement: e.target.value })}
           />
         </div>
 

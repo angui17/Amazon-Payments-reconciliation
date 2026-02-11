@@ -20,6 +20,7 @@ const diffClass = (n) => {
 };
 
 const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
+    console.log(rows)
     if (!rows.length) {
         return (
             <div className="card table-card" style={{ padding: 14 }}>

@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { Line } from "react-chartjs-2";
+import { ORANGE, SLATE } from "../../utils/feesCharts";
 
 const PaymentsTimeline = forwardRef(({ data = [] }, ref) => {
   const chartRef = useRef(null);
@@ -25,8 +26,14 @@ const PaymentsTimeline = forwardRef(({ data = [] }, ref) => {
           tension: 0.35,
           fill: true,
           borderWidth: 2,
+
+          borderColor: ORANGE.border,
+          backgroundColor: ORANGE.soft,
+
           pointRadius: 0,
           pointHoverRadius: 4,
+          pointBackgroundColor: ORANGE.solid,
+          pointBorderColor: ORANGE.border,
         },
       ],
     }),
@@ -43,8 +50,14 @@ const PaymentsTimeline = forwardRef(({ data = [] }, ref) => {
       },
       interaction: { intersect: false, mode: "index" },
       scales: {
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
-        y: { grid: { drawBorder: false }, ticks: { maxTicksLimit: 5 } },
+        x: {
+          grid: { display: false },
+          ticks: { maxTicksLimit: 8, color: SLATE.border },
+        },
+        y: {
+          grid: { drawBorder: false, color: SLATE.soft },
+          ticks: { maxTicksLimit: 5, color: SLATE.border },
+        },
       },
       devicePixelRatio: 2,
     }),

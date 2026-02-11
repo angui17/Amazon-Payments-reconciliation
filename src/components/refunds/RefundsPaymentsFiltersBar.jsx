@@ -22,8 +22,8 @@ const RefundsPaymentsFiltersBar = ({
   };
 
   return (
-    <div className="filters-card">
-      <div className="filters-row">
+    <div className="filters-card filters-card--refunds-payments">
+    <div className="filters-row-inline">
         {/* LEFT */}
         <div className="filters-left">
           <div className="filter-group">
@@ -112,22 +112,14 @@ const RefundsPaymentsFiltersBar = ({
         </div>
 
         {/* ACTIONS */}
-        <div className="filters-actions" style={{ marginTop: "15px" }}>
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={onApply}
-            type="button"
-          >
-            Apply
-          </button>
-          <button
-            className="btn btn-sm"
-            onClick={onClear}
-            type="button"
-          >
-            Clear
-          </button>
-        </div>
+        <div className="filters-actions--refunds-payments">
+        <button className="btn btn-sm btn-primary" onClick={onApply} type="button">
+          Apply
+        </button>
+        <button className="btn btn-sm" onClick={onClear} type="button">
+          Clear
+        </button>
+      </div>
       </div>
     </div>
   );

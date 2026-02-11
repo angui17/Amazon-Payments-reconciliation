@@ -1,7 +1,10 @@
 import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 
-const RefundBreakdownBar = React.forwardRef(({ breakdown = {} }, ref) => {
+const RefundBreakdownBar = React.forwardRef(function RefundBreakdownBar(
+  { breakdown = {} },
+  ref
+) {
   const { principal = 0, tax = 0, fees = 0 } = breakdown || {};
 
   const data = useMemo(
@@ -36,12 +39,18 @@ const RefundBreakdownBar = React.forwardRef(({ breakdown = {} }, ref) => {
 
   const options = useMemo(
     () => ({
+      indexAxis: "y",
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { position: "bottom" },
         tooltip: {
-          callbacks: { label: (ctx) => `$${ctx.raw.toLocaleString()}` },
+          callbacks: {
+            label: (ctx) => {
+              const raw = Number(ctx.raw || 0);
+              return `$${raw.toLocaleString()}`;
+            },
+          },
         },
       },
       scales: {
@@ -49,7 +58,9 @@ const RefundBreakdownBar = React.forwardRef(({ breakdown = {} }, ref) => {
         y: {
           stacked: true,
           grid: { drawBorder: false },
-          ticks: { callback: (v) => `$${v / 1000}k` },
+          ticks: {
+            callback: (v) => `$${Number(v) / 1000}k`,
+          },
         },
       },
     }),

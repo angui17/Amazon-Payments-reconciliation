@@ -2,7 +2,7 @@ import React from "react";
 import StatusBadge from "../ui/StatusBadge";
 import { formatDescription } from "../../utils/textUtils";
 import OrdersTableHeaders from "./OrdersTableHeaders";
-import OrdersTableSkeleton from "./OrdersTableSkeleton"; 
+import OrdersTableSkeleton from "./OrdersTableSkeleton";
 
 const OrdersTableBody = ({
   rows = [],
@@ -56,52 +56,51 @@ const OrdersTableBody = ({
             {/* Rows */}
             {!loading && rows.length > 0
               ? rows.map((row, idx) => {
-                  const productSales = Number(row.PRODUCT_SALES);
-                  const total = Number(row.TOTAL);
+                const productSales = Number(row.PRODUCT_SALES);
+                const total = Number(row.TOTAL);
 
-                  return (
-                    <tr key={`${row.ORDER_ID || row.order_id || idx}-${idx}`}>
-                      <td className="">{row.ORDER_ID || row.order_id || "-"}</td>
-                      <td className="">{row.SKU || row.sku || "-"}</td>
+                return (
+                  <tr key={`${row.ORDER_ID || row.order_id || idx}-${idx}`}>
+                    <td className="">{row.ORDER_ID || row.order_id || "-"}</td>
+                    <td className="">{row.SKU || row.sku || "-"}</td>
 
-                      <td className="th-right" title={row.DESCRIPTION || row.description || ""}>
-                        {formatDescription(row.DESCRIPTION || row.description)}
-                      </td>
+                    <td className="th-right" title={row.DESCRIPTION || row.description || ""}>
+                      {formatDescription(row.DESCRIPTION || row.description)}
+                    </td>
 
-                      <td className="th-center">{row.QUANTITY ?? row.quantity ?? "-"}</td>
-                      <td className="th-center">{row.MARKETPLACE || row.marketplace || "-"}</td>
-                      <td className="th-center">{row.FULFILLMENT || row.fulfillment || "-"}</td>
+                    <td className="th-center">{row.QUANTITY ?? row.quantity ?? "-"}</td>
+                    <td className="th-center">{formatDescription(row.MARKETPLACE || row.marketplace || "-")}</td>
+                    <td className="th-center">{formatDescription(row.FULFILLMENT || row.fulfillment || "-")}</td>
 
-                      <td className="muted">
-                        {`${row.ORDER_CITY || row.city || ""}${
-                          row.ORDER_STATE || row.state ? `, ${row.ORDER_STATE || row.state}` : ""
+                    <td className="muted">
+                      {`${formatDescription(row.ORDER_CITY || row.city || "")}${row.ORDER_STATE || row.state ? `, ${row.ORDER_STATE || row.state}` : ""
                         }` || "-"}
-                      </td>
+                    </td>
 
-                      <td className={`${productSales < 0 ? "negative " : ""}`}>
-                        {Number.isFinite(productSales) ? `$${productSales.toLocaleString()}` : "-"}
-                      </td>
+                    <td className={`${productSales < 0 ? "negative " : ""}`}>
+                      {Number.isFinite(productSales) ? `$${productSales.toLocaleString()}` : "-"}
+                    </td>
 
-                      <td className="muted ">
-                        {row.DATE_TIME ? new Date(row.DATE_TIME).toLocaleDateString() : "-"}
-                      </td>
+                    <td className="muted ">
+                      {row.DATE_TIME ? new Date(row.DATE_TIME).toLocaleDateString() : "-"}
+                    </td>
 
-                      <td className={`${total < 0 ? "negative " : ""}`}>
-                        {Number.isFinite(total) ? `$${total.toLocaleString()}` : "-"}
-                      </td>
+                    <td className={`${total < 0 ? "negative " : ""}`}>
+                      {Number.isFinite(total) ? `$${total.toLocaleString()}` : "-"}
+                    </td>
 
-                      <td>
-                        <StatusBadge status={row.STATUS || row.status} />
-                      </td>
+                    <td>
+                      <StatusBadge status={row.STATUS || row.status} />
+                    </td>
 
-                      <td className="th-center">
-                        <button className="btn btn-sm" onClick={() => onView?.(row)}>
-                          Details
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                    <td className="th-center">
+                      <button className="btn btn-sm" onClick={() => onView?.(row)}>
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
               : null}
           </tbody>
         </table>

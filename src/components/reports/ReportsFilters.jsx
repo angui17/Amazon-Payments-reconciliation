@@ -70,10 +70,7 @@ const ReportsFilters = ({
         </div>
 
         <div className="filters-row filters-actions">
-          <div style={{ marginRight: 12, opacity: 0.8 }}>
-            {loading ? "Loading..." : totalItems ? `${from}-${to} of ${totalItems}` : "0 records"}
-          </div>
-
+         
           <button className="btn btn-sm btn-primary" onClick={onApply} disabled={loading} type="button">
             Apply
           </button>

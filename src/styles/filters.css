@@ -21,6 +21,14 @@
   flex: 1;
 }
 
+.filters-left .filters-actions {
+  grid-column: 5 / -1;
+  /* desde la col 5 hasta la última */
+  justify-self: end;
+  /* pegado a la derecha */
+  align-self: end;
+}
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -223,7 +231,8 @@
 
 /* Multi select compacto: se ve como input pero con altura controlada */
 .filter-input--multi {
-  height: 36px;           /* mantiene la estética */
+  height: 36px;
+  /* mantiene la estética */
   padding: 6px 10px;
   overflow: auto;
 }
@@ -288,9 +297,11 @@ select.filter-input--multi[multiple] {
 
 /* Acciones alineadas como un campo más */
 .filters-card--sales .filters-actions--inline {
-  justify-content: flex-end;
-  gap: 10px;
+  grid-column: 5 / -1;
+  justify-self: end;
+  align-self: end;
 }
+
 
 /* Responsive */
 @media (max-width: 1100px) {
@@ -311,4 +322,195 @@ select.filter-input--multi[multiple] {
   .filters-card--sales .filters-actions--inline .btn {
     width: 100%;
   }
+}
+
+/* ===== Orders Filters (scoped) ===== */
+.filters-card--orders .filters-left {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr)) auto;
+  /* 5 inputs + acciones */
+  gap: 12px;
+  align-items: end;
+}
+
+/* importante: si por accidente queda algún .filters-right adentro, que no rompa */
+.filters-card--orders .filters-right {
+  width: auto;
+  display: contents;
+  /* lo “desaparece” como wrapper */
+}
+
+.filters-card--orders .filters-left {
+  grid-template-columns: repeat(6, minmax(150px, 1fr)) auto;
+  align-items: end;
+}
+
+/* ===== Orders Filters (scoped) ===== */
+.filters-card--orders .filters-left {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) minmax(180px, 2fr) 200px;
+  /* 4 campos + Status más ancho + columna fija para botones */
+  gap: 12px;
+  align-items: end;
+}
+
+/* Status ocupa la columna “ancha” (la 5) */
+.filters-card--orders .filter-group:nth-child(5) {
+  grid-column: 5 / 6;
+}
+
+/* Botones SIEMPRE en la última columna */
+.filters-card--orders .filters-actions--orders {
+  grid-column: 6 / 7;
+  justify-self: end;
+  align-self: end;
+  height: 36px;
+  padding-top: 0;
+  align-self: center;
+}
+
+@media (max-width: 1200px) {
+  .filters-card--orders .filters-left {
+    grid-template-columns: repeat(2, minmax(160px, 1fr)) 200px;
+  }
+
+  .filters-card--orders .filters-actions--orders {
+    grid-column: 3 / 4;
+  }
+}
+
+/* ===== Orders Payments Filters (scoped) ===== */
+.filters-card--payments .filters-row-inline {
+  display: grid;
+  grid-template-columns:
+    minmax(160px, 1fr)
+    /* from */
+    minmax(160px, 1fr)
+    /* to */
+    minmax(160px, 1fr)
+    /* order */
+    minmax(160px, 1fr)
+    /* sku */
+    minmax(220px, 1.4fr)
+    /* amount desc (más ancho) */
+    minmax(180px, 1fr)
+    /* status */
+    auto;
+  /* actions */
+  gap: 12px;
+  align-items: end;
+}
+
+/* Botones pegados a la derecha y alineados con inputs */
+.filters-card--payments .filters-actions--payments {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: end;
+  padding-top: 0;
+}
+
+/* Responsive: baja a 2 columnas + botones al final */
+@media (max-width: 1200px) {
+  .filters-card--payments .filters-row-inline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .filters-card--payments .filters-actions--payments {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-card--payments .filters-row-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-card--payments .filters-actions--payments {
+    justify-content: stretch;
+  }
+
+  .filters-card--payments .filters-actions--payments .btn {
+    width: 100%;
+  }
+}
+
+/* ===== Refunds Payments Filters (scoped) ===== */
+.filters-card--refunds-payments .filters-row-inline {
+  display: grid;
+  grid-template-columns:
+    minmax(160px, 1fr)
+    /* from */
+    minmax(160px, 1fr)
+    /* to */
+    minmax(180px, 1.2fr)
+    /* settlement */
+    minmax(180px, 1.2fr)
+    /* order */
+    minmax(160px, 1fr)
+    /* sku */
+    minmax(160px, 1fr)
+    /* status */
+    minmax(180px, 1fr)
+    /* reason */
+    auto;
+  /* actions */
+  gap: 12px;
+  align-items: end;
+}
+
+
+.filters-card--refunds-payments .filters-left {
+  display: contents;
+}
+
+.filters-card--refunds-payments .filters-actions--refunds-payments {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: end;
+  padding-top: 0;
+}
+
+@media (max-width: 1200px) {
+  .filters-card--refunds-payments .filters-row-inline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .filters-card--refunds-payments .filters-actions--refunds-payments {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-card--refunds-payments .filters-row-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-card--refunds-payments .filters-actions--refunds-payments {
+    justify-content: stretch;
+  }
+
+  .filters-card--refunds-payments .filters-actions--refunds-payments .btn {
+    width: 100%;
+  }
+}
+
+.filters-card--refunds-payments .filters-actions--refunds-payments {
+  height: 36px;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.filters-card--refunds-payments .filters-actions--refunds-payments .btn {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
 }
