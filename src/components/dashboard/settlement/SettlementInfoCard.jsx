@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import "../../../styles/settlement.css";
 import StatusBadge from "../../common/StatusBadge"
 import { onlyDate } from "../../../utils/dateUtils";
+import { effectiveStatusFromDiff } from "../../../utils/settlementsTableUtils";
 
 const prettyKey = (k) =>
   String(k)
@@ -55,8 +56,28 @@ const isDateKey = (k) => {
 };
 
 
-const SettlementInfoCard = ({ row, title = "Settlement data" }) => {
-  const entries = useMemo(() => (row ? Object.entries(row) : []), [row]);
+const SettlementInfoCard = ({ row, title = "Settlement data", allowKeys = null }) => {
+  const entries = useMemo(() => {
+    if (!row) return [];
+    const all = Object.entries(row);
+    if (!Array.isArray(allowKeys) || allowKeys.length === 0) return all;
+    const allowed = new Set(allowKeys.map((k) => String(k).toLowerCase()));
+    return all.filter(([k]) => allowed.has(String(k).toLowerCase()));
+  }, [row, allowKeys]);
+
+  const effectiveStatus = useMemo(() => {
+    if (!row) return null;
+
+    // ajustá el nombre si tu diff se llama distinto
+    const diff =
+      row?.diffPayments ??
+      row?.difference ??
+      row?.differenceTotal ??
+      0;
+
+    return effectiveStatusFromDiff(diff); // "C" o "P"
+  }, [row]);
+
 
   if (!row) {
     return (
@@ -83,7 +104,7 @@ const SettlementInfoCard = ({ row, title = "Settlement data" }) => {
               <div className="settlement-kv-value">
                 {k.toLowerCase() === "status" ? (
                   (() => {
-                    const s = mapStatus(v);
+                    const s = mapStatus(effectiveStatus);
                     return s.badge ? (
                       <StatusBadge status={s.badge}>{s.label}</StatusBadge>
                     ) : (

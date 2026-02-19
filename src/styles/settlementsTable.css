@@ -234,13 +234,13 @@
     }
 }
 
-.flag-badge{
-  white-space: nowrap;   
-  line-height: 1;         
-  height: 22px;          
+.flag-badge {
+    white-space: nowrap;
+    line-height: 1;
+    height: 22px;
 }
 
-.flags-wrap{
-  align-items: center;    
-  justify-content: center; 
+.flags-wrap {
+    align-items: center;
+    justify-content: center;
 }

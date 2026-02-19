@@ -1,0 +1,88 @@
+.missing-collapse {
+  margin-top: 14px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.missing-collapse__header {
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: #ffffff;
+  border: none;
+  text-align: left;
+}
+
+.missing-collapse__header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #cc5500;
+}
+
+.missing-collapse__header:hover h3 {
+  opacity: 0.85;
+}
+
+.missing-collapse__icon {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.missing-collapse__icon.open {
+  transform: rotate(180deg);
+}
+
+.missing-collapse__content {
+  padding: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+.missing-fee-table-wrap {
+  width: 100%;
+  overflow: auto;
+  background: #fff;
+}
+
+.missing-fee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.missing-fee-table thead th {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.missing-fee-table tbody td {
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 10px 12px;
+}
+
+.missing-fee-table tbody tr:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.right {
+  text-align: right;
+}
+
+.missing-fee-empty {
+  padding: 10px 2px;
+  opacity: 0.75;
+}

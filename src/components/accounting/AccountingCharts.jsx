@@ -33,14 +33,22 @@ const buildByDayFromRows = (rows) => {
   const map = new Map();
 
   for (const r of rows) {
-    const dateRaw = pick(r, ["date", "DATE", "depositDateDate", "postedDate", "depositDate"]);
+    const dateRaw = pick(r, ["depositDateDate", "date", "DATE", "postedDate", "depositDate"]);
     const date = onlyDate(dateRaw);
     if (!date) continue;
 
     const amazon = toNum(pick(r, ["amazonTotal", "amazon_total", "AMAZON_TOTAL", "amazonTotalReported"]));
     const sapPay = toNum(pick(r, ["sapPaymentsTotal", "sap_payments_total", "SAP_PAYMENTS_TOTAL"]));
     const sapDebit = toNum(pick(r, ["sapJournalTotalDebit", "sapJournalDebit", "SAP_JOURNAL_DEBIT"]));
-    const diffPay = toNum(pick(r, ["diffPaymentsTotal", "diff_payments_total", "DIFF_PAYMENTS_TOTAL", "difference"]));
+    const diffPay = toNum(
+      pick(r, [
+        "diffPayments",
+        "diffPaymentsTotal",
+        "diff_payments_total",
+        "DIFF_PAYMENTS_TOTAL",
+        "difference",
+      ])
+    );
 
     if (amazon === 0 && sapPay === 0 && sapDebit === 0 && diffPay === 0) continue;
 

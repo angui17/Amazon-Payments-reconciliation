@@ -13,3 +13,23 @@ export const getDashboard = ({ fecha_desde, fecha_hasta, limit_records = 50, sta
         raw: true
     });
 }
+
+// WS (266)
+export const getADashboardSettlementDetails = ({ settlementId }) => {
+    return idaRequest({
+        id: 266,
+        params: { settlementId: String(settlementId) },
+        raw: true
+    });
+}
+
+// WS (280)
+export const getSapInvoicesBySettlement = ({ settlementId, limit_records = 50 }) => {
+    return idaRequest({
+        id: 280,
+        params: {
+            settlementId: String(settlementId),
+            limit_records,
+        }
+    });
+}

@@ -64,6 +64,154 @@ export const sumFeesColumns = (row, keys = [
 ]) =>
   keys.reduce((acc, k) => acc + Math.abs(toNum(row?.[k])), 0);
 
+
+// ---------- settlements / dashboard helpers ----------
+
+export const normStatus = (r) =>
+  String(r?.status ?? r?.STATUS ?? r?.Status ?? "").trim().toUpperCase();
+
+export const isTruthy = (v) =>
+  v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
+
+export const getReconciledBool = (r) => {
+  const v =
+    r?.reconciled ??
+    r?.RECONCILED ??
+    r?.isReconciled ??
+    r?.IS_RECONCILED;
+  return isTruthy(v);
+};
+
+// diff accessor (para tu regla: diff==0 => Completed, diff!=0 => Pending)
+export const getDiff = (r) =>
+  toNum(
+    r?.diffPayments ??
+      r?.difference ??
+      r?.diff ??
+      r?.DIFF ??
+      r?.DIFF_PAYMENTS ??
+      0
+  );
+
+export const getAmazonAmount = (r) =>
+  toNum(
+    r?.amazonTotalReported ??
+      r?.amazonTotal ??
+      r?.AMAZON_TOTAL ??
+      r?.amazon_total ??
+      r?.AMAZON ??
+      r?.amountAmazon ??
+      0
+  );
+
+export const getSapAmount = (r) =>
+  toNum(
+    r?.sapPaymentsTotal ??
+      r?.sapTotal ??
+      r?.SAP_TOTAL ??
+      r?.sap_total ??
+      r?.SAP ??
+      r?.amountSap ??
+      0
+  );
+
+export const hasMissingSettlementId = (r) =>
+  !String(r?.settlementId ?? r?.SETTLEMENT_ID ?? r?.settlement_id ?? "").trim();
+
+export const hasAmazonInternalDiff = (r) => Number(r?.exceptionsCount || 0) > 0;
+
+// --- helper: effective status for KPIs (single source of truth) ---
+export const effectiveStatusForRow = (r) => {
+  // 1) Si viene reconciled, manda
+  const hasReconciledField =
+    r?.reconciled !== undefined ||
+    r?.RECONCILED !== undefined ||
+    r?.isReconciled !== undefined ||
+    r?.IS_RECONCILED !== undefined;
+
+  if (hasReconciledField) {
+    return getReconciledBool(r) ? "COMPLETED" : "PENDING";
+  }
+
+  // 2) Si no viene reconciled, fallback por status
+  const s = normStatus(r);
+  if (["COMPLETED", "C", "RECONCILED"].includes(s)) return "COMPLETED";
+  if (["P", "PENDING"].includes(s)) return "PENDING";
+  if (["NR", "NOT_RECONCILED", "NOT RECONCILED"].includes(s)) return "NOT_RECONCILED";
+
+  // 3) último fallback: por diff
+  const diff = getDiff(r);
+  return diff === 0 ? "COMPLETED" : "PENDING";
+};
+
+/**
+ * KPIs para settlements (Dashboard / Accounting)
+ * Regla: Pending = diff != 0, Completed = diff == 0
+ * Reconciled/Not reconciled: si existe campo reconciled, lo respeta.
+ */
+export const buildSettlementsReconciliationKpis = (
+  rows,
+  { currency = "USD", locale = "en-US" } = {}
+) => {
+  const safe = Array.isArray(rows) ? rows : [];
+  const settlementsCount = safe.length;
+
+  let pendingCount = 0;
+  let reconciledCount = 0;
+  let notReconciledCount = 0;
+
+  let amazonTotal = 0;
+  let sapTotal = 0;
+
+  let amazonInternalDiffCount = 0;
+  let missingSettlementIdCount = 0;
+
+  for (const r of safe) {
+    const eff = effectiveStatusForRow(r);
+
+    // ✅ Pending basado en effective status (no en diff)
+    if (eff === "PENDING") pendingCount++;
+
+    // ✅ Reconciled/Not reconciled: mantenemos tu lógica, pero consistente con reconciled cuando existe
+    const hasReconciledField =
+      r?.reconciled !== undefined ||
+      r?.RECONCILED !== undefined ||
+      r?.isReconciled !== undefined ||
+      r?.IS_RECONCILED !== undefined;
+
+    if (hasReconciledField) {
+      const reconciled = getReconciledBool(r);
+      if (reconciled) reconciledCount++;
+      else notReconciledCount++;
+    } else {
+      // si no viene reconciled, usamos eff/status
+      if (eff === "COMPLETED") reconciledCount++;
+      else if (eff === "NOT_RECONCILED") notReconciledCount++;
+    }
+
+    amazonTotal += getAmazonAmount(r);
+    sapTotal += getSapAmount(r);
+
+    if (hasAmazonInternalDiff(r)) amazonInternalDiffCount++;
+    if (hasMissingSettlementId(r)) missingSettlementIdCount++;
+  }
+
+  const differenceTotal = amazonTotal - sapTotal;
+
+  return {
+    settlementsCount,
+    pendingCount,
+    reconciledCount,
+    notReconciledCount,
+    amazonTotalFormatted: money(amazonTotal, currency, locale),
+    sapTotalFormatted: money(sapTotal, currency, locale),
+    differenceTotalFormatted: money(differenceTotal, currency, locale),
+    amazonInternalDiffCount,
+    missingSettlementIdCount,
+    raw: { amazonTotal, sapTotal, differenceTotal },
+  };
+};
+
 // ---------- KPI builders ----------
 /**
  * mode:

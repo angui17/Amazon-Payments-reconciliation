@@ -5,12 +5,11 @@ import AccountingTableHeaders from "./AccountingTableHeaders";
 import "../../styles/settlementsTable.css";
 
 import { safeNum, formatMoney } from "../../utils/numberUtils";
-import { STATUS_LABELS } from "../../utils/status";
+import { effectiveStatusFromDiff, mapStatus } from "../../utils/settlementsTableUtils";
 
-const statusClass = (code) => {
-    if (code === "C") return "status-success";
-    if (code === "P") return "status-warning";
-    return "status-neutral";
+const StatusPill = ({ status }) => {
+    const { label, className } = mapStatus(status);
+    return <span className={`status-pill ${className}`}>{label}</span>;
 };
 
 const diffClass = (n) => {
@@ -20,7 +19,6 @@ const diffClass = (n) => {
 };
 
 const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
-    console.log(rows)
     if (!rows.length) {
         return (
             <div className="card table-card" style={{ padding: 14 }}>
@@ -34,7 +32,7 @@ const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
             <div className="table-header" style={{ padding: 14 }}>
                 <h3>Settlements</h3>
                 <div style={{ display: "flex" }}>
-                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
+                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} results</div>
 
                     {onExportPdf ? (
                         <button
@@ -57,6 +55,7 @@ const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
                     <tbody>
                         {rows.map((r, idx) => {
                             const diff = Number(r.diffPayments ?? 0);
+                            const effStatus = effectiveStatusFromDiff(diff); // "C" o "P"
 
                             const flags = [];
                             if (safeNum(r.missingJournal) === 1)
@@ -114,9 +113,7 @@ const AccountingTable = ({ rows = [], onDetails, onExportPdf }) => {
                                     </td>
 
                                     <td className="th-center">
-                                        <span className={`status-pill ${statusClass(r.status)}`}>
-                                            {STATUS_LABELS?.[r.status] || r.status}
-                                        </span>
+                                        <StatusPill status={effStatus} />
                                     </td>
 
                                     <td className="th-center">

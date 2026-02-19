@@ -9,81 +9,84 @@ import {
   lineOptions,
   barOptions,
   donutOptions,
+  buildStatusCountsFromRows,
+  buildDepositsByDayCountsFromRows,
 } from "../../utils/dashboardCharts";
 
 import "../../styles/charts.css";
 
-const DashboardCharts = forwardRef(({ charts }, ref) => {
+const DashboardCharts = forwardRef(({ charts, rows = [] }, ref) => {
   // refs a cada chart
   const depositsRef = useRef(null);
   const reconRef = useRef(null);
   const statusRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-  getChartImages: () => {
-    const images = [];
+    getChartImages: () => {
+      const images = [];
 
-    const grab = (r) => {
-      const cur = r.current;
-      if (!cur) return null;
+      const grab = (r) => {
+        const cur = r.current;
+        if (!cur) return null;
 
-      // react-chartjs-2 v4/v5 safe
-      const chart =
-        typeof cur.toBase64Image === "function"
-          ? cur
-          : cur.chart && typeof cur.chart.toBase64Image === "function"
-          ? cur.chart
-          : null;
+        // react-chartjs-2 v4/v5 safe
+        const chart =
+          typeof cur.toBase64Image === "function"
+            ? cur
+            : cur.chart && typeof cur.chart.toBase64Image === "function"
+              ? cur.chart
+              : null;
 
-      if (!chart) return null;
+        if (!chart) return null;
 
-      // 🔹 guardamos estado original
-      const prevDpr = chart.options.devicePixelRatio ?? 1;
-      const prevW = chart.width;
-      const prevH = chart.height;
+        // 🔹 guardamos estado original
+        const prevDpr = chart.options.devicePixelRatio ?? 1;
+        const prevW = chart.width;
+        const prevH = chart.height;
 
-      // 🚀 export en alta resolución
-      chart.options.devicePixelRatio = 3;     // calidad HD
-      chart.resize(1200, 420);               // tamaño “PDF friendly”
-      chart.update("none");
+        // 🚀 export en alta resolución
+        chart.options.devicePixelRatio = 3;     // calidad HD
+        chart.resize(1200, 420);               // tamaño “PDF friendly”
+        chart.update("none");
 
-      const img = chart.toBase64Image("image/png", 1.0);
+        const img = chart.toBase64Image("image/png", 1.0);
 
-      // 🔙 restauramos estado original
-      chart.options.devicePixelRatio = prevDpr;
-      chart.resize(prevW, prevH);
-      chart.update("none");
+        // 🔙 restauramos estado original
+        chart.options.devicePixelRatio = prevDpr;
+        chart.resize(prevW, prevH);
+        chart.update("none");
 
-      return img;
-    };
+        return img;
+      };
 
-    [depositsRef, reconRef, statusRef].forEach((r) => {
-      const img = grab(r);
-      if (img) images.push(img);
-    });
+      [depositsRef, reconRef, statusRef].forEach((r) => {
+        const img = grab(r);
+        if (img) images.push(img);
+      });
 
-    return images;
-  },
-}));
+      return images;
+    },
+  }));
 
 
   if (!charts) return null;
 
   const deposits = charts.depositsByDay || [];
-  const status = charts.statusCounts || [];
+  const statusFromRows = buildStatusCountsFromRows(rows);
+  const reconFromRows = buildDepositsByDayCountsFromRows(rows);
 
   return (
     <div className="charts-grid">
 
       <ChartCard title="Reconciled vs Not Reconciled (by Day)">
         <div className="chart-canvas" style={{ height: "260px" }}>
-          <Bar ref={reconRef} data={buildReconBar(deposits)} options={barOptions} />
+          <Bar ref={reconRef} data={buildReconBar(reconFromRows)} options={barOptions} />
         </div>
       </ChartCard>
 
       <ChartCard title="Status Breakdown">
         <div className="chart-canvas" style={{ height: "260px" }}>
-          <Doughnut ref={statusRef} data={buildStatusDonut(status)} options={donutOptions} />
+          <Doughnut ref={statusRef} data={buildStatusDonut(statusFromRows)} options={donutOptions} />
         </div>
       </ChartCard>
 

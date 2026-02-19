@@ -4,16 +4,17 @@ import { Link } from "react-router-dom";
 import ErrorsTableHeaders from "./ErrorsTableHeaders";
 import "../../styles/settlements-table.css"
 
-const money = (n) => {
-  const num = Number(n ?? 0);
-  return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+import {
+  money,
+  mapStatus,
+  effectiveStatusFromDiff,
+  rowKey,
+} from "../../utils/settlementsTableUtils";
+
 
 const StatusPill = ({ status }) => {
-  const s = String(status || "-").toUpperCase();
-  const label = s === "P" ? "Pending" : s === "C" ? "Completed" : s;
-  const cls = s === "C" ? "status-success" : s === "P" ? "status-warning" : "status-neutral";
-  return <span className={`status-pill ${cls}`}>{label}</span>;
+  const { label, className } = mapStatus(status);
+  return <span className={`status-pill ${className}`}>{label}</span>;
 };
 
 const FlagBadge = ({ tone = "neutral", children }) => (
@@ -25,10 +26,10 @@ const ErrorsTable = ({ rows = [], onDetails, onExportPdf }) => {
     <div className="card table-card">
       <div className="card-header table-header">
         <h3>Error Log</h3>
-        <div style={{ display: "flex" }}>
-          <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
-
-
+        <div className="table-header-right">
+          <div className="table-meta">
+            {`${rows.length} results`}
+          </div>
           {onExportPdf ? (
             <button
               className="btn btn-sm btn-outline"
@@ -57,6 +58,8 @@ const ErrorsTable = ({ rows = [], onDetails, onExportPdf }) => {
               const hasNoSap = Number(r.flagNoSap ?? 0) === 1;
               const hasAmazonInternal = Number(r.flagAmazonInternal ?? 0) === 1 || Number(r.amazonInternalDiff ?? 0) !== 0;
 
+              const status = effectiveStatusFromDiff(r.difference);
+
               return (
                 <tr key={`${r.settlementId ?? "row"}-${idx}`}>
                   <td className="mono">
@@ -70,13 +73,13 @@ const ErrorsTable = ({ rows = [], onDetails, onExportPdf }) => {
                   <td className={`th-center ${diff < 0 ? "negative" : ""}`}>{money(diff)}</td>
 
                   <td>
-                    <div className="flags-wrap">
+                    <div className="th-center flags-wrap">
                       {hasDiff ? <FlagBadge tone="warning">Diff</FlagBadge> : <FlagBadge>OK</FlagBadge>}
                       {hasNoSap ? <FlagBadge tone="danger">No SAP</FlagBadge> : null}
                       {hasAmazonInternal ? <FlagBadge tone="danger">Amazon Internal</FlagBadge> : null}
                     </div>
                   </td>
-                  <td><StatusPill status={r.status} /></td>
+                  <td><StatusPill status={status} /></td>
                   <td className="th-center">
                     <button className="btn btn-sm" onClick={() => onDetails?.(r)}>
                       Details

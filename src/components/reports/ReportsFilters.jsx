@@ -10,6 +10,13 @@ const PENDING_OPTIONS = [
   { value: "5", label: "5" },
 ];
 
+const STATUS_OPTIONS = [
+  { value: "ALL", label: "All" },
+  { value: "P", label: "Pending" },
+  { value: "C", label: "Completed" },
+];
+
+
 const ReportsFilters = ({
   filters,
   onChange,
@@ -26,62 +33,77 @@ const ReportsFilters = ({
   const to = totalItems === 0 ? 0 : Math.min(totalItems, page * pageSize);
 
   return (
-    <div className="filters-card">
-      <div className="filters-top">
-        <div className="filters-left">
-          <div className="filter-group">
-            <label className="filter-label">From date</label>
-            <input
-              type="date"
-              value={filters.fecha_desde}
-              onChange={set("fecha_desde")}
-              className="filter-input"
-              disabled={loading}
-            />
-          </div>
+  <div className="filters-card filters-card--reports">
+    <div className="filters-inline">
+      <div className="filter-group">
+        <label className="filter-label">From date</label>
+        <input
+          type="date"
+          value={filters.fecha_desde}
+          onChange={set("fecha_desde")}
+          className="filter-input"
+          disabled={loading}
+        />
+      </div>
 
-          <div className="filter-group">
-            <label className="filter-label">To date</label>
-            <input
-              type="date"
-              value={filters.fecha_hasta}
-              onChange={set("fecha_hasta")}
-              className="filter-input"
-              disabled={loading}
-            />
-          </div>
+      <div className="filter-group">
+        <label className="filter-label">To date</label>
+        <input
+          type="date"
+          value={filters.fecha_hasta}
+          onChange={set("fecha_hasta")}
+          className="filter-input"
+          disabled={loading}
+        />
+      </div>
 
-          {/* ✅ Pending (1..5) */}
-          <div className="filter-group">
-            <label className="filter-label">Pending</label>
-            <select
-              value={filters.pending}
-              onChange={set("pending")}
-              className="filter-input"
-              disabled={loading}
-            >
-              {PENDING_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      <div className="filter-group">
+        <label className="filter-label">Pending</label>
+        <select
+          value={filters.pending}
+          onChange={set("pending")}
+          className="filter-input"
+          disabled={loading}
+        >
+          {PENDING_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div className="filters-row filters-actions">
-         
-          <button className="btn btn-sm btn-primary" onClick={onApply} disabled={loading} type="button">
-            Apply
-          </button>
+      {/* ✅ Status pegado a Pending */}
+      <div className="filter-group">
+        <label className="filter-label">Status</label>
+        <select
+          value={filters.status}
+          onChange={set("status")}
+          className="filter-input"
+          disabled={loading}
+        >
+          {STATUS_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <button className="btn btn-sm" onClick={onReset} disabled={loading} type="button">
-            Clear
-          </button>
-        </div>
+      {/* ✅ Acciones como última “columna” */}
+      <div className="filters-actions filters-actions--reports">
+        <button className="btn btn-sm btn-primary" onClick={onApply} disabled={loading} type="button">
+          Apply
+        </button>
+
+        <button className="btn btn-sm" onClick={onReset} disabled={loading} type="button">
+          Clear
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default ReportsFilters;

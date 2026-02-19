@@ -5,8 +5,10 @@ import OrdersTableHeaders from "../OrdersTableHeaders";
 import OrdersTableSkeleton from "../OrdersTableSkeleton";
 import OrdersTableBodyPayments from "../OrdersTableBodyPayments";
 
+import "../../../styles/settlements-table.css";
+
 const OrdersPaymentsTable = ({
-  title = "Inpayments",
+  title = "Inpayments Orders",
   loading = false,
   rows = [],
   totalItems = 0,
@@ -19,22 +21,23 @@ const OrdersPaymentsTable = ({
     <div className="data-table">
       <div className="table-header">
         <h3>{title}</h3>
-
         <div className="table-header-right">
-          <span>{loading ? "Loading..." : `${totalItems} results`}</span>
-          <div className="table-meta" style={{ display: "flex", gap: 8 }}>
-            {onExportPdf ? (
-              <button
-                className="btn btn-sm btn-outline"
-                onClick={onExportPdf}
-                disabled={loading || rows.length === 0}
-                type="button"
-                title={rows.length === 0 ? "No rows to export" : "Export current table to PDF"}
-              >
-                Export PDF
-              </button>
-            ) : null}
+          <div className="table-meta">
+            {loading ? "Loading..." : `${totalItems} results`}
           </div>
+
+          {onExportPdf ? (
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={onExportPdf}
+              disabled={loading || rows.length === 0}
+              type="button"
+              title={rows.length === 0 ? "No rows to export" : "Export current table to PDF"}
+            >
+              Export PDF
+            </button>
+          ) : null}
+
         </div>
       </div>
 

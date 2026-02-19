@@ -3,14 +3,17 @@ import ChartCard from "../charts/Errors/ChartCard";
 import ErrorsByRuleBar from "../charts/Errors/ErrorsByRuleBar";
 import ErrorsByDayLine from "../charts/Errors/ErrorsByDayLine";
 import ErrorsBreakdownBars from "../charts/Errors/ErrorsBreakdownBars";
+import TopCausesParetoBar from "../charts/Errors/TopCausesParetoBar";
 
-const ErrorsCharts = forwardRef(({ rows, charts, loading }, ref) => {
+const ErrorsCharts = forwardRef(({ rows, charts, charts279, loading }, ref) => {
   const byRule = charts?.exceptionsByRule || [];
   const byDay = charts?.exceptionsByDay || [];
+  const topCauses = charts279?.paretoByAmountDescription || [];
 
   const ruleRef = useRef(null);
   const dayRef = useRef(null);
   const breakdownRef = useRef(null);
+  const topCausesRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     getChartImages: () => {
@@ -25,7 +28,7 @@ const ErrorsCharts = forwardRef(({ rows, charts, loading }, ref) => {
         return null;
       };
 
-      [ruleRef, dayRef, breakdownRef].forEach((r) => {
+      [ruleRef, dayRef, breakdownRef, topCausesRef].forEach((r) => {
         const img = grab(r);
         if (img) images.push(img);
       });
@@ -37,7 +40,7 @@ const ErrorsCharts = forwardRef(({ rows, charts, loading }, ref) => {
   const isLoading = loading || !charts;
 
   return (
-    <div className="charts-grid">
+    <div className="charts-grid charts-grid--errors">
       <ChartCard
         title="Exceptions by Rule"
         subtitle="Number of exceptions by type"
@@ -63,6 +66,15 @@ const ErrorsCharts = forwardRef(({ rows, charts, loading }, ref) => {
         skeletonType="bars"
       >
         <ErrorsBreakdownBars ref={breakdownRef} data={byDay} />
+      </ChartCard>
+
+      <ChartCard
+        title="Top Causes"
+        subtitle="Pareto by Amount Description (Total)"
+        loading={loading || !charts279}
+        skeletonType="bars"
+      >
+        <TopCausesParetoBar ref={topCausesRef} data={topCauses} maxItems={12} />
       </ChartCard>
     </div>
   );

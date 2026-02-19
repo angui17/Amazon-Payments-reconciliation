@@ -6,6 +6,7 @@ import {
     mapStatus,
     diffClass,
     isReconciled,
+    effectiveStatus,
 } from "../../utils/settlementsTableUtils";
 
 import "../../styles/settlements-table.css";
@@ -21,19 +22,21 @@ const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
         <div className="card table-card">
             <div className="card-header table-header">
                 <h3>Settlements</h3>
-                <div className="table-meta">{rows.length} results</div>
 
-                {onExportPdf ? (
-                    <button
-                        className="btn btn-sm btn-outline"
-                        onClick={() => onExportPdf?.()}
-                        disabled={rows.length === 0}
-                        type="button"
-                        title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
-                    >
-                        Export PDF
-                    </button>
-                ) : null}
+                <div style={{ display: "flex" }}>
+                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
+                    {onExportPdf ? (
+                        <button
+                            className="btn btn-sm btn-outline"
+                            onClick={() => onExportPdf?.()}
+                            disabled={rows.length === 0}
+                            type="button"
+                            title={rows.length === 0 ? "No rows to export" : "Export current page to PDF"}
+                        >
+                            Export PDF
+                        </button>
+                    ) : null}
+                </div>
             </div>
 
             <div className="table-container">
@@ -72,7 +75,7 @@ const SettlementsTable = ({ rows = [], onDetails, onExportPdf }) => {
                                 </td>
                                 <td className="th-center">{isReconciled(r.reconciled)}</td>
                                 <td className="th-center">{r.exceptionsCount ?? 0}</td>
-                                <td><StatusPill status={r.status} /></td>
+                                <td><StatusPill status={effectiveStatus(r.status, r.reconciled)} /></td>
                                 <td className="th-center">
                                     <button className="btn btn-sm" onClick={() => onDetails?.(r)} >
                                         Details

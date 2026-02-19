@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import SettlementInfoCard from "./settlement/SettlementInfoCard";
-import { getAccountingSettlementDetails } from "../../api/accounting";
+import { getADashboardSettlementDetails, getSapInvoicesBySettlement } from "../../api/dashboard";
 
 import SettlementKPIs from "./settlement/SettlementKPIs";
 import SettlementExtras from "./settlement/SettlementExtras";
-
+//tables
 import SettlementRowsTable from "./settlement/SettlementRowsTable";
 import SettlementRowsTableSkeleton from "./settlement/SettlementRowsTableSkeleton";
+import SapInvoicesTableSection from "./settlement/SapInvoicesTableSection";
 
 import SimplePagination from "../common/SimplePagination";
+import { paginate } from "../../utils/pagination"
 
 const DashboardSettlementDetail = () => {
     const navigate = useNavigate();
@@ -27,11 +29,21 @@ const DashboardSettlementDetail = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
+    // sap invoices state (WS 280)
+    const [sapInvoices, setSapInvoices] = useState([]);
+    // pagination SAP
+    const [invPage, setInvPage] = useState(1);
+    const [invPageSize, setInvPageSize] = useState(10);
+
     const fetchDetails = async () => {
         setLoading(true);
         try {
-            const resp = await getAccountingSettlementDetails({ settlementId });
+            const resp = await getADashboardSettlementDetails({ settlementId });
             setDetails(resp);
+
+            const data = await getSapInvoicesBySettlement({ settlementId })
+            setSapInvoices(Array.isArray(data) ? data : []);
+
         } catch (err) {
             console.error("WS 266 → error:", err);
             setDetails(null);
@@ -49,6 +61,10 @@ const DashboardSettlementDetail = () => {
         setPage(1);
     }, [settlementId]);
 
+    useEffect(() => {
+        setInvPage(1);
+    }, [settlementId]);
+
     const summary = details?.summary || null;
     const infoSource = summary || row;
 
@@ -62,6 +78,21 @@ const DashboardSettlementDetail = () => {
     const end = start + pageSize;
     const pageRows = allRows.slice(start, end);
 
+    const invPg = paginate({
+        rows: sapInvoices,
+        page: invPage,
+        pageSize: invPageSize,
+    });
+
+    const invoicesRows = invPg.visibleRows;
+    const sapInvoicesCount = Array.isArray(sapInvoices) ? sapInvoices.length : 0;
+
+    const mergedInfoSource = {
+        ...(infoSource || {}),
+        sapInvoicesCount,
+    };
+
+
     return (
         <div className="main-content page active">
             <div
@@ -74,7 +105,7 @@ const DashboardSettlementDetail = () => {
                 }}
             >
                 <div>
-                    <h1>Settlement: <span style={{ color: "#cc5500"}}>{settlementId}</span></h1>
+                    <h1>Settlement: <span style={{ color: "#cc5500" }}>{settlementId}</span></h1>
                     <p>Detailed information for the selected settlement.</p>
                 </div>
 
@@ -93,14 +124,14 @@ const DashboardSettlementDetail = () => {
                     "amazonTotalReported",
                     "sapPaymentsTotal",
                     "difference",
-                    "sapPaymentsCount",
+                    "sapInvoicesCount",
                     "amazonInternalDiff",
                     "reconciled",
                 ]}
             />
 
             {/* KPIs */}
-            <SettlementKPIs summary={summary} loading={loading} />
+            <SettlementKPIs summary={summary} loading={loading} sapInvoicesCount={sapInvoicesCount} />
 
             {/* Table paginada */}
             {loading ? (
@@ -123,6 +154,30 @@ const DashboardSettlementDetail = () => {
 
             {/* Charts */}
             <SettlementExtras details={details} summary={summary} loading={loading} />
+
+            {/* SAP Invoices table */}
+            {invoicesRows.length > 0 ?
+                <SapInvoicesTableSection
+                    loading={loading}
+                    rows={invoicesRows}
+                    skeletonRows={invPageSize}
+                />
+                : null
+            }
+
+            {sapInvoices.length > 0 ?
+                <SimplePagination
+                    page={invPg.page}
+                    totalItems={invPg.totalItems}
+                    pageSize={invPageSize}
+                    onPageChange={setInvPage}
+                    onPageSizeChange={(n) => {
+                        setInvPageSize(n);
+                        setInvPage(1);
+                    }}
+                />
+                : null}
+
         </div>
     );
 };

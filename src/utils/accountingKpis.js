@@ -7,6 +7,12 @@ const toNum = (v) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+const effectiveStatusFromAccountingRow = (r) => {
+  const diff = getDiffPayments(r);
+  return isZeroMoney(diff) ? "COMPLETED" : "PENDING";
+};
+
+
 const sumField = (arr, candidates) =>
   arr.reduce((acc, r) => {
     for (const k of candidates) {
@@ -32,10 +38,27 @@ export const computeAccountingKpis = ({ rows = [], summary = null }) => {
 
   if (hasRows) {
     const settlements = rows.length;
-    const pending = rows.filter((r) => getStatus(r) === "P").length;
+
+
+    const getDiffPayments = (r) =>
+      toNum(
+        r?.diffPayments ??
+        r?.DIFF_PAYMENTS ??
+        r?.diff_payments ??
+        r?.difference ??
+        r?.DIFF ??
+        0
+      );
+
+    // Ojo con centavos por floating: tratá como 2 decimales
+    const isZeroMoney = (n) => Math.abs(Number(n || 0)) < 0.005;
+
+    const pending = rows.filter((r) => !isZeroMoney(getDiffPayments(r))).length;
+
     const amazonTotal = sumField(rows, ["amazonTotalReported", "amazonTotal", "amazon_total", "AMAZON_TOTAL"]);
     const sapPaymentsTotal = sumField(rows, ["sapPaymentsTotal", "sap_payments_total", "SAP_PAYMENTS_TOTAL"]);
     const diffPaymentsTotal = sumField(rows, ["diffPayments", "diffPaymentsTotal", "diff_payments_total", "DIFF_PAYMENTS_TOTAL"]);
+
     const missingJournal = countTruthy(rows, ["missingJournal", "missing_journal", "MISSING_JOURNAL"]);
     const missingPayments = countTruthy(rows, ["missingPayments", "missing_payments", "MISSING_PAYMENTS"]);
     const unbalancedJournals = countTruthy(rows, ["unbalancedJournal", "unbalanced_journal", "UNBALANCED_JOURNAL"]);

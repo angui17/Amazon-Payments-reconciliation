@@ -29,7 +29,7 @@ const SalesFeesFilters = ({
   ];
 
   return (
-    <div className="filters-card filters-card--inpay">
+    <div className="filters-card filters-card--sales-fees">
       <div className="filters-inline">
         {/* From */}
         <div className="filter-group">

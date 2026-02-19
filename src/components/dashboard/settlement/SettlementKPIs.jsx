@@ -14,7 +14,7 @@ const trendFromNumber = (n) => {
   return x > 0 ? "up" : "down";
 };
 
-const SettlementKPIs = ({ summary, loading = false }) => {
+const SettlementKPIs = ({ summary, loading = false, sapInvoicesCount = 0 }) => {
   const cards = useMemo(() => {
     if (!summary) return [];
 
@@ -57,15 +57,12 @@ const SettlementKPIs = ({ summary, loading = false }) => {
         trend: reconciled ? "up" : "down",
          change: reconciled ? "Settlement reconciled" : "Pending reconciliation",
       },
-      {
-        title: "SAP payments count",
-        value: Number.isFinite(Number(sapPaymentsCount)) ? String(sapPaymentsCount) : "—",
-        trend: "neutral",
-         change:
-      sapPaymentsCount > 0
-        ? "Linked payments"
-        : "No SAP payments found",
-      },
+     {
+  title: "SAP invoices count",
+  value: String(sapInvoicesCount ?? 0),
+  trend: "neutral",
+  change: (sapInvoicesCount ?? 0) > 0 ? "Linked invoices" : "No SAP invoices found",
+},
       {
         title: "Amazon internal diff",
         value: fmtMoney(amazonInternalDiff),

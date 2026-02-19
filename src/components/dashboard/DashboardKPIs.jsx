@@ -3,119 +3,21 @@ import KPICard from "../common/KPICard";
 import "../../styles/kpi.css";
 import KPICardSkeleton from "./KPICardSkeleton";
 
-const money = (n) => {
-  const num = Number(n || 0);
-  return `$${num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
+import { money, trendByDiff, buildSettlementsReconciliationKpis } from "../../utils/kpicards";
 
-const normStatus = (r) =>
-  String(r?.status ?? r?.STATUS ?? r?.Status ?? "").trim().toUpperCase();
-
-const num = (v) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
-
-const isTruthy = (v) => v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true";
-
-const getReconciledBool = (r) => {
-  const v = r?.reconciled ?? r?.RECONCILED ?? r?.isReconciled ?? r?.IS_RECONCILED;
-  return isTruthy(v);
-};
-
-const getAmazonAmount = (r) =>
-  num(
-    r.amazonTotalReported ??
-    r.amazonTotal ??
-    r.AMAZON_TOTAL ??
-    r.amazon_total ??
-    r.AMAZON ??
-    r.amountAmazon
-  );
-
-const getSapAmount = (r) =>
-  num(
-    r.sapPaymentsTotal ??
-    r.sapTotal ??
-    r.SAP_TOTAL ??
-    r.sap_total ??
-    r.SAP ??
-    r.amountSap
-  );
-
-const getAmazonInternalDiff = (r) => Number(r?.exceptionsCount || 0) > 0
-
-const hasMissingSettlementId = (r) =>
-  !String(r.settlementId ?? r.SETTLEMENT_ID ?? r.settlement_id ?? "").trim();
-
-const buildSummaryFromRows = (rows = []) => {
-  const settlementsCount = rows.length;
-
-  let pendingCount = 0;
-  let reconciledCount = 0;
-  let notReconciledCount = 0;
-
-  let amazonTotal = 0;
-  let sapTotal = 0;
-
-  let amazonInternalDiffCount = 0;
-  let missingSettlementIdCount = 0;
-
-  for (const r of rows) {
-    const s = normStatus(r);
-    if (s === "PENDING" || s === "P") pendingCount++;
-
-    const hasReconciledField =
-      r?.reconciled !== undefined ||
-      r?.RECONCILED !== undefined ||
-      r?.isReconciled !== undefined ||
-      r?.IS_RECONCILED !== undefined
-
-    if (hasReconciledField) {
-      const reconciled = getReconciledBool(r);
-      if (reconciled) reconciledCount++;
-      else notReconciledCount++;
-    } else {
-      if (s === "RECONCILED" || s === "C" || s === "COMPLETED") reconciledCount++;
-      else if (s === "NOT_RECONCILED" || s === "NR" || s === "NOT RECONCILED") notReconciledCount++;
-    }
-
-    // totals
-    amazonTotal += getAmazonAmount(r);
-    sapTotal += getSapAmount(r);
-
-    if (getAmazonInternalDiff(r)) amazonInternalDiffCount++;
-    if (hasMissingSettlementId(r)) missingSettlementIdCount++;
-  }
-
-  const differenceTotal = amazonTotal - sapTotal;
-
-  return {
-    settlementsCount,
-    pendingCount,
-    reconciledCount,
-    notReconciledCount,
-    amazonTotal,
-    sapTotal,
-    differenceTotal,
-    amazonInternalDiffCount,
-    missingSettlementIdCount,
-  };
-};
-
-const DashboardKPIs = ({ summary, rows = [] }) => {
+const DashboardKPIs = ({ rows = [] }) => {
   const computed = useMemo(() => {
-    if (!rows || rows.length === 0) return null;
-    return buildSummaryFromRows(rows);
+    if (!Array.isArray(rows)) return null;
+    if (rows.length === 0) return null;
+
+    return buildSettlementsReconciliationKpis(rows, {
+      currency: "USD",
+      locale: "en-US",
+    });
   }, [rows]);
 
-
-  const finalSummary = computed || summary;
-
-  if (!finalSummary) {
+  // Si no hay rows en esta página, mostramos skeleton (o podrías mostrar ceros)
+  if (!computed) {
     return (
       <div className="kpi-cards">
         {Array.from({ length: 9 }).map((_, i) => (
@@ -126,16 +28,21 @@ const DashboardKPIs = ({ summary, rows = [] }) => {
   }
 
   const {
-    settlementsCount = 0,
-    pendingCount = 0,
-    reconciledCount = 0,
-    notReconciledCount = 0,
-    amazonTotal = 0,
-    sapTotal = 0,
-    differenceTotal = 0,
-    amazonInternalDiffCount = 0,
-    missingSettlementIdCount = 0,
-  } = finalSummary;
+    settlementsCount,
+    pendingCount,
+    reconciledCount,
+    notReconciledCount,
+    amazonInternalDiffCount,
+    missingSettlementIdCount,
+    amazonTotalFormatted,
+    sapTotalFormatted,
+    differenceTotalFormatted,
+    raw,
+  } = computed;
+
+  const amazonTotalRaw = Number(raw?.amazonTotal ?? 0) || 0;
+  const sapTotalRaw = Number(raw?.sapTotal ?? 0) || 0;
+  const differenceRaw = Number(raw?.differenceTotal ?? (amazonTotalRaw - sapTotalRaw)) || 0;
 
   const pctReconciled =
     settlementsCount > 0 ? (reconciledCount / settlementsCount) * 100 : 0;
@@ -145,9 +52,7 @@ const DashboardKPIs = ({ summary, rows = [] }) => {
       ? `${pctReconciled.toFixed(0)}% of settlements are reconciled`
       : "No settlements in selected range";
 
-  const diffAbs = Math.abs(Number(differenceTotal || 0));
-  const diffTrend =
-    diffAbs === 0 ? "up" : Number(differenceTotal) < 0 ? "down" : "warning";
+  const diffTrend = trendByDiff(differenceRaw);
 
   return (
     <div className="kpi-cards">
@@ -181,27 +86,27 @@ const DashboardKPIs = ({ summary, rows = [] }) => {
 
       <KPICard
         title="Amazon Total"
-        value={money(amazonTotal)}
+        value={amazonTotalFormatted ?? money(amazonTotalRaw)}
         change="Sum of Amazon reported deposits for the selected range"
         trend="neutral"
       />
 
       <KPICard
         title="SAP Total"
-        value={money(sapTotal)}
+        value={sapTotalFormatted ?? money(sapTotalRaw)}
         change="Sum of SAP posted payments for the selected range"
         trend="neutral"
       />
 
       <KPICard
         title="Difference (Amazon - SAP)"
-        value={money(differenceTotal)}
+        value={differenceTotalFormatted ?? money(differenceRaw)}
         change={
-          diffAbs === 0
+          Math.abs(differenceRaw) === 0
             ? "Perfect match between Amazon and SAP totals"
-            : `Mismatch of ${money(differenceTotal)} to investigate`
+            : `Mismatch of ${differenceTotalFormatted ?? money(differenceRaw)} to investigate`
         }
-        trend={diffTrend}
+        trend={Math.abs(differenceRaw) === 0 ? "up" : diffTrend}
       />
 
       <KPICard

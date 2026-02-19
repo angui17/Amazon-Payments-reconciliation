@@ -15,6 +15,7 @@ import ReportsMonthlyTable from "../reports/ReportsMonthlyTable";
 
 // filters
 import ReportsFilters from "../reports/ReportsFilters";
+import { effectiveStatusFromReconciledCount } from "../../utils/settlementsTableUtils";
 
 // pagination
 import SimplePagination from "../common/SimplePagination";
@@ -33,7 +34,8 @@ const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_FILTERS = {
   fecha_desde: DEFAULT_FROM,
   fecha_hasta: DEFAULT_TO,
-  pending: "ALL", // ✅ nuevo
+  pending: "ALL",
+  status: "ALL",
   limit_months: 12,
 };
 
@@ -92,24 +94,29 @@ const Reports = () => {
     fetchReports();
   }, [params]);
 
-  // ✅ FE filter: pending = 1..5 (o ALL)
-const filteredRows = useMemo(() => {
-  const rows = Array.isArray(allRows) ? allRows : [];
+  const filteredRows = useMemo(() => {
+    const rows = Array.isArray(allRows) ? allRows : [];
+    let out = rows;
 
-  if (applied.pending && applied.pending !== "ALL") {
-    const target = Number(applied.pending);
+    // A) filtro por pendingCount (1..5)
+    if (applied.pending && applied.pending !== "ALL") {
+      const target = Number(applied.pending);
+      out = out.filter((r) => Number(r?.pendingCount) === target);
+    }
 
-    return rows.filter((r) => {
-      const n = Number(r?.pendingCount);
-      return Number.isFinite(n) && n === target;
-    });
-  }
+    // B) filtro por estado (C/P) basado en reconciledCount
+    if (applied.status && applied.status !== "ALL") {
+      const want = String(applied.status).toUpperCase(); // "C" | "P"
+      out = out.filter((r) => {
+        const st = effectiveStatusFromReconciledCount(r?.reconciledCount);
+        return st === want;
+      });
+    }
 
-  return rows;
-}, [allRows, applied.pending]);
+    return out;
+  }, [allRows, applied.pending, applied.status]);
 
   const totalItems = filteredRows.length;
-
   const { visibleRows, page: safePage } = useMemo(
     () =>
       paginate({
@@ -186,11 +193,13 @@ const filteredRows = useMemo(() => {
           <ReportsMonthlyTable
             rows={visibleRows}
             onViewDetails={(row) => console.log("DETAIL ROW:", row)}
+
             onExportPdf={async () => {
               const headerBlocks = buildReportsPdfKpiBlocks(pageSummary, totalSummary);
               await new Promise((r) => requestAnimationFrame(r));
 
               const chartImages = chartsRef.current?.getChartImages?.() || [];
+              const statusLabel = applied.status === "ALL" ? "All" : applied.status;
 
               exportRowsToPdf({
                 rows: visibleRows,
@@ -200,7 +209,7 @@ const filteredRows = useMemo(() => {
                 orientation: "l",
                 headerBlocks,
                 chartImages,
-                footerNote: `Filters — From: ${applied.fecha_desde} · To: ${applied.fecha_hasta} · Pending: ${pendingLabel}`,
+                footerNote: `Filters — From: ${applied.fecha_desde} · To: ${applied.fecha_hasta} · Pending: ${pendingLabel} · Status: ${statusLabel}`,
               });
             }}
           />

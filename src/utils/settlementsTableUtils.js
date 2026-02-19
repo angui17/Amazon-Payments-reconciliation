@@ -16,16 +16,24 @@ export const onlyYMD = (v) => {
 export const formatPeriod = (start, end) =>
   `${onlyYMD(start)} → ${onlyYMD(end)}`;
 
+// Reconciled helpers (robustos)
+export const isReconciledBool = (v) => {
+  if (v === true) return true;
+  const s = String(v ?? "").trim().toLowerCase();
+  return s === "1" || s === "true" || s === "yes" || s === "y";
+};
+
+export const isReconciled = (v) => (isReconciledBool(v) ? "Yes" : "No");
+
+// Status helpers
+export const effectiveStatus = (_status, reconciled) =>
+  isReconciledBool(reconciled) ? "C" : "P";
+
 export const mapStatus = (status) => {
   const s = String(status || "-").trim().toUpperCase();
 
-  if (s === "P") {
-    return { label: "Pending", className: "status-warning" };
-  }
-
-  if (s === "C") {
-    return { label: "Completed", className: "status-success" };
-  }
+  if (s === "P") return { label: "Pending", className: "status-warning" };
+  if (s === "C") return { label: "Completed", className: "status-success" };
 
   return { label: s, className: "status-neutral" };
 };
@@ -37,4 +45,16 @@ export const diffClass = (diff) => {
   return "diff-warn";
 };
 
-export const isReconciled = (v) => Number(v) === 1 ? "Yes" : "No";
+// util común para keys
+export const rowKey = (r, idx = 0, fallback = "row") =>
+  `${r?.settlementId ?? fallback}-${idx}`;
+
+export const effectiveStatusFromDiff = (diff) => {
+  const d = Number(diff ?? 0);
+  return Math.abs(d) < 0.0001 ? "C" : "P";
+};
+
+export const effectiveStatusFromReconciledCount = (count) => {
+  const n = Number(count ?? 0);
+  return n > 0 ? "C" : "P";
+};

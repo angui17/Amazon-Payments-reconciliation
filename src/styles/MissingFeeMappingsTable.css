@@ -1,0 +1,44 @@
+.missing-fee-table-wrap {
+  width: 100%;
+  overflow: auto;
+}
+
+.missing-fee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.missing-fee-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.missing-fee-table tbody td {
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 10px 12px;
+  vertical-align: top;
+}
+
+.missing-fee-table tbody tr:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.right {
+  text-align: right;
+}
+
+.missing-fee-empty {
+  padding: 10px 2px;
+  opacity: 0.75;
+}

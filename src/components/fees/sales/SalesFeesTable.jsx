@@ -31,7 +31,7 @@ const SalesFeesTable = ({
 
                 <div className="table-header-right">
                     <div className="table-meta">
-                        {loading ? "Loading..." : `${totalItems} results • showing ${rows.length}`}
+                        {loading ? "Loading..." : `${totalItems} results`}
                     </div>
 
                     {onExportPdf ? (

@@ -1,17 +1,24 @@
 import React, { useMemo } from "react";
 import ReportsMonthlyTableHeaders from "./ReportsMonthlyTableHeaders";
 import { money, int, pct, formatMonth, diffClass } from "../../utils/kpicards";
+import { effectiveStatusFromReconciledCount, mapStatus } from "../../utils/settlementsTableUtils";
+
 import "../../styles/settlements-table.css"
 
 const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
     const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
+
+    const StatusPill = ({ status }) => {
+        const { label, className } = mapStatus(status);
+        return <span className={`status-pill ${className}`}>{label}</span>;
+    };
 
     return (
         <div className="card table-card">
             <div className="table-header" style={{ padding: 14 }}>
                 <h3>Reports</h3>
                 <div style={{ display: "flex" }}>
-                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} rows</div>
+                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} results</div>
                     {onExportPdf ? (
                         <button
                             className="btn btn-sm btn-outline"
@@ -39,6 +46,7 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
                             safeRows.map((r, idx) => {
                                 const diff = Number(r.differenceTotal);
                                 const isNegative = Number.isFinite(diff) && diff < 0;
+                                const status = effectiveStatusFromReconciledCount(r.reconciledCount);
 
                                 return (
                                     <tr key={r.month ?? idx}>
@@ -53,11 +61,10 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
                                         <td>{int(r.notReconciledCount)}</td>
                                         <td>{int(r.pendingCount)}</td>
                                         <td>{pct(r.reconciledPct)}</td>
-                                        {/* <td className="th-center">
-                                            <button className="btn btn-sm" onClick={() => onDetails?.(r)}>
-                                                Details
-                                            </button>
-                                        </td> */}
+                                        <td className="th-center">
+                                            <StatusPill status={status} />
+                                        </td>
+
                                     </tr>
                                 );
                             })

@@ -45,3 +45,73 @@
     background-position: -100% 0;
   }
 }
+
+.health-card.health-success {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.10) inset;
+}
+
+.health-card.health-warning {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.10) inset;
+}
+
+.health-card.health-danger {
+  border: 1px solid rgba(185, 28, 28, 0.35);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.08) inset;
+}
+
+
+.health-score {
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Colores del score según trend */
+.health-card.health-success .health-score {
+  color: #047857; /* verde */
+}
+
+.health-card.health-warning .health-score {
+  color: #b45309; /* amarillo/naranja */
+}
+
+.health-card.health-danger .health-score {
+  color: #b91c1c; /* rojo */
+}
+
+.health-meta {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 6px;
+}
+
+.health-card.health-danger .health-meta { opacity: 0.9; }
+
+/* =========================
+   Reconciliation Health Card
+   ========================= */
+
+.health-card {
+  border: 2px solid transparent;
+  border-radius: 12px;
+}
+
+/* SUCCESS (verde) */
+.health-card.health-success {
+  border-color: #047857;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) inset;
+}
+
+/* WARNING (amarillo) */
+.health-card.health-warning {
+  border-color: #b45309;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14) inset;
+}
+
+/* DANGER (rojo) */
+.health-card.health-danger {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) inset;
+}

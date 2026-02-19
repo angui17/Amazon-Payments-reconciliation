@@ -19,9 +19,12 @@ import DashboardCharts from "../dashboard/DashboardCharts";
 // filtros por defecto
 import DashboardFilters from "../dashboard/DashboardFilters";
 import { ymdToMdy } from "../../utils/dateUtils";
+import { effectiveStatus } from "../../utils/settlementsTableUtils";
 
 // paginacion
 import SimplePagination from "../common/SimplePagination";
+import { paginate } from "../../utils/pagination";
+
 
 const DEFAULT_FILTERS = {
   fecha_desde: "2025-01-01",
@@ -61,11 +64,14 @@ const Dashboard = () => {
   // pdf 
   const chartsRef = useRef(null);
 
-  const toApiFilters = (f) => ({
-    ...f,
-    fecha_desde: ymdToMdy(f.fecha_desde), //  MM-DD-YYYY
-    fecha_hasta: ymdToMdy(f.fecha_hasta), // MM-DD-YYYY
-  });
+  const toApiFilters = (f) => {
+    const { status, ...rest } = f;
+    return {
+      ...rest,
+      fecha_desde: ymdToMdy(f.fecha_desde),
+      fecha_hasta: ymdToMdy(f.fecha_hasta),
+    };
+  };
 
   const fetchDashboard = async (f) => {
     setLoading(true);
@@ -103,37 +109,29 @@ const Dashboard = () => {
     fetchDashboard(filters);
   }, [])
 
-  const getRowStatus = (r) => {
-    const raw = r?.status ?? r?.STATUS ?? r?.Status ?? "";
-    return String(raw).toUpperCase();
-  };
-
   const allRows = rows || [];
 
   // 1) status filter
   const statusFiltered =
     filters.status === "ALL"
       ? allRows
-      : allRows.filter((r) => getRowStatus(r) === String(filters.status).toUpperCase());
+      : allRows.filter(
+        (r) =>
+          effectiveStatus(r.status, r.reconciled) ===
+          String(filters.status).toUpperCase()
+      );
+
 
   // 2) limit_records
   const limitN = Math.max(1, Number(filters.limit_records) || 50);
   const filteredRows = statusFiltered.slice(0, limitN);
 
-  const totalItems = filteredRows.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const safePage = Math.min(Math.max(1, page), totalPages);
-
-  const start = (safePage - 1) * pageSize;
-  const end = start + pageSize;
-
-  const pagedRows = filteredRows.slice(start, end);
-
   // paginacion
+  const { page: safePage, totalItems, totalPages, visibleRows: pagedRows } = paginate({ rows: filteredRows, page, pageSize });
+
   useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil((filteredRows?.length || 0) / pageSize));
-    if (page > totalPages) setPage(1);
-  }, [filteredRows.length, pageSize]);
+    if (page !== safePage) setPage(safePage);
+  }, [safePage]);
 
   return (
     <>
@@ -143,7 +141,7 @@ const Dashboard = () => {
       </div>
 
       {/* KPI charts */}
-      {pagedRows.length > 0 ? <DashboardKPIs summary={summary} rows={pagedRows} /> : null}
+      {pagedRows.length > 0 ? <DashboardKPIs rows={pagedRows} /> : null}
 
       {/* Filters */}
       <DashboardFilters

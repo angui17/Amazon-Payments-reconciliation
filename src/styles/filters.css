@@ -514,3 +514,172 @@ select.filter-input--multi[multiple] {
   display: inline-flex;
   align-items: center;
 }
+
+/* ===== Reports Filters (scoped) ===== */
+.filters-card--reports .filters-inline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+  /* 4 campos + acciones */
+  gap: 12px;
+  align-items: center;
+}
+
+/* Botones alineados con inputs */
+.filters-card--reports .filters-actions--reports {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  height: 36px;
+  align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .filters-card--reports .filters-inline {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .filters-card--reports .filters-actions--reports {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 520px) {
+  .filters-card--reports .filters-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-card--reports .filters-actions--reports {
+    justify-content: stretch;
+  }
+
+  .filters-card--reports .filters-actions--reports .btn {
+    width: 100%;
+  }
+}
+
+/* ===== Orders Payments Filters (scoped) - responsive fix ===== */
+/* Reemplaza la grilla rígida por una que se adapta al ancho real */
+.filters-card--payments .filters-row-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+/* Amount Description un poco más ancho cuando haya espacio */
+.filters-card--payments .filter-group:has(select) {
+  min-width: 200px;
+}
+
+/* Acciones: siempre al final, y si no entra, baja sola a nueva fila */
+.filters-card--payments .filters-actions--payments {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: end;
+  padding-top: 0;
+  height: 36px;
+}
+
+/* A partir de cierto ancho “medio”, forzamos acciones abajo para que no rompa */
+@media (max-width: 1320px) {
+  .filters-card--payments .filters-actions--payments {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile: acciones full width */
+@media (max-width: 520px) {
+  .filters-card--payments .filters-actions--payments {
+    justify-content: stretch;
+  }
+  .filters-card--payments .filters-actions--payments .btn {
+    width: 100%;
+  }
+}
+
+@media (max-height: 520px) {
+  .filters-card--payments {
+    padding: 10px;
+  }
+  .filters-card--payments .filters-row-inline {
+    gap: 10px;
+  }
+}
+
+/* ===== Orders Payments Filters – single line stable ===== */
+.filters-card--payments .filters-row-inline {
+  display: grid;
+  grid-template-columns:
+    minmax(130px, 1fr)   /* from */
+    minmax(130px, 1fr)   /* to */
+    minmax(150px, 1fr)   /* order */
+    minmax(130px, 1fr)   /* sku */
+    minmax(180px, 1.2fr) /* amount desc */
+    minmax(120px, 1fr)   /* status */
+    auto;                /* actions */
+  gap: 10px;
+  align-items: end;
+}
+
+/* Inputs pueden achicarse sin romper */
+.filters-card--payments .filter-input {
+  min-width: 0;
+}
+
+/* Botones SIEMPRE en la misma fila */
+.filters-card--payments .filters-actions--payments {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: end;
+  white-space: nowrap;
+}
+
+/* ===== Refunds Payments – force single line ===== */
+.filters-card--refunds-payments .filters-row-inline{
+  display: grid;
+  grid-template-columns:
+    minmax(120px, 1fr)  /* from */
+    minmax(120px, 1fr)  /* to */
+    minmax(150px, 1fr)  /* settlement */
+    minmax(150px, 1fr)  /* order */
+    minmax(130px, 1fr)  /* sku */
+    minmax(120px, 1fr)  /* status */
+    minmax(140px, 1fr)  /* reason */
+    auto;               /* actions */
+  gap: 10px;
+  align-items: end;
+}
+
+/* clave: permite encogerse sin overflow */
+.filters-card--refunds-payments .filter-input{
+  min-width: 0;
+}
+
+/* acciones siempre visibles */
+.filters-card--refunds-payments .filters-actions--refunds-payments{
+  white-space: nowrap;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+
+/* ===== Sales Fees Filters (scoped) ===== */
+.filters-card--sales-fees .filters-inline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr)) auto; /* 5 campos + acciones */
+  gap: 12px;
+  align-items: end;
+}
+
+.filters-card--sales-fees .filters-actions--inline {
+  justify-self: end;
+  align-self: end;
+  white-space: nowrap;
+}

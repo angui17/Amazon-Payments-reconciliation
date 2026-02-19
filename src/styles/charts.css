@@ -169,3 +169,114 @@
   .chart-card{ grid-column: span 12; }
 }
 
+/* ===== Errors only overrides ===== */
+.charts-grid--errors .chart-card:nth-child(3){
+  grid-column: span 6; /* ✅ ya no ocupa 12, vuelve a 2 por fila */
+}
+
+/* mobile sigue igual */
+@media (max-width: 900px){
+  .charts-grid--errors .chart-card{
+    grid-column: span 12;
+  }
+}
+
+.chart-card--wide{
+  grid-column: span 12;
+}
+
+@media (max-width: 900px){
+  .chart-card--wide{
+    grid-column: span 12;
+  }
+}
+
+/* ===== Pending Aging panel (right half) ===== */
+.aging-panel{
+  width: 50%;
+  margin: 16px auto 32px auto;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  padding: 14px;
+}
+
+.aging-panel__header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 10px;
+}
+
+.aging-panel__title{
+  font-weight: 700;
+  font-size: 16px;
+  color: #cc5500;
+}
+
+.aging-panel__subtitle{
+  font-size: 12px;
+  color:#6b7280;
+  margin-top: 2px;
+}
+
+.aging-panel__body{
+  width: 100%;
+  overflow-x: auto;
+}
+
+.aging-table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.aging-table th,
+.aging-table td{
+  padding: 10px 8px;
+  border-top: 1px solid rgba(17,24,39,.08);
+}
+
+.aging-table thead th{
+  border-top: none;
+  color: #6b7280;
+  font-weight: 700;
+  text-align: left;
+}
+
+.aging-table .num{
+  text-align: right;
+  white-space: nowrap;
+}
+
+.aging-panel__skeleton{
+  height: 180px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f3f4f6, #fafafa, #f3f4f6);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+/* responsive: en mobile que ocupe todo */
+@media (max-width: 900px){
+  .aging-panel{
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(17,24,39,.12);
+}
+
+.chip-info{ background: rgba(59,130,246,.10); color:#1d4ed8; border-color: rgba(59,130,246,.25); }
+.chip-warn{ background: rgba(245,158,11,.12); color:#92400e; border-color: rgba(245,158,11,.25); }
+.chip-error{ background: rgba(239,68,68,.12); color:#991b1b; border-color: rgba(239,68,68,.25); }

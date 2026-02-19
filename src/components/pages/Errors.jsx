@@ -25,6 +25,7 @@ import ErrorsCharts from '../errors/ErrorsCharts';
 
 // filters
 import ErrorsFilters from "../errors/ErrorsFilters";
+import { effectiveStatusFromDiff } from "../../utils/settlementsTableUtils";
 
 // Export to pdf
 import { exportRowsToPdf } from "../../utils/pdfExport/exportTableToPdf";
@@ -49,25 +50,19 @@ const Errors = () => {
 
   // charts
   const [charts, setCharts] = useState(null);
+  const [charts279, setCharts279] = useState(null);
 
   // pdf
   const chartsRef = useRef(null);
 
   // filters
-  const toApiFilters = (ui) => ({
-    ...ui,
-    fecha_desde: ymdToMdy(ui.fecha_desde),
-    fecha_hasta: ymdToMdy(ui.fecha_hasta),
-  });
-
-  const handleApply = () => {
-    if (!canApply) return;
-
-    onApply({
-      ...draft,
-      limit_records: draft.limit_records === "" ? 50 : draft.limit_records,
-      status: draft.status || "ALL",
-    });
+  const toApiFilters = (ui) => {
+    const { status, ...rest } = ui;
+    return {
+      ...rest,
+      fecha_desde: ymdToMdy(ui.fecha_desde),
+      fecha_hasta: ymdToMdy(ui.fecha_hasta),
+    };
   };
 
   const handleApplyFilters = (nextUiFilters) => {
@@ -81,6 +76,7 @@ const Errors = () => {
     setSummary279(null);
     setRows(null);
     setCharts(null);
+    setCharts279(null);
 
     try {
       const apiFilters = toApiFilters(uiFilters);
@@ -94,6 +90,7 @@ const Errors = () => {
       setRows(resp267.rows || []);
       setCharts(resp267.charts);
       setSummary279(resp279.summary);
+      setCharts279(resp279.charts);
     } catch (e) {
       console.error("Error fetching errors:", e);
     } finally {
@@ -105,15 +102,15 @@ const Errors = () => {
     fetchErrors(filters);
   }, [])
 
-  const getRowStatus = (r) =>
-    String(r?.status ?? r?.STATUS ?? "").trim().toUpperCase();
+  const getEffectiveStatus = (r) => effectiveStatusFromDiff(r?.difference);
 
-  // 1) status
-  const statusFiltered = (rows || []).filter((r) => {
-    const s = getRowStatus(r);
-    if (filters.status === "ALL") return true;
-    return s === String(filters.status).toUpperCase();
-  });
+  // 1) status (basado en diff)
+  const statusFiltered =
+    filters.status === "ALL"
+      ? (rows || [])
+      : (rows || []).filter(
+        (r) => getEffectiveStatus(r) === String(filters.status).toUpperCase()
+      );
 
   // 2) limit_records 
   const limitN = Math.max(1, Number(filters.limit_records) || 50);
@@ -140,8 +137,8 @@ const Errors = () => {
       fileName: `errors_${filters.fecha_desde}_${filters.fecha_hasta}.pdf`,
       orientation: "l",
       headerBlocks,
-      footerNote: `Status filter: ${filters.status} | Limit: ${filters.limit_records}`,
       chartImages,
+      footerNote: `Status filter: ${filters.status} | Limit: ${filters.limit_records}`,
     });
   };
 
@@ -177,7 +174,7 @@ const Errors = () => {
 
       {/* charts */}
       {filteredRows.length > 0
-        ? <ErrorsCharts rows={filteredRows} charts={charts} loading={loading} ref={chartsRef} />
+        ? <ErrorsCharts rows={filteredRows} charts={charts} loading={loading} ref={chartsRef} charts279={charts279} />
         : null}
 
       {/* Modal details */}

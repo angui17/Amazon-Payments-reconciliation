@@ -19,6 +19,7 @@ const AccountingInfoCard = ({ row }) => {
       hiddenKeys={[
         "rn",
         "rawJson",
+        "sapPaymentsCount",
       ]}
     />
   );
