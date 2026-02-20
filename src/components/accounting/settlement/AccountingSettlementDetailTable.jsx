@@ -16,7 +16,8 @@ const StatusPill = ({ status }) => {
   return <span className={`status-pill ${cls}`}>{label}</span>;
 };
 
-const AccountingSettlementDetailTable = ({ rows = [] }) => {
+const AccountingSettlementDetailTable = ({ rows = [], settlementStatus }) => {
+   const statusToShow = settlementStatus ?? "-";
   return (
     <div className="card table-card" style={{ marginTop: 16 }}>
       <div className="card-header table-header">
@@ -60,7 +61,7 @@ const AccountingSettlementDetailTable = ({ rows = [] }) => {
                   <td>{desc}</td>
                   <td className={`th-center ${amount < 0 ? "negative" : ""}`}>{money(amount)}</td>
                   <td className={`th-center ${total < 0 ? "negative" : ""}`}>{money(total)}</td>
-                  <td className="th-center"><StatusPill status={status} /></td>
+                  <td className="th-center"><StatusPill status={statusToShow} /></td>
                 </tr>
               );
             })}

@@ -186,7 +186,7 @@ const AccountingSettlementDetail = () => {
             {loading ? (
                 <AccountingSettlementDetailTableSkeleton rows={10} />
             ) : (
-                <AccountingSettlementDetailTable rows={pageRows} />
+                <AccountingSettlementDetailTable rows={pageRows} settlementStatus={cardRow?.status}/>
             )}
 
             {/* Pagination */}
