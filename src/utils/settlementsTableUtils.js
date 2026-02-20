@@ -58,3 +58,22 @@ export const effectiveStatusFromReconciledCount = (count) => {
   const n = Number(count ?? 0);
   return n > 0 ? "C" : "P";
 };
+
+export const effectiveStatusFromMonthlyRow = (r) => {
+  const total = Number(r?.settlementsCount ?? 0);
+  const reconciled = Number(r?.reconciledCount ?? 0);
+  const notRec = Number(r?.notReconciledCount ?? 0);
+
+  // si viene pendingCount, usalo; si no, calculalo
+  const pendingRaw = r?.pendingCount;
+  const pending = pendingRaw != null
+    ? Number(pendingRaw)
+    : Math.max(0, total - reconciled - notRec);
+
+  return pending > 0 ? "P" : "C";
+};
+
+export const effectiveStatusFromNotReconciledCount = (notReconciledCount) => {
+  const n = Number(notReconciledCount ?? 0);
+  return n > 0 ? "P" : "C";
+};

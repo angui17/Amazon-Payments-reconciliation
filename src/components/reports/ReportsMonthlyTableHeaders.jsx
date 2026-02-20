@@ -11,8 +11,8 @@ const ReportsMonthlyTableHeaders = () => {
         <th>SAP Total</th>
         <th>Difference</th>
         <th>Reconciled</th>
-        <th>Not Reconciled</th>
-        <th>Pending</th>
+        <th className="th-center">Not Reconciled</th>
+        <th className="th-center">Pending</th>
         <th>% Recon</th>
         <th>Status</th>
       </tr>

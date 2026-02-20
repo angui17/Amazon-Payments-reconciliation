@@ -1,24 +1,50 @@
 import React, { useMemo } from "react";
 import KPICard from "../common/KPICard";
 
-import { money, int, pct, trendByDiff } from "../../utils/kpicards";
+import { money, trendByDiff } from "../../utils/kpicards";
+
+const int = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : 0;
+};
+
+const pctFrom = (num, den) => {
+  const n = Number(num);
+  const d = Number(den);
+  if (!Number.isFinite(n) || !Number.isFinite(d) || d <= 0) return "—";
+  return `${Math.round((n / d) * 100)}%`;
+};
+
+const clamp0 = (n) => (Number.isFinite(n) ? Math.max(0, n) : 0);
 
 const ReportsKpiCards = ({ summary, totalSummary }) => {
   const cards = useMemo(() => {
     if (!summary) return [];
 
+    const total = int(summary?.settlementsCount);
+    const reconciled = int(summary?.reconciledCount);
+
+    // si no confiás en la BD:
+    // const notReconciled = clamp0(total - reconciled);
+    const notReconciled = int(summary?.notReconciledCount);
+
+    const pending = clamp0(total - reconciled - notReconciled);
+    const reconciledPctNum = total > 0 ? (reconciled / total) * 100 : 0;
+
     return [
       {
         title: "Settlements",
-        value: `${int(summary.settlementsCount)}`,
-        change: `${int(summary.reconciledCount)} reconciled · ${int(summary.notReconciledCount)} with differences · ${int(totalSummary?.settlementsCount ?? 0)} total`,
+        value: `${total}`,
+        change: `${reconciled} reconciled · ${notReconciled} with differences`,
         trend: "neutral",
       },
       {
         title: "Reconciled %",
-        value: pct(summary.reconciledPct),
-        change: summary.pendingCount > 0 ? `${int(summary.pendingCount)} pending` : "All settlements processed",
-        trend: summary.reconciledPct >= 95 ? "up" : "neutral",
+        value: pctFrom(reconciled, total),
+        change: reconciledPctNum >= 100
+          ? "All settlements reconciled"
+          : `${notReconciled} with differences`,
+        trend: reconciledPctNum >= 95 ? "up" : "neutral",
       },
       {
         title: "Amazon Total",
@@ -35,8 +61,12 @@ const ReportsKpiCards = ({ summary, totalSummary }) => {
       {
         title: "Difference Total",
         value: money(summary.differenceTotal),
-        change: summary.differenceTotal === 0 ? "No difference between SAP and Amazon"
-          : summary.differenceTotal < 0 ? "SAP amount is higher than Amazon" : "Amazon amount is higher than SAP",
+        change:
+          Number(summary.differenceTotal) === 0
+            ? "No difference between SAP and Amazon"
+            : Number(summary.differenceTotal) < 0
+              ? "SAP amount is higher than Amazon"
+              : "Amazon amount is higher than SAP",
         trend: trendByDiff(summary.differenceTotal),
       },
     ];

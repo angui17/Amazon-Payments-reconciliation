@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import ReportsMonthlyTableHeaders from "./ReportsMonthlyTableHeaders";
 import { money, int, pct, formatMonth, diffClass } from "../../utils/kpicards";
-import { effectiveStatusFromReconciledCount, mapStatus } from "../../utils/settlementsTableUtils";
+import { effectiveStatusFromNotReconciledCount, mapStatus } from "../../utils/settlementsTableUtils";
 
-import "../../styles/settlements-table.css"
+import "../../styles/settlements-table.css";
 
 const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
     const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
@@ -18,7 +18,9 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
             <div className="table-header" style={{ padding: 14 }}>
                 <h3>Reports</h3>
                 <div style={{ display: "flex" }}>
-                    <div className="table-meta" style={{ margin: "10px" }}> {rows.length} results</div>
+                    <div className="table-meta" style={{ margin: "10px" }}>
+                        {rows.length} results
+                    </div>
                     {onExportPdf ? (
                         <button
                             className="btn btn-sm btn-outline"
@@ -32,6 +34,7 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
                     ) : null}
                 </div>
             </div>
+
             <div className="data-table">
                 <table>
                     <ReportsMonthlyTableHeaders />
@@ -46,25 +49,31 @@ const ReportsMonthlyTable = ({ rows = [], onViewDetails, onExportPdf }) => {
                             safeRows.map((r, idx) => {
                                 const diff = Number(r.differenceTotal);
                                 const isNegative = Number.isFinite(diff) && diff < 0;
-                                const status = effectiveStatusFromReconciledCount(r.reconciledCount);
+
+                                const total = int(r.settlementsCount);
+                                const reconciled = int(r.reconciledCount);
+                                const notRec = int(r.notReconciledCount);
+
+                                const status = effectiveStatusFromNotReconciledCount(notRec);
+                                const computedPending = notRec === 0 ? 0 : notRec;
 
                                 return (
                                     <tr key={r.month ?? idx}>
                                         <td>{formatMonth(r.month)}</td>
-                                        <td className="th-center">{int(r.settlementsCount)}</td>
+                                        <td className="th-center">{total}</td>
                                         <td>{money(r.amazonTotal)}</td>
                                         <td>{money(r.sapTotal)}</td>
                                         <td className={`th-center ${diffClass(r.differenceTotal)} ${isNegative ? "negative" : ""}`}>
                                             {money(r.differenceTotal)}
                                         </td>
-                                        <td className="th-center">{int(r.reconciledCount)}</td>
-                                        <td>{int(r.notReconciledCount)}</td>
-                                        <td>{int(r.pendingCount)}</td>
+
+                                        <td className="th-center">{reconciled}</td>
+                                        <td className="th-center">{notRec}</td>
+                                        <td className="th-center">{computedPending}</td>
                                         <td>{pct(r.reconciledPct)}</td>
                                         <td className="th-center">
                                             <StatusPill status={status} />
                                         </td>
-
                                     </tr>
                                 );
                             })
