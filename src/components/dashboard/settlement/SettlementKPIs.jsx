@@ -17,15 +17,7 @@ const trendFromNumber = (n) => {
 const SettlementKPIs = ({ summary, loading = false, sapInvoicesCount = 0 }) => {
   const cards = useMemo(() => {
     if (!summary) return [];
-
-    const {
-      amazonTotalReported,
-      sapPaymentsTotal,
-      difference,
-      reconciled,
-      sapPaymentsCount,
-      amazonInternalDiff,
-    } = summary;
+ const { amazonTotalReported, sapPaymentsTotal, difference, reconciled, amazonInternalDiff } = summary;
 
     return [
       {
@@ -57,12 +49,12 @@ const SettlementKPIs = ({ summary, loading = false, sapInvoicesCount = 0 }) => {
         trend: reconciled ? "up" : "down",
          change: reconciled ? "Settlement reconciled" : "Pending reconciliation",
       },
-     {
-  title: "SAP invoices count",
-  value: String(sapInvoicesCount ?? 0),
-  trend: "neutral",
-  change: (sapInvoicesCount ?? 0) > 0 ? "Linked invoices" : "No SAP invoices found",
-},
+      {
+        title: "SAP invoices count",
+        value: String(sapInvoicesCount ?? 0),
+        trend: "neutral",
+        change: (sapInvoicesCount ?? 0) > 0 ? "Linked invoices" : "No SAP invoices found",
+      },
       {
         title: "Amazon internal diff",
         value: fmtMoney(amazonInternalDiff),
@@ -73,7 +65,7 @@ const SettlementKPIs = ({ summary, loading = false, sapInvoicesCount = 0 }) => {
         : "Amazon internal mismatch",
       },
     ];
-  }, [summary]);
+  }, [summary, sapInvoicesCount]);
 
   if (loading) return <SettlementKPIsSkeleton count={6} />;
   if (!summary) return null;

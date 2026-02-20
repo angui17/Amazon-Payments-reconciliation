@@ -17,8 +17,16 @@ const mapStatus = (v) => {
 
 const getValue = (row, key) => row?.[key];
 
-const SettlementRowsTable = ({ rows = [] }) => {
+const SettlementRowsTable = ({ rows = [], settlementStatus }) => {
   const view = Array.isArray(rows) ? rows : [];
+
+  const normalizedSettlementStatus = String(settlementStatus || "")
+    .trim()
+    .toUpperCase();
+
+  const forceCompleted =
+    normalizedSettlementStatus === "C" ||
+    normalizedSettlementStatus === "COMPLETED";
 
   if (!view.length) {
     return (
@@ -70,7 +78,10 @@ const SettlementRowsTable = ({ rows = [] }) => {
                     }
 
                     if (k === "status") {
-                      const s = mapStatus(raw);
+                      // ✅ si el settlement es Completed, todos los rows “Completed”
+                      const statusToShow = forceCompleted ? "C" : raw;
+                      const s = mapStatus(statusToShow);
+
                       return (
                         <td key={k} className="th-center">
                           <StatusBadge status={s.badge}>{s.label}</StatusBadge>

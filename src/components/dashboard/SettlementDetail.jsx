@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import SettlementInfoCard from "./settlement/SettlementInfoCard";
@@ -13,6 +13,8 @@ import SapInvoicesTableSection from "./settlement/SapInvoicesTableSection";
 
 import SimplePagination from "../common/SimplePagination";
 import { paginate } from "../../utils/pagination"
+
+import { effectiveStatusFromDiff } from "../../utils/settlementsTableUtils";
 
 const DashboardSettlementDetail = () => {
     const navigate = useNavigate();
@@ -42,7 +44,8 @@ const DashboardSettlementDetail = () => {
             setDetails(resp);
 
             const data = await getSapInvoicesBySettlement({ settlementId })
-            setSapInvoices(Array.isArray(data) ? data : []);
+            const invRows = Array.isArray(data) ? data : (data?.rows ?? []);
+            setSapInvoices(Array.isArray(invRows) ? invRows : []);
 
         } catch (err) {
             console.error("WS 266 → error:", err);
@@ -85,13 +88,25 @@ const DashboardSettlementDetail = () => {
     });
 
     const invoicesRows = invPg.visibleRows;
-    const sapInvoicesCount = Array.isArray(sapInvoices) ? sapInvoices.length : 0;
+   const sapInvoicesCount = useMemo(
+  () => (Array.isArray(sapInvoices) ? sapInvoices.length : 0),
+  [sapInvoices]
+);
 
     const mergedInfoSource = {
         ...(infoSource || {}),
         sapInvoicesCount,
     };
 
+    const settlementStatus = useMemo(() => {
+        const diff =
+            mergedInfoSource?.diffPayments ??
+            mergedInfoSource?.difference ??
+            mergedInfoSource?.diff ??
+            0;
+
+        return effectiveStatusFromDiff(diff); // "C" o "P"
+    }, [mergedInfoSource]);
 
     return (
         <div className="main-content page active">
@@ -116,7 +131,10 @@ const DashboardSettlementDetail = () => {
 
             {/* Info */}
             <SettlementInfoCard
-                row={infoSource}
+                row={{
+                    ...mergedInfoSource,
+                    status: settlementStatus,
+                }}
                 allowKeys={[
                     "settlementId",
                     "depositDateDate",
@@ -137,7 +155,7 @@ const DashboardSettlementDetail = () => {
             {loading ? (
                 <SettlementRowsTableSkeleton rows={pageSize} />
             ) : (
-                <SettlementRowsTable rows={pageRows} />
+                <SettlementRowsTable rows={pageRows} settlementStatus={settlementStatus} />
             )}
 
             {/* Pagination */}
